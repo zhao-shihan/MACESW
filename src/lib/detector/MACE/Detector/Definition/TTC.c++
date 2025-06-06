@@ -103,14 +103,10 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         ttc.WindowWidth() / 2,
         ttc.WindowThickness() / 2,
         ttc.WindowLength() / 2)};
-    const auto ttcWindowUpLogic{Make<G4LogicalVolume>(
+    const auto ttcWindowLogic{Make<G4LogicalVolume>(
         ttcWindowSolid,
         window,
-        "TTCWindowUp")};
-    const auto ttcWindowDownLogic{Make<G4LogicalVolume>(
-        ttcWindowSolid,
-        window,
-        "TTCWindowDown")};
+        "TTCWindow")};
     // set up the Silicon
     const auto ttcSiliconeSolid{Make<G4Box>(
         "TTCSiliconeSolid",
@@ -195,18 +191,19 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         Make<G4PVPlacement>(
             nullptr,
             G4ThreeVector(0, ttc.LightCouplerThickness() + (ttc.Length() + ttc.WindowThickness()) / 2, 0),
-            ttcWindowUpLogic,
+            ttcWindowLogic,
             "TTCWindowPhysics",
             ttcVirtualBoxLogic[i],
             false,
+            ttc.NSiPM() - 1, // SiPMLocalID
             checkOverlaps);
         Make<G4PVPlacement>(
-            nullptr,
-            G4ThreeVector(0, -(ttc.LightCouplerThickness() + (ttc.Length() + ttc.WindowThickness()) / 2), 0),
-            ttcWindowDownLogic,
+            G4Translate3D{G4ThreeVector(0, -(ttc.LightCouplerThickness() + (ttc.Length() + ttc.WindowThickness()) / 2), 0)} * G4RotateZ3D{pi},
+            ttcWindowLogic,
             "TTCWindowPhysics",
             ttcVirtualBoxLogic[i],
             false,
+            ttc.NSiPM() - 2, // SiPMLocalID
             checkOverlaps);
         // set the position of the PCB inside the air mother box
         Make<G4PVPlacement>(
@@ -258,18 +255,8 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         G4ThreeVector(0, (ttc.SiliconeThickness() - ttc.WindowThickness()) / 2, 0),
         ttcSiliconeLogic,
         "TTCSiliconePhysics",
-        ttcWindowUpLogic,
+        ttcWindowLogic,
         false,
-        ttc.NSiPM() - 1, // SiPMLocalID
-        checkOverlaps);
-    Make<G4PVPlacement>(
-        nullptr,
-        G4ThreeVector(0, -(ttc.SiliconeThickness() - ttc.WindowThickness()) / 2, 0),
-        ttcSiliconeLogic,
-        "TTCSiliconePhysics",
-        ttcWindowDownLogic,
-        false,
-        ttc.NSiPM() - 2, // SiPMLocalID
         checkOverlaps);
 
     // Construct Silicon Optical Surface

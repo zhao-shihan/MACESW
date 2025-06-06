@@ -177,7 +177,7 @@ auto TTCSD::EndOfEvent(G4HCofThisEvent*) -> void {
     if (fTTCSiPMSD) {
         auto nHit{fTTCSiPMSD->NOpticalPhotonHit()};
         for (auto&& hit : std::as_const(*fHitsCollection->GetVector())) {
-            Get<"nOptPho">(*hit) = (nHit[Get<"TileID">(*hit)]);
+            Get<"nOptPho">(*hit) = nHit[Get<"TileID">(*hit)];
         }
     }
 }

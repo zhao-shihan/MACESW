@@ -6,12 +6,11 @@
 #/control/saveHistory
 /run/verbose 2
 
-#/Mustard/Detector/Description/Ixport mms_geom.yaml
+
+/Mustard/Detector/Description/Import SimTTC/SimTTC.yaml
 
 /MACE/Physics/UseOpticalPhysics
-
 /run/initialize
-
 /process/optical/scintillation/setFiniteRiseTime true
 
 /MACE/Generator/SwitchToGPSX
@@ -23,7 +22,7 @@
 
 /MACE/Analysis/SaveTTCHitData         yes
 /MACE/Analysis/SaveTTCSiPMHitData     yes
-/MACE/Analysis/SaveCDCHitData         yes
+
 
 /Mustard/Analysis/FilePath SimMACE_vis
 /Mustard/Analysis/FileMode RECREATE
@@ -48,29 +47,19 @@
 #/vis/viewer/set/lineSegmentsPerCircle 100
 /vis/viewer/zoom 2.5
 
+# Visibility
+/vis/geometry/set/visibility MMSField             0 no
+/vis/geometry/set/visibility TTCVirtualBox       -1 no
+/vis/geometry/set/visibility TTCScintillator      0 yes
+
 # Colors
-/vis/geometry/set/colour AcceleratorField              0     1     1     1     0.05
-/vis/geometry/set/colour BeamDegrader                  0     1     1     1     0.1
-/vis/geometry/set/colour BeamMonitor                   0     1     1     1     0.1
-/vis/geometry/set/colour CDCBody                       0     1     1     1     0.05
-/vis/geometry/set/colour CDCCell                       0     1     1     1     0.005
-/vis/geometry/set/colour CDCFieldWire                  0     1     1     1     0.01
-/vis/geometry/set/colour CDCGas                        0     1     1     1     0.005
-/vis/geometry/set/colour CDCSenseLayer                 0     1     1     1     0.015
-/vis/geometry/set/colour CDCSenseWire                  0     1     1     1     0.01
-/vis/geometry/set/colour CDCSensitiveVolume            0     1     1     1     0.005
-/vis/geometry/set/colour CDCSuperLayer                 0     1     1     1     0.005
-/vis/geometry/set/colour MMSBeamPipe                   0     1     1     1     0.05
 /vis/geometry/set/colour MMSField                      0     1     1     1     0.05
-/vis/geometry/set/colour MMSMagnet                     0     1     1     1     0.05
-/vis/geometry/set/colour MMSShield                     0     1     1     1     0.05
 /vis/geometry/set/colour TTCVirtualBox                 0     1     1     1     0.05
 /vis/geometry/set/colour TTCPCB                        0     1     1     1     0.05
 /vis/geometry/set/colour TTCWindow                     0     1     1     1     0.05
 /vis/geometry/set/colour TTCSilicone                   0     1     1     1     0.05
 /vis/geometry/set/colour TTCLightCoupler               0     1     1     1     0.05
 /vis/geometry/set/colour TTCScintillator               0     1     1     1     0.05
-/vis/geometry/set/colour Target                        0     1     1     1     0.1
 /vis/geometry/set/colour World                         0     1     1     1     0.001
 
 /vis/scene/add/date
@@ -86,10 +75,14 @@
 /vis/filtering/trajectories/particleFilter-0/add e+
 /vis/filtering/trajectories/particleFilter-0/add e-
 /vis/filtering/trajectories/particleFilter-0/add gamma
+/vis/filtering/trajectories/particleFilter-0/add opticalphoton
 /vis/filtering/trajectories/particleFilter-0/add neutron
 /vis/filtering/trajectories/particleFilter-0/add anti_neutron
 /vis/filtering/trajectories/particleFilter-0/add proton
 /vis/filtering/trajectories/particleFilter-0/add anti_proton
+/vis/filtering/trajectories/particleFilter-0/add pi+
+/vis/filtering/trajectories/particleFilter-0/add pi-
+/vis/filtering/trajectories/particleFilter-0/add pi0
 
 /vis/modeling/trajectories/create/drawByParticleID
 /vis/modeling/trajectories/drawByParticleID-0/default/setDrawAuxPts no

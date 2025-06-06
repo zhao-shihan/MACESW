@@ -43,7 +43,7 @@ auto TTCSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
 
     const auto postStepPoint{*step.GetPostStepPoint()};
     const auto tileID{postStepPoint.GetTouchable()->GetReplicaNumber(2)};
-    const auto siPMLocalID{postStepPoint.GetTouchable()->GetReplicaNumber()};
+    const auto siPMLocalID{postStepPoint.GetTouchable()->GetReplicaNumber(1)};
     // new a hit
     auto hit{std::make_unique_for_overwrite<TTCSiPMHit>()};
     Get<"EvtID">(*hit) = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();

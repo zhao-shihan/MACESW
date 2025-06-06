@@ -52,17 +52,17 @@ auto GenMuonICDecay::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("n").help("Number of events to generate.").nargs(1).scan<'i', unsigned long long>();
     cli->add_argument("-o", "--output").help("Output file path.").default_value("mu2eeevv.root"s).required().nargs(1);
     cli->add_argument("--output-mode").help("Output file creation mode (see ROOT documentation for details).").default_value("NEW"s).required().nargs(1);
-    cli->add_argument("--compression-level").help("Output file compression level (see ROOT documentation for details).").default_value(muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose)).required().nargs(1);
+    cli->add_argument("--compression-level").help("Output file compression level (see ROOT documentation for details).").default_value(muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose)).required().nargs(1).scan<'i', std::underlying_type_t<ROOT::RCompressionSetting::EDefaults::EValues>>();
     cli->add_argument("-t", "--output-tree").help("Output tree name.").default_value("eeevv"s).required().nargs(1);
     cli->add_argument("-d", "--metropolis-delta").help("State step in Metropolis-Hasting sampling.").required().nargs(1).scan<'g', double>();
     cli->add_argument("-s", "--metropolis-discard").help("Number of states discarded between two samples in Metropolis-Hasting sampling.").required().nargs(1).scan<'i', int>();
     auto& cliMG0{cli->add_mutually_exclusive_group()};
     cliMG0.add_argument("-l", "--ep-ek-upper-bound").help("Add upper bound for energetic positron kinetic energy.").nargs(1).scan<'g', double>();
     cliMG0.add_argument("-b", "--bias").help("Enable bias (importance sampling).").flag();
-    cli->add_argument("-p", "--pxy-softening-factor").help("Softening factor for transverse momentum soft comparision in bias.").default_value(0.2_MeV).required().nargs(1);
-    cli->add_argument("-c", "--cos-theta-softening-factor").help("Softening factor for momentum cosine soft comparision in bias.").default_value(0.05).required().nargs(1);
-    cli->add_argument("-e", "--ep-ek-soft-cut").help("Soft kinetic energy upper bound for energetic positron track in bias.").default_value(5_keV).required().nargs(1);
-    cli->add_argument("-f", "--ep-ek-softening-factor").help("Softening factor for energetic positron kinetic energy soft comparision in bias.").default_value(0.5_keV).required().nargs(1);
+    cli->add_argument("-p", "--pxy-softening-factor").help("Softening factor for transverse momentum soft comparision in bias.").default_value(0.2_MeV).required().nargs(1).scan<'g', double>();
+    cli->add_argument("-c", "--cos-theta-softening-factor").help("Softening factor for momentum cosine soft comparision in bias.").default_value(0.05).required().nargs(1).scan<'g', double>();
+    cli->add_argument("-e", "--ep-ek-soft-cut").help("Soft kinetic energy upper bound for energetic positron track in bias.").default_value(5_keV).required().nargs(1).scan<'g', double>();
+    cli->add_argument("-f", "--ep-ek-softening-factor").help("Softening factor for energetic positron kinetic energy soft comparision in bias.").default_value(0.5_keV).required().nargs(1).scan<'g', double>();
     Mustard::Env::MPIEnv env{argc, argv, cli};
 
     Mustard::UseXoshiro<256> random;

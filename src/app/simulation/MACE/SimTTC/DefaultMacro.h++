@@ -2,7 +2,7 @@
 
 #include <initializer_list>
 
-namespace MACE::SimMMS {
+namespace MACE::SimTTC {
 
 constexpr auto defaultMacro = {
     "#############################################################################",
@@ -13,12 +13,10 @@ constexpr auto defaultMacro = {
     "#/control/saveHistory",
     "/run/verbose 2",
     "",
-    "#/Mustard/Detector/Description/Ixport mms_geom.yaml",
+    "/Mustard/Detector/Description/Ixport SimTTC.yaml",
     "",
     "/MACE/Physics/UseOpticalPhysics",
-    "",
     "/run/initialize",
-    "",
     "/process/optical/scintillation/setFiniteRiseTime true",
     "",
     "/gps/particle                         e+",
@@ -29,9 +27,8 @@ constexpr auto defaultMacro = {
     "",
     "/MACE/Analysis/SaveTTCHitData         yes",
     "/MACE/Analysis/SaveTTCSiPMHitData     yes",
-    "/MACE/Analysis/SaveCDCHitData         yes",
     "",
-    "/Mustard/Analysis/FilePath SimMMS_vis",
+    "/Mustard/Analysis/FilePath SimTTC_vis",
     "/Mustard/Analysis/FileMode RECREATE",
     "",
 
@@ -58,29 +55,13 @@ constexpr auto defaultMacro = {
     "/vis/viewer/zoom 2.5",
     "",
     "# Visibility",
-    "/vis/geometry/set/visibility CDCCell             -1 false",
-    "/vis/geometry/set/visibility CDCSuperLayer        0 false",
     "/vis/geometry/set/visibility MMSField             0 false",
-    "/vis/geometry/set/visibility TTCVirtualBox        0 false",
+    "/vis/geometry/set/visibility TTCVirtualBox       -1 no",
+    "/vis/geometry/set/visibility TTCScintillator      0 yes",
+    "",
     "",
     "# Colors",
-    "/vis/geometry/set/colour AcceleratorField              0     1     1     1     0.05",
-    "/vis/geometry/set/colour BeamDegrader                  0     1     1     1     0.1",
-    "/vis/geometry/set/colour BeamMonitor                   0     1     1     1     0.1",
-    "/vis/geometry/set/colour CDCBody                       0     1     1     1     0.05",
-    "/vis/geometry/set/colour CDCCell                       0     1     1     1     0.005",
-    "/vis/geometry/set/colour CDCFieldWire                  0     1     1     1     0.01",
-    "/vis/geometry/set/colour CDCGas                        0     1     1     1     0.005",
-    "/vis/geometry/set/colour CDCSenseLayer                 0     1     1     1     0.015",
-    "/vis/geometry/set/colour CDCSenseWire                  0     1     1     1     0.01",
-    "/vis/geometry/set/colour CDCSensitiveVolume            0     1     1     1     0.005",
-    "/vis/geometry/set/colour CDCSuperLayer                 0     1     1     1     0.005",
-    "/vis/geometry/set/colour MMSBeamPipe                   0     1     1     1     0.05",
-    "/vis/geometry/set/colour MMSBeamPipeVacuum             0     1     1     1     0.01",
     "/vis/geometry/set/colour MMSField                      0     1     1     1     0.05",
-    "/vis/geometry/set/colour MMSMagnet                     0     1     1     1     0.05",
-    "/vis/geometry/set/colour MMSShield                     0     1     1     1     0.05",
-    "/vis/geometry/set/colour Target                        0     1     1     1     0.1",
     "/vis/geometry/set/colour TTCVirtualBox                 0     1     1     1     0.05",
     "/vis/geometry/set/colour TTCPCB                        0     1     1     1     0.05",
     "/vis/geometry/set/colour TTCWindow                     0     1     1     1     0.05",
@@ -135,4 +116,4 @@ constexpr auto defaultMacro = {
 
     ""};
 
-} // namespace MACE::SimMMS
+} // namespace MACE::SimTTC

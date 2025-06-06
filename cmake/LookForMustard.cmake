@@ -1,6 +1,6 @@
 message(STATUS "Looking for Mustard")
 
-set(MACE_MUSTARD_MINIMUM_REQUIRED 0.8.0)
+set(MACE_MUSTARD_MINIMUM_REQUIRED 0.25.520)
 
 if(NOT MACE_BUILTIN_MUSTARD)
     find_package(Mustard ${MACE_MUSTARD_MINIMUM_REQUIRED})
@@ -18,8 +18,8 @@ if(MACE_BUILTIN_MUSTARD)
         set(MACE_BUILTIN_MUSTARD_VERSION ${MACE_MUSTARD_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MACE_BUILTIN_MUSTARD_SRC_DIR "${MACE_PROJECT_3RDPARTY_DIR}/Mustard-main")
-    set(MACE_BUILTIN_MUSTARD_URL "https://github.com/zhao-shihan/Mustard/archive/refs/heads/main.zip")
+    set(MACE_BUILTIN_MUSTARD_SRC_DIR "${MACE_PROJECT_3RDPARTY_DIR}/Mustard-${MACE_BUILTIN_MUSTARD_VERSION}")
+    set(MACE_BUILTIN_MUSTARD_URL "https://github.com/zhao-shihan/Mustard/archive/refs/tags/v${MACE_BUILTIN_MUSTARD_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MACE_BUILTIN_MUSTARD_SRC_DIR}/CMakeLists.txt")

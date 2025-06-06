@@ -47,7 +47,7 @@ auto GenMuoniumICDecay::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("n").help("Number of events to generate.").nargs(1).scan<'i', unsigned long long>();
     cli->add_argument("-o", "--output").help("Output file path.").default_value("M2eeevve.root"s).required().nargs(1);
     cli->add_argument("--output-mode").help("Output file creation mode (see ROOT documentation for details).").default_value("NEW"s).required().nargs(1);
-    cli->add_argument("--compression-level").help("Output file compression level (see ROOT documentation for details).").default_value(muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose)).required().nargs(1);
+    cli->add_argument("--compression-level").help("Output file compression level (see ROOT documentation for details).").default_value(muc::to_underlying(ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose)).required().nargs(1).scan<'i', std::underlying_type_t<ROOT::RCompressionSetting::EDefaults::EValues>>();
     cli->add_argument("-t", "--output-tree").help("Output tree name.").default_value("eeevve"s).required().nargs(1);
     cli->add_argument("-d", "--metropolis-delta").help("State step in Metropolis-Hasting sampling.").required().nargs(1).scan<'g', double>();
     cli->add_argument("-s", "--metropolis-discard").help("Number of states discarded between two samples in Metropolis-Hasting sampling.").required().nargs(1).scan<'i', int>();

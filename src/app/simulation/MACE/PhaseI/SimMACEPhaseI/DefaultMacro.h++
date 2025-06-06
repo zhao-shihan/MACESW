@@ -74,14 +74,14 @@ constexpr auto defaultMacro = {
     "# Colors",
     "/vis/geometry/set/colour CentralBeamPipe                        0     1     1     1     0.1",
     "",
-    "/vis/geometry/set/colour MRPCGasTank                            0     1     1     1     0.05"
-    "/vis/geometry/set/colour MRPCInnerGlass                         0     1     1     1     0.1"
-    "/vis/geometry/set/colour MRPCOuterGlass                         0     1     1     1     0.1"
-    "/vis/geometry/set/colour MRPCAnode                              0     1     1     1     0.1"
-    "/vis/geometry/set/colour MRPCMylar                              0     1     1     1     0.1"
-    "/vis/geometry/set/colour MRPCPCB                                0     1     1     1     0.1"
-    "/vis/geometry/set/colour MRPCHoneyComb                          0     1     1     1     0.1"
-
+    "/vis/geometry/set/colour MRPCGasTank                            0     1     1     1     0.05",
+    "/vis/geometry/set/colour MRPCInnerGlass                         0     1     1     1     0.1",
+    "/vis/geometry/set/colour MRPCOuterGlass                         0     1     1     1     0.1",
+    "/vis/geometry/set/colour MRPCAnode                              0     1     1     1     0.1",
+    "/vis/geometry/set/colour MRPCMylar                              0     1     1     1     0.1",
+    "/vis/geometry/set/colour MRPCPCB                                0     1     1     1     0.1",
+    "/vis/geometry/set/colour MRPCHoneyComb                          0     1     1     1     0.1",
+    "",
     "/vis/geometry/set/colour ECALCrystal                            0     1     1     1     0.1",
     "/vis/geometry/set/colour ECALPMTCoupler                         0     1     1     1     0.1",
     "/vis/geometry/set/colour ECALPMTShell                           0     1     1     1     0.05",

@@ -1,0 +1,7 @@
+file(GLOB SimTTC_SCRIPTS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*)
+foreach(_scripts ${SimTTC_SCRIPTS})
+    set(SimTTC_SCRIPTS_COPY_DIR SimTTC)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${SimTTC_SCRIPTS_COPY_DIR})
+    configure_file(${_scripts} ${CMAKE_BINARY_DIR}/${SimTTC_SCRIPTS_COPY_DIR} COPYONLY)
+    install(FILES ${_scripts} DESTINATION ${MACE_DATAROOTDIR}/${SimTTC_SCRIPTS_COPY_DIR})
+endforeach()
