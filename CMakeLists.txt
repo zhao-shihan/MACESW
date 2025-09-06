@@ -48,14 +48,17 @@ option(MACE_INSTALL_OFFLINE_DATA "Install offline data. If disabled, offline dat
 # Advance
 # Options (ON/OFF)
 option(MACE_ENABLE_ASAN_IN_DEBUG_BUILD "Enable AddressSanitizer in debug build" OFF)
-option(MACE_ENABLE_IPO "Bulid MACE with interprocedural optimization" ON)
+option(MACE_ENABLE_IPO "Build MACE with interprocedural optimization" ON)
 option(MACE_ENABLE_UBSAN_IN_DEBUG_BUILD "Enable UndefinedBehaviorSanitizer in debug build" ON)
 option(MACE_FULL_UNITY_BUILD "Building MACE use unity build technique COMPLETELY." OFF)
+option(MACE_SHOW_EVEN_MORE_COMPILER_WARNINGS "Add compiler flag to show even more compiler warnings (GCC: -Weffc++, Clang: -Weverything, MSVC: /Wall)." OFF)
 option(MACE_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
+option(MACE_WITH_DEBUG_INFO "Always add debugging information" OFF)
 cmake_dependent_option(MACE_ENABLE_UNITY_BUILD "Build MACE with unity build technique." OFF "NOT MACE_FULL_UNITY_BUILD" ON)
+cmake_dependent_option(MACE_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnings raise from external dependencies." OFF "NOT MACE_SHOW_EVEN_MORE_COMPILER_WARNINGS" ON)
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build using shared libraries")
 set(MACE_BUILTIN_MACE_OFFLINE_DATA_VERSION 0.0.1 CACHE STRING "Set built-in offline data version (if required).")
-set(MACE_BUILTIN_MUSTARD_VERSION 0.25.520 CACHE STRING "Set built-in Mustard version (if required).")
+set(MACE_BUILTIN_MUSTARD_VERSION 0.25.831 CACHE STRING "Set built-in Mustard version (if required).")
 set(MACE_BUILTIN_PMP_VERSION 3.0.0 CACHE STRING "Set built-in pmp version (if required).")
 
 # =============================================================================

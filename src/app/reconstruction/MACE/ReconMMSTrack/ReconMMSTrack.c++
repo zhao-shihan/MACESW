@@ -11,8 +11,7 @@
 #include "Mustard/Data/Processor.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -37,9 +36,11 @@ auto ReconMMSTrack::Main(int argc, char* argv[]) const -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
     std::vector<std::string> files;
-    for (auto i{1}; i < argc; ++i) { files.emplace_back(argv[i]); }
+    for (auto i{1}; i < argc; ++i) {
+        files.emplace_back(argv[i]);
+    }
 
-    TFile file{Mustard::MPIX::ParallelizePath("output.root").generic_string().c_str(), "RECREATE"};
+    TFile file{Mustard::Parallel::ProcessSpecificPath("output.root").generic_string().c_str(), "RECREATE"};
     Mustard::Data::Output<Data::MMSTrack> reconTrack{"G4Run0/MMSTrack"};
     Mustard::Data::Output<Data::MMSTrack> reconTrackError{"G4Run0/MMSTrackError"};
 
@@ -53,10 +54,14 @@ auto ReconMMSTrack::Main(int argc, char* argv[]) const -> int {
     processor.Process<Data::CDCSimHit>(
         ROOT::RDataFrame{"G4Run0/CDCSimHit", files}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
-            if (byPass) { return; }
+            if (byPass) {
+                return;
+            }
             for (auto&& [trackID, good] : finder(event, nextTrackID).good) {
                 const auto track{fitter(good.hitData, good.seed).track};
-                if (track == nullptr) { continue; }
+                if (track == nullptr) {
+                    continue;
+                }
                 reconTrack.Fill(*track);
 
                 using namespace Mustard::VectorArithmeticOperator;

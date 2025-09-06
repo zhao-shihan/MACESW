@@ -23,8 +23,8 @@
 /GPSX/PulseWidth          1.5 us
 
 /Mustard/Physics/MuonDecay/ICDecay/BR                      1
-/Mustard/Physics/MuonDecay/ICDecay/MetropolisDelta         0.005
-/Mustard/Physics/MuonDecay/ICDecay/MetropolisDiscard       10
+/Mustard/Physics/MuonDecay/ICDecay/MetropolisDelta         0.001
+/Mustard/Physics/MuonDecay/ICDecay/MetropolisDiscard       1000
 /Mustard/Physics/MuonDecay/RadiativeDecay/BR                0
 /Mustard/Physics/MuonDecay/UpdateDecayBR
 

@@ -11,14 +11,13 @@
 #include "G4ThreeVector.hh"
 
 #include "muc/math"
+#include "muc/ptrvec"
 
 #include "gsl/gsl"
 
 #include <algorithm>
 #include <iterator>
-#include <memory>
 #include <ranges>
-#include <vector>
 
 namespace MACE::inline Simulation::Analysis {
 
@@ -30,7 +29,7 @@ public:
     auto MinNTTCHitForQualifiedTrack(int n) -> void { fMinNTTCHitForQualifiedTrack = std::max(1, n); }
 
     auto operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitHC,
-                    const std::vector<gsl::owner<TTCHit*>>& ttcHitHC) -> std::vector<std::shared_ptr<Mustard::Data::Tuple<Data::MMSSimTrack>>>;
+                    const std::vector<gsl::owner<TTCHit*>>& ttcHitHC) -> muc::shared_ptrvec<Mustard::Data::Tuple<Data::MMSSimTrack>>;
 
 private:
     int fMinNTTCHitForQualifiedTrack;

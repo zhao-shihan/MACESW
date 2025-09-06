@@ -15,11 +15,11 @@ PrimaryGeneratorAction::PrimaryGeneratorAction() :
     fPrimaryGeneratorActionMessengerRegister{this} {}
 
 auto PrimaryGeneratorAction::NVertex() const -> int {
-    const auto& [gpsx, fromDataPrimaryGenerator]{fAvailableGenerator};
+    const auto& [gpsx, dataReaderPrimaryGenerator]{fAvailableGenerator};
     if (fGenerator == &gpsx) {
         return gpsx.NVertex();
-    } else if (fGenerator == &fromDataPrimaryGenerator) {
-        return fromDataPrimaryGenerator.NVertex();
+    } else if (fGenerator == &dataReaderPrimaryGenerator) {
+        return dataReaderPrimaryGenerator.NVertex();
     }
     muc::unreachable();
 }

@@ -8,8 +8,8 @@
 
 #include "G4UserTrackingAction.hh"
 
-#include <memory>
-#include <vector>
+#include "muc/ptrvec"
+
 namespace MACE::SimTTC::inline Action {
 
 class TrackingAction final : public Mustard::Env::Memory::PassiveSingleton<TrackingAction>,
@@ -31,7 +31,7 @@ private:
 private:
     bool fSaveDecayVertexData;
 
-    std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>> fDecayVertexData;
+    muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>> fDecayVertexData;
 
     AnalysisMessenger::Register<TrackingAction> fMessengerRegister;
 };

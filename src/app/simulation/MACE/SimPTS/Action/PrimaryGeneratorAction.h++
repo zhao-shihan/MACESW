@@ -5,11 +5,11 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
-#include "Mustard/Extension/Geant4X/Generator/GeneralParticleSourceX.h++"
+#include "Mustard/Geant4X/Generator/GeneralParticleSourceX.h++"
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 
-#include "muc/ptr_vector"
+#include "muc/ptrvec"
 
 #include <memory>
 #include <vector>
@@ -33,7 +33,7 @@ private:
     Mustard::Geant4X::GeneralParticleSourceX fGPSX;
 
     bool fSavePrimaryVertexData;
-    muc::unique_ptr_vector<Mustard::Data::Tuple<Data::SimPrimaryVertex>> fPrimaryVertexData;
+    muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>> fPrimaryVertexData;
 
     AnalysisMessenger::Register<PrimaryGeneratorAction> fMessengerRegister;
 };

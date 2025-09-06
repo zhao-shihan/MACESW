@@ -10,7 +10,7 @@
 
 #include "G4Types.hh"
 
-#include "muc/ptr_vector"
+#include "muc/ptrvec"
 
 #include "gsl/gsl"
 
@@ -31,8 +31,8 @@ public:
 
     auto RunBegin(G4int runID) -> void;
 
-    auto SubmitPrimaryVertexData(const muc::unique_ptr_vector<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
-    auto SubmitDecayVertexData(const muc::unique_ptr_vector<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
+    auto SubmitPrimaryVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
+    auto SubmitDecayVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
     auto SubmitVirtualHC(const std::vector<VirtualHit*>& hc) -> void { fVirtualHit = &hc; }
     auto EventEnd() -> void;
 
@@ -49,8 +49,8 @@ private:
     std::optional<Mustard::Data::Output<Data::SimDecayVertex>> fDecayVertexOutput;
     std::optional<Mustard::Data::Output<VirtualHitModel>> fVirtualHitOutput;
 
-    const muc::unique_ptr_vector<Mustard::Data::Tuple<Data::SimPrimaryVertex>>* fPrimaryVertex;
-    const muc::unique_ptr_vector<Mustard::Data::Tuple<Data::SimDecayVertex>>* fDecayVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>* fPrimaryVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>* fDecayVertex;
     const std::vector<VirtualHit*>* fVirtualHit;
 
     AnalysisMessenger::Register<Analysis> fMessengerRegister;

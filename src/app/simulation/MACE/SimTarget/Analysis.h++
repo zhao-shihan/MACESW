@@ -7,13 +7,12 @@
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
 
 #include "muc/array"
+#include "muc/ptrvec"
 
 #include "gsl/gsl"
 
 #include <cstdio>
 #include <filesystem>
-#include <memory>
-#include <vector>
 
 class G4Run;
 
@@ -67,7 +66,7 @@ private:
     const G4Run* fThisRun;
 
     gsl::owner<TFile*> fResultFile;
-    std::vector<std::unique_ptr<Mustard::Data::Tuple<MuoniumTrack>>> fMuoniumTrack;
+    muc::unique_ptrvec<Mustard::Data::Tuple<MuoniumTrack>> fMuoniumTrack;
 
     gsl::owner<std::FILE*> fYieldFile;
 

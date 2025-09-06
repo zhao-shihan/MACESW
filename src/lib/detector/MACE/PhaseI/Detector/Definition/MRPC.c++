@@ -114,7 +114,7 @@ auto MRPC::Construct(G4bool checkOverlaps) -> void {
                                           (cornerMRPCWidth + 1_cm - gasTankThickness) / 2,
                                           (mrpcTotalThickness + 2_cm - gasTankThickness) / 2,
                                           (cornerMRPCLength + 1_cm - gasTankThickness) / 2)};
-    const auto logicCornerGas{Make<G4LogicalVolume>(solidCornerGasTank, gas, mrpc.Name() + "Gas")};
+    const auto logicCornerGas{Make<G4LogicalVolume>(solidCornerGas, gas, mrpc.Name() + "Gas")};
     Make<G4PVPlacement>(G4Transform3D::Identity,
                         logicCornerGas,
                         mrpc.Name() + "Gas",

@@ -6,20 +6,18 @@
 #include "MACE/Simulation/SD/CDCSDMessenger.h++"
 
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Utility/NonMoveableBase.h++"
 
 #include "G4VSensitiveDetector.hh"
 
+#include "muc/hash_map"
+#include "muc/ptrvec"
+
 #include <algorithm>
-#include <memory>
-#include <unordered_map>
 #include <vector>
-#include <cmath>
 
 namespace MACE::inline Simulation::inline SD {
 
-class CDCSD : public Mustard::NonMoveableBase,
-              public G4VSensitiveDetector {
+class CDCSD : public G4VSensitiveDetector {
 public:
     CDCSD(const G4String& sdName);
 
@@ -35,7 +33,7 @@ protected:
     double fMeanDriftVelocity;
     const std::vector<Detector::Description::CDC::CellInformation>* fCellMap;
 
-    std::unordered_map<int, std::vector<std::unique_ptr<CDCHit>>> fSplitHit;
+    muc::flat_hash_map<int, muc::unique_ptrvec<CDCHit>> fSplitHit;
     CDCHitCollection* fHitsCollection;
 
     CDCSDMessenger::Register<CDCSD> fMessengerRegister;

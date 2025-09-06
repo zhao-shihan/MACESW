@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "Mustard/Extension/Geant4X/Interface/SingletonMessenger.h++"
+#include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
 
 #include <memory>
 

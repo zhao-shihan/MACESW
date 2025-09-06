@@ -12,7 +12,9 @@ auto TruthFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     Get<"EvtID">(*track) = Get<"EvtID">(firstHit);
     Get<"TrkID">(*track) = Get<"TrkID">(*seed);
     Get<"HitID">(*track)->reserve(hitData.size());
-    for (auto&& hit : hitData) { Get<"HitID">(*track)->emplace_back(Get<"HitID">(*hit)); }
+    for (auto&& hit : hitData) {
+        Get<"HitID">(*track)->emplace_back(Get<"HitID">(*hit));
+    }
     Get<"chi2">(*track) = 0;
     Get<"t0">(*track) = Get<"t0">(firstHit);
     Get<"PDGID">(*track) = Get<"PDGID">(firstHit);
@@ -22,11 +24,13 @@ auto TruthFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().FastField());
     Get<"CreatProc">(*track) = Get<"CreatProc">(firstHit);
 
-    if (not fCheckHitDataConsistency) { return track; }
+    if (not fCheckHitDataConsistency) {
+        return track;
+    }
 
 #define MACE_RECONSTRUCTION_MMSTRACKING_FITTER_TRUTHFITTER_HIT_DATA_CONSISTENCY_CHECK(cond) \
     if (cond) {                                                                             \
-        throw std::invalid_argument { Mustard::PrettyException(#cond) };                    \
+        Mustard::Throw<std::invalid_argument>(#cond);                                       \
     }
     for (auto&& hit : hitData) {
         MACE_RECONSTRUCTION_MMSTRACKING_FITTER_TRUTHFITTER_HIT_DATA_CONSISTENCY_CHECK(Get<"EvtID">(*hit) != Get<"EvtID">(firstHit))

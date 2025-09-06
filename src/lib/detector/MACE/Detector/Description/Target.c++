@@ -1,7 +1,7 @@
 #include "MACE/Detector/Description/Target.h++"
 
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
-#include "Mustard/Utility/PrettyLog.h++"
 
 #include "CLHEP/Vector/Rotation.h"
 
@@ -35,7 +35,9 @@ auto Target::Material() const -> G4Material* {
     const auto nist{G4NistManager::Instance()};
 
     auto silicaAerogel{nist->FindMaterial(materialName)};
-    if (silicaAerogel) { return silicaAerogel; }
+    if (silicaAerogel) {
+        return silicaAerogel;
+    }
 
     silicaAerogel = new G4Material{materialName, fSilicaAerogelDensity, 3, kStateSolid, fEffectiveTemperature};
     silicaAerogel->AddMaterial(nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE"), 0.625);

@@ -17,32 +17,38 @@ GenFitterBase<AHit, ATrack, AFitter>::GenFitterBase(double driftErrorRMS, double
         Detector::Assembly::MMS mms{world, false};
         mms.Get<Detector::Definition::CDCGas>().RemoveDaughter<Detector::Definition::CDCSuperLayer>();
         // geant4 -> gdml
-        const auto& mpiEnv{Mustard::Env::MPIEnv::Instance()};
+        const auto& intraNodeComm{Mustard::Env::MPIEnv::Instance().IntraNodeComm()};
         std::filesystem::path gdmlFSPath;
         std::filesystem::path::string_type gdmlPath;
-        if (mpiEnv.OnCommNodeMaster()) {
+        if (intraNodeComm.rank() == 0) {
             gdmlFSPath = Mustard::CreateTemporaryFile("mms_temp", ".gdml");
             world.Export(gdmlFSPath);
             gdmlPath = gdmlFSPath;
         }
         auto gdmlPathLength{gdmlPath.length()};
-        MPI_Bcast(&gdmlPathLength, 1, Mustard::MPIX::DataType(gdmlPathLength), 0, mpiEnv.CommNode());
+        intraNodeComm.bcast(0, gdmlPathLength);
         gdmlPath.resize(gdmlPathLength);
-        MPI_Bcast(gdmlPath.data(), gdmlPathLength, Mustard::MPIX::DataType(gdmlPath.data()), 0, mpiEnv.CommNode());
+        intraNodeComm.bcast(0, gdmlPath.data(), mplr::vector_layout<std::filesystem::path::value_type>{gdmlPathLength});
         // gdml -> root
         TGeoManager::Import(gdmlPath.c_str());
         gGeoManager->SetName(name);
         gGeoManager->GetTopVolume()->SetInvisible();
         // remove gdml
-        MPI_Barrier(mpiEnv.CommNode());
-        if (mpiEnv.OnCommNodeMaster()) {
+        intraNodeComm.barrier();
+        if (intraNodeComm.rank() == 0) {
             std::error_code ec;
             std::filesystem::remove(gdmlFSPath, ec);
         }
     }
     // setup genfit
-    genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface);
-    genfit::FieldManager::getInstance()->init(new GenFitMMSField);
+    if (const auto materialEffects{genfit::MaterialEffects::getInstance()};
+        not materialEffects->isInitialized()) {
+        materialEffects->init(new genfit::TGeoMaterialInterface);
+    }
+    if (const auto fieldManager{genfit::FieldManager::getInstance()};
+        not fieldManager->isInitialized()) {
+        fieldManager->init(new GenFitMMSField);
+    }
 }
 
 template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
@@ -53,8 +59,8 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
 auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPointer>& hitData, ASeedPointer seed)
     -> std::pair<std::shared_ptr<genfit::Track>,
-                 std::unordered_map<const genfit::AbsMeasurement*, AHitPointer>> {
-    if (Mustard::Math::Norm2(*Get<"p0">(*seed)) < muc::pow<2>(fLowestMomentum)) {
+                 muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>> {
+    if (Mustard::Math::NormSq(*Get<"p0">(*seed)) < muc::pow(fLowestMomentum, 2)) {
         return {};
     }
     if (TDatabasePDG::Instance()->GetParticle(Get<"PDGID">(*seed)) == nullptr) {
@@ -66,7 +72,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                                         Mustard::ToG3<"Length">(this->ToTVector3(*Get<"x0">(*seed))),
                                         Mustard::ToG3<"Energy">(this->ToTVector3(*Get<"p0">(*seed))))};
 
-    std::unordered_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
+    muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
     measurementHitMap.reserve(hitData.size());
 
     const auto& cdc{Detector::Description::CDC::Instance()};
@@ -96,7 +102,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                 rawHitCoords[6] = Mustard::ToG3<"Length">(*Get<"d">(*hit));
 
                 TMatrixDSym rawHitCov(7);
-                const auto varD{muc::pow<2>(Mustard::ToG3<"Length">(this->DriftErrorRMS()))};
+                const auto varD{muc::pow(Mustard::ToG3<"Length">(this->DriftErrorRMS()), 2)};
                 rawHitCov(0, 0) = varD;
                 rawHitCov(1, 1) = varD;
                 rawHitCov(2, 2) = varD;
@@ -124,10 +130,12 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
     requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
 auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, ASeedPointer seed,
-                                                    const std::unordered_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
+                                                    const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
     const auto& status{*genfitTrack->getFitStatus()};
-    if (not status.isFitConvergedPartially()) { return {}; }
+    if (not status.isFitConvergedPartially()) {
+        return {};
+    }
 
     const genfit::MeasuredStateOnPlane* firstState;
     try {
@@ -153,7 +161,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
     const auto p0{Mustard::ToG4<"Energy">(firstState->getMom())};
     const auto mass{Mustard::ToG4<"Energy">(firstState->getMass())};
     const auto pdgID{firstState->getPDG()};
-    const auto ek0{std::sqrt(p0.Mag2() + muc::pow<2>(mass)) - mass};
+    const auto ek0{std::sqrt(p0.Mag2() + muc::pow(mass, 2)) - mass};
 
     auto track{std::make_shared_for_overwrite<Mustard::Data::Tuple<ATrack>>()};
     Get<"EvtID">(*track) = Get<"EvtID">(*seed);
@@ -182,7 +190,9 @@ template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
          std::derived_from<genfit::AbsFitter> AFitter>
 auto GenFitterBase<AHit, ATrack, AFitter>::OpenEventDisplay(bool clearUponClose) -> void {
     genfit::EventDisplay::getInstance()->open();
-    if (clearUponClose) { ClearEventDisplayTrackStore(); }
+    if (clearUponClose) {
+        ClearEventDisplayTrackStore();
+    }
 }
 
 template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,

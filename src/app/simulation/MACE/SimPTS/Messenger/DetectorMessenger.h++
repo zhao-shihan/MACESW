@@ -2,7 +2,7 @@
 
 #include "MACE/SimPTS/Action/DetectorConstruction.h++"
 
-#include "Mustard/Extension/Geant4X/Interface/DetectorMessenger.h++"
+#include "Mustard/Geant4X/Interface/DetectorMessenger.h++"
 
 namespace MACE::SimPTS::inline Messenger {
 

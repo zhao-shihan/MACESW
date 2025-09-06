@@ -10,7 +10,7 @@
 /run/initialize
 
 /MACE/Generator/SwitchToFromDataPrimaryGenerator
-/Mustard/Generator/FromDataPrimaryGenerator/EventData R_line.root R_line
+/Mustard/Generator/DataReaderPrimaryGenerator/EventData R_line.root R_line
 
 /Mustard/Physics/MuoniumPhysics/Formation/ConversionProbability    0
 

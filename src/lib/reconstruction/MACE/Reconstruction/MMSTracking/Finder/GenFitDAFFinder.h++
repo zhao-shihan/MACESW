@@ -17,13 +17,13 @@
 
 #include "muc/algorithm"
 #include "muc/array"
+#include "muc/hash_set"
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <numeric>
 #include <ranges>
-#include <unordered_set>
 
 namespace MACE::inline Reconstruction::MMSTracking::inline Finder {
 

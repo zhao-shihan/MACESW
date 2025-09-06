@@ -1,7 +1,7 @@
 #include "MACE/SimTarget/Action/SteppingAction.h++"
 
-#include "Mustard/Extension/Geant4X/Particle/Antimuonium.h++"
-#include "Mustard/Extension/Geant4X/Particle/Muonium.h++"
+#include "Mustard/Geant4X/Particle/Antimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
 
 #include "G4MuonPlus.hh"
 #include "G4Step.hh"

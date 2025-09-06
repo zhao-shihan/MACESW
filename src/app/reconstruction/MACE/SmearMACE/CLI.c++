@@ -1,37 +1,37 @@
 #include "MACE/SmearMACE/CLI.h++"
 
-#include "Mustard/Math/Parity.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+
+#include "muc/math"
 
 #include "fmt/core.h"
 
-#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 
 namespace MACE::SmearMACE {
 
-CLIModule::CLIModule(argparse::ArgumentParser& argParser) :
-    ModuleBase{argParser} {
-    ArgParser()
-        .add_argument("input")
+CLIModule::CLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli) :
+    ModuleBase{cli} {
+    TheCLI()
+        ->add_argument("input")
         .nargs(argparse::nargs_pattern::at_least_one)
         .help("Input file path(s).");
-    ArgParser()
-        .add_argument("-o", "--output")
+    TheCLI()
+        ->add_argument("-o", "--output")
         .help("Output file path. Suffix '_smeared' on input file name by default.");
-    ArgParser()
-        .add_argument("-m", "--output-mode")
+    TheCLI()
+        ->add_argument("-m", "--output-mode")
         .help("Output file creation mode. Default to 'NEW'.");
 
-    ArgParser()
-        .add_argument("-i", "--index-range")
+    TheCLI()
+        ->add_argument("-i", "--index-range")
         .nargs(1, 2)
         .scan<'i', gsl::index>()
         .default_value(std::vector<gsl::index>{0, 1})
         .help("Set number of datasets (index in [0, size) range), or index range (in [first, last) pattern)");
 
-    auto& cdcHitMutexGroup{ArgParser().add_mutually_exclusive_group()};
+    auto& cdcHitMutexGroup{TheCLI()->add_mutually_exclusive_group()};
     cdcHitMutexGroup
         .add_argument("--cdc-hit")
         .nargs(2)
@@ -41,11 +41,11 @@ CLIModule::CLIModule(argparse::ArgumentParser& argParser) :
         .add_argument("--cdc-hit-id")
         .flag()
         .help("Save CDC hit data in output file without smearing.");
-    ArgParser()
-        .add_argument("--cdc-hit-name")
+    TheCLI()
+        ->add_argument("--cdc-hit-name")
         .help("Set dataset name format. Default to 'G4Run{}/CDCSimHit'.");
 
-    auto& ttcHitMutexGroup{ArgParser().add_mutually_exclusive_group()};
+    auto& ttcHitMutexGroup{TheCLI()->add_mutually_exclusive_group()};
     ttcHitMutexGroup
         .add_argument("--ttc-hit")
         .nargs(2)
@@ -55,11 +55,11 @@ CLIModule::CLIModule(argparse::ArgumentParser& argParser) :
         .add_argument("--ttc-hit-id")
         .flag()
         .help("Save TTC hit data in output file without smearing.");
-    ArgParser()
-        .add_argument("--ttc-hit-name")
+    TheCLI()
+        ->add_argument("--ttc-hit-name")
         .help("Set dataset name format. Default to 'G4Run{}/TTCSimHit'.");
 
-    auto& mmsTrackMutexGroup{ArgParser().add_mutually_exclusive_group()};
+    auto& mmsTrackMutexGroup{TheCLI()->add_mutually_exclusive_group()};
     mmsTrackMutexGroup
         .add_argument("--mms-track")
         .nargs(2)
@@ -69,11 +69,11 @@ CLIModule::CLIModule(argparse::ArgumentParser& argParser) :
         .add_argument("--mms-track-id")
         .flag()
         .help("Save CDC track data in output file without smearing.");
-    ArgParser()
-        .add_argument("--mms-track-name")
+    TheCLI()
+        ->add_argument("--mms-track-name")
         .help("Set dataset name format. Default to 'G4Run{}/MMSSimTrack'.");
 
-    auto& mcpHitMutexGroup{ArgParser().add_mutually_exclusive_group()};
+    auto& mcpHitMutexGroup{TheCLI()->add_mutually_exclusive_group()};
     mcpHitMutexGroup
         .add_argument("--mcp-hit")
         .nargs(2)
@@ -83,11 +83,11 @@ CLIModule::CLIModule(argparse::ArgumentParser& argParser) :
         .add_argument("--mcp-hit-id")
         .flag()
         .help("Save MCP hit data in output file without smearing.");
-    ArgParser()
-        .add_argument("--mcp-hit-name")
+    TheCLI()
+        ->add_argument("--mcp-hit-name")
         .help("Set dataset name format. Default to 'G4Run{}/MCPSimHit'.");
 
-    auto& ecalHitMutexGroup{ArgParser().add_mutually_exclusive_group()};
+    auto& ecalHitMutexGroup{TheCLI()->add_mutually_exclusive_group()};
     ecalHitMutexGroup
         .add_argument("--ecal-hit")
         .nargs(2)
@@ -97,13 +97,13 @@ CLIModule::CLIModule(argparse::ArgumentParser& argParser) :
         .add_argument("--ecal-hit-id")
         .flag()
         .help("Save ECAL hit data in output file without smearing.");
-    ArgParser()
-        .add_argument("--ecal-hit-name")
+    TheCLI()
+        ->add_argument("--ecal-hit-name")
         .help("Set dataset name format. Default to 'G4Run{}/ECALSimHit'.");
 }
 
 auto CLIModule::DatasetIndexRange() const -> std::pair<gsl::index, gsl::index> {
-    auto var{ArgParser().get<std::vector<gsl::index>>("-i")};
+    auto var{TheCLI()->get<std::vector<gsl::index>>("-i")};
     assert(var.size() == 1 or var.size() == 2);
     if (var.size() == 1) {
         return {0, var.front()};
@@ -113,8 +113,9 @@ auto CLIModule::DatasetIndexRange() const -> std::pair<gsl::index, gsl::index> {
 }
 
 auto CLIModule::OutputFilePath() const -> std::filesystem::path {
-    if (auto output{ArgParser().present("-o")};
-        output) { return *std::move(output); }
+    if (auto output{TheCLI()->present("-o")}) {
+        return *std::move(output);
+    }
     auto inputList{InputFilePath()};
     if (inputList.size() > 1) {
         Mustard::PrintError("Cannot automatically construct output file path since # input file path > 1. Use -o or --output");
@@ -129,11 +130,13 @@ auto CLIModule::OutputFilePath() const -> std::filesystem::path {
     return input.replace_extension().concat("_smeared").replace_extension(extension);
 }
 
-auto CLIModule::ParseSmearingConfig(std::string_view arg) const -> std::unordered_map<std::string, std::string> {
-    auto var{ArgParser().present<std::vector<std::string>>(arg)};
-    if (not var.has_value()) { return {}; }
-    std::unordered_map<std::string, std::string> config;
-    assert(Mustard::Math::IsEven(var->size()));
+auto CLIModule::ParseSmearingConfig(std::string_view arg) const -> muc::flat_hash_map<std::string, std::string> {
+    auto var{TheCLI()->present<std::vector<std::string>>(arg)};
+    if (not var.has_value()) {
+        return {};
+    }
+    Ensures(muc::even(var->size()));
+    muc::flat_hash_map<std::string, std::string> config;
     for (gsl::index i{}; i < ssize(*var); i += 2) {
         auto [_, inserted]{config.try_emplace(std::move(var->at(i)), std::move(var->at(i + 1)))};
         if (not inserted) {

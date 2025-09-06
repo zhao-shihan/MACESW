@@ -2,7 +2,7 @@
 #include "MACE/Simulation/SD/TTCSD.h++"
 #include "MACE/Simulation/SD/TTCSiPMSD.h++"
 
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
@@ -36,7 +36,6 @@
 namespace MACE::inline Simulation::inline SD {
 
 TTCSD::TTCSD(const G4String& sdName, const TTCSiPMSD* ttcSiPMSD) :
-    Mustard::NonMoveableBase{},
     G4VSensitiveDetector{sdName},
     fTTCSiPMSD{ttcSiPMSD},
     fEnergyDepositionThreshold{},
@@ -70,11 +69,15 @@ auto TTCSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& track{*step.GetTrack()};
     const auto& particle{*track.GetDefinition()};
 
-    if (&particle == G4OpticalPhoton::Definition()) { return false; }
+    if (&particle == G4OpticalPhoton::Definition()) {
+        return false;
+    }
 
     const auto eDep{step.GetTotalEnergyDeposit()};
 
-    if (eDep < fEnergyDepositionThreshold) { return false; }
+    if (eDep < fEnergyDepositionThreshold) {
+        return false;
+    }
     assert(eDep > 0);
 
     const auto& preStepPoint{*step.GetPreStepPoint()};
@@ -140,7 +143,7 @@ auto TTCSD::EndOfEvent(G4HCofThisEvent*) -> void {
                 const auto windowClosingTime{tFirst + triggerTimeWindow};
                 if (tFirst == windowClosingTime and // Notice: bad numeric with huge Get<"t">(**clusterFirst)!
                     triggerTimeWindow != 0) [[unlikely]] {
-                    Mustard::PrettyWarning(fmt::format("A huge time ({}) completely rounds off the time resolution ({})", tFirst, triggerTimeWindow));
+                    Mustard::PrintWarning(fmt::format("A huge time ({}) completely rounds off the time resolution ({})", tFirst, triggerTimeWindow));
                 }
                 cluster = {cluster.end(), std::ranges::find_if_not(cluster.end(), splitHit.end(),
                                                                    [&windowClosingTime](const auto& hit) {
@@ -154,7 +157,9 @@ auto TTCSD::EndOfEvent(G4HCofThisEvent*) -> void {
                 // construct real hit
                 assert(Get<"TileID">(*topHit) == tileID);
                 for (const auto& hit : cluster) {
-                    if (hit == topHit) { continue; }
+                    if (hit == topHit) {
+                        continue;
+                    }
                     Get<"Edep">(*topHit) += Get<"Edep">(*hit);
                 }
                 fHitsCollection->insert(topHit.release());

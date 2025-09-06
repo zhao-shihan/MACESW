@@ -10,12 +10,14 @@
 
 #include "G4Types.hh"
 
+#include "muc/ptrvec"
+
 #include "gsl/gsl"
 
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
 
 class TFile;
 
@@ -38,8 +40,8 @@ public:
 
     auto RunBegin(G4int runID) -> void;
 
-    auto SubmitPrimaryVertexData(const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>>& data) -> void { fPrimaryVertex = &data; }
-    auto SubmitDecayVertexData(const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>>& data) -> void { fDecayVertex = &data; }
+    auto SubmitPrimaryVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
+    auto SubmitDecayVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
     auto SubmitECALHC(const std::vector<gsl::owner<ECALHit*>>& hc) -> void { fECALHit = &hc; }
     auto SubmitECALPMHC(const std::vector<gsl::owner<ECALPMHit*>>& hc) -> void { fECALPMHit = &hc; }
     auto SubmitMCPHC(const std::vector<gsl::owner<MCPHit*>>& hc) -> void { fMCPHit = &hc; }
@@ -62,8 +64,8 @@ private:
     std::optional<Mustard::Data::Output<Data::ECALPMHit>> fECALPMHitOutput;
     std::optional<Mustard::Data::Output<Data::MCPSimHit>> fMCPSimHitOutput;
 
-    const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>>* fPrimaryVertex;
-    const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>>* fDecayVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>* fPrimaryVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>* fDecayVertex;
     const std::vector<gsl::owner<ECALHit*>>* fECALHit;
     const std::vector<gsl::owner<ECALPMHit*>>* fECALPMHit;
     const std::vector<gsl::owner<MCPHit*>>* fMCPHit;

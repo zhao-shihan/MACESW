@@ -3,8 +3,8 @@
 #include "MACE/SimTarget/Messenger/PrimaryGeneratorActionMessenger.h++"
 
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
-#include "Mustard/Extension/Geant4X/Generator/FromDataPrimaryGenerator.h++"
-#include "Mustard/Extension/Geant4X/Generator/GeneralParticleSourceX.h++"
+#include "Mustard/Geant4X/Generator/DataReaderPrimaryGenerator.h++"
+#include "Mustard/Geant4X/Generator/GeneralParticleSourceX.h++"
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 
@@ -16,7 +16,7 @@ public:
     PrimaryGeneratorAction();
 
     auto SwitchToGPSX() -> void { fGenerator = &fAvailableGenerator.gpsx; }
-    auto SwitchToFromDataPrimaryGenerator() -> void { fGenerator = &fAvailableGenerator.fromDataPrimaryGenerator; }
+    auto SwitchToFromDataPrimaryGenerator() -> void { fGenerator = &fAvailableGenerator.dataReaderPrimaryGenerator; }
 
     auto NVertex() const -> int;
 
@@ -25,7 +25,7 @@ public:
 private:
     struct {
         Mustard::Geant4X::GeneralParticleSourceX gpsx;
-        Mustard::Geant4X::FromDataPrimaryGenerator fromDataPrimaryGenerator;
+        Mustard::Geant4X::DataReaderPrimaryGenerator dataReaderPrimaryGenerator;
     } fAvailableGenerator;
     G4VPrimaryGenerator* fGenerator;
 

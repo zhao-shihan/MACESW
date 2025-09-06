@@ -1,8 +1,8 @@
 #pragma once
 
 #include "MACE/Data/MMSTrack.h++"
-#include "MACE/Data/SimHit.h++"
 #include "MACE/Data/SensorHit.h++"
+#include "MACE/Data/SimHit.h++"
 #include "MACE/Data/SimVertex.h++"
 #include "MACE/SimTTC/Messenger/AnalysisMessenger.h++"
 #include "MACE/Simulation/Analysis/MMSTruthTracker.h++"
@@ -11,11 +11,13 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Simulation/AnalysisBase.h++"
 
+#include "muc/ptrvec"
+
 #include "gsl/gsl"
 
 #include <filesystem>
-#include <memory>
 #include <utility>
+#include <vector>
 
 class TFile;
 
@@ -33,8 +35,8 @@ public:
     auto SaveTTCHitData(bool val) -> void { fSaveTTCHitData = val; }
     auto SaveTTCSiPMHitData(bool val) -> void { fSaveTTCSiPMHitData = val; }
 
-    auto SubmitPrimaryVertexData(const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>>& data) -> void { fPrimaryVertex = &data; }
-    auto SubmitDecayVertexData(const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>>& data) -> void { fDecayVertex = &data; }
+    auto SubmitPrimaryVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
+    auto SubmitDecayVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
     auto SubmitTTCHC(const std::vector<gsl::owner<TTCHit*>>& hc) -> void { fTTCHit = &hc; }
     auto SubmitTTCSiPMHC(const std::vector<gsl::owner<TTCSiPMHit*>>& hc) -> void { fTTCSiPMHit = &hc; }
 
@@ -52,8 +54,8 @@ private:
     std::optional<Mustard::Data::Output<Data::TTCSimHit>> fTTCSimHitOutput;
     std::optional<Mustard::Data::Output<Data::TTCSiPMHit>> fTTCSiPMHitOutput;
 
-    const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>>* fPrimaryVertex;
-    const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>>* fDecayVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>* fPrimaryVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>* fDecayVertex;
     const std::vector<gsl::owner<TTCHit*>>* fTTCHit;
     const std::vector<gsl::owner<TTCSiPMHit*>>* fTTCSiPMHit;
     AnalysisMessenger::Register<Analysis> fMessengerRegister;

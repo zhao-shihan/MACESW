@@ -15,7 +15,6 @@
 namespace MACE::PhaseI::inline Simulation::inline SD {
 
 SciFiSiPMSD::SciFiSiPMSD(const G4String& sdName) :
-    Mustard::NonMoveableBase{},
     G4VSensitiveDetector{sdName},
     fHit{},
     fHitsCollection{} {
@@ -35,7 +34,9 @@ auto SciFiSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& track{*step.GetTrack()};
     const auto& particle{*track.GetDefinition()};
 
-    if (&particle != G4OpticalPhoton::Definition()) { return false; }
+    if (&particle != G4OpticalPhoton::Definition()) {
+        return false;
+    }
 
     step.GetTrack()->SetTrackStatus(fStopAndKill);
 
@@ -64,8 +65,8 @@ auto SciFiSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
     }
 }
 
-auto SciFiSiPMSD::NOpticalPhotonHit() const -> std::unordered_map<int, int> {
-    std::unordered_map<int, int> nHit;
+auto SciFiSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, int> {
+    muc::flat_hash_map<int, int> nHit;
     for (auto&& [siPMID, hit] : fHit) {
         if (hit.size() > 0) {
             nHit[siPMID] = hit.size();

@@ -49,7 +49,7 @@ auto PDSVeto::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fPSThickness, "PSThickness");
     ImportValue(node, fPSFiberRadius, "PSFiberRadius");
     ImportValue(node, fPSHoleRadius, "PSHoleRadius");
-    ImportValue(node,fPSFiberCurvatureRadius ,"PSFiberCurvatureRadius" );
+    ImportValue(node, fPSFiberCurvatureRadius, "PSFiberCurvatureRadius");
     ImportValue(node, fInterPSGap, "InterPSGap");
     ImportValue(node, fInterModuleGap, "InterModuleGap");
     ImportValue(node, fCap12Gap, "Cap12Gap");
@@ -62,10 +62,9 @@ auto PDSVeto::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fCapLayer, "CapLayer");
     ImportValue(node, fPSMaterialName, "PSMaterialName");
     ImportValue(node, fSiPMThickness, "SiPMThickness");
-    ImportValue(node, fSiPMCathodeThickness,"SiPMCathodeThickness");
+    ImportValue(node, fSiPMCathodeThickness, "SiPMCathodeThickness");
     ImportValue(node, fSiPMCouplerThickness, "SiPMCouplerThickness");
     ImportValue(node, fSiPMSize, "SiPMSize");
-    
 }
 auto PDSVeto::ExportAllValue(YAML::Node& node) const -> void {
     // Geometry
@@ -78,7 +77,7 @@ auto PDSVeto::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fPSThickness, "PSThickness");
     ExportValue(node, fPSFiberRadius, "PSFiberRadius");
     ExportValue(node, fPSHoleRadius, "PSHoleRadius");
-    ExportValue(node,fPSFiberCurvatureRadius ,"PSFiberCurvatureRadius" );
+    ExportValue(node, fPSFiberCurvatureRadius, "PSFiberCurvatureRadius");
     ExportValue(node, fInterPSGap, "InterPSGap");
     ExportValue(node, fInterModuleGap, "InterModuleGap");
 
@@ -90,11 +89,9 @@ auto PDSVeto::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fCapLayer, "CapLayer");
     ExportValue(node, fPSMaterialName, "PSMaterialName");
     ExportValue(node, fSiPMThickness, "SiPMThickness");
-    ExportValue(node, fSiPMCathodeThickness,"SiPMCathodeThickness");
+    ExportValue(node, fSiPMCathodeThickness, "SiPMCathodeThickness");
     ExportValue(node, fSiPMCouplerThickness, "SiPMCouplerThickness");
     ExportValue(node, fSiPMSize, "SiPMSize");
-
-
 }
 
 } // namespace MACE::Detector::Description

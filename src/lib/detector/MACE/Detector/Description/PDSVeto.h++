@@ -23,27 +23,26 @@ public:
     auto PSWidth() const -> const auto& { return fPSWidth; }
     auto PSThickness() const -> const auto& { return fPSThickness; }
     auto PSFiberRadius() const -> const auto& { return fPSFiberRadius; }
-    auto PSFiberCurvatureRadius() const -> const auto& {return fPSFiberCurvatureRadius;}
+    auto PSFiberCurvatureRadius() const -> const auto& { return fPSFiberCurvatureRadius; }
     auto PSHoleRadius() const -> const auto& { return fPSHoleRadius; }
     auto InterPSGap() const -> const auto& { return fInterPSGap; }
-    auto InterModuleGap() const -> const auto& {return fInterModuleGap;}
+    auto InterModuleGap() const -> const auto& { return fInterModuleGap; }
     auto Cap12Gap() const -> const auto& { return fCap12Gap; }
     auto ModuleOffset() const -> const auto& { return fModuleOffset; }
     auto AlAbsorberThickness() const -> const auto& { return fAlAbsorberThickness; }
 
     auto TopLayer() const -> const auto& { return fTopLayer; }
-    auto SideLayer() const -> const auto&{return fSideLayer;}
+    auto SideLayer() const -> const auto& { return fSideLayer; }
     auto BottomLayer() const -> const auto& { return fBottomLayer; }
     auto CapLayer() const -> const auto& { return fCapLayer; }
 
-    auto SiPMThickness() const ->const auto&{return fSiPMThickness;}
-    auto SiPMCathodeThickness() const ->const auto&{return fSiPMCathodeThickness;}
-    auto SiPMCouplerThickness() const ->const auto &{return fSiPMCouplerThickness;}
-    auto SiPMSize() const ->const auto&{return fSiPMSize;}
+    auto SiPMThickness() const -> const auto& { return fSiPMThickness; }
+    auto SiPMCathodeThickness() const -> const auto& { return fSiPMCathodeThickness; }
+    auto SiPMCouplerThickness() const -> const auto& { return fSiPMCouplerThickness; }
+    auto SiPMSize() const -> const auto& { return fSiPMSize; }
     // Material
 
     auto PSMaterialName() const -> const auto& { return fPSMaterialName; }
-
 
 private:
     auto ImportAllValue(const YAML::Node& node) -> void override;
@@ -63,11 +62,11 @@ private:
     double fPSFiberRadius;          // 0.7mm
     double fPSHoleRadius;           //>0.7mm
     double fPSFiberCurvatureRadius; // 61cm finely caculated, do not change arbitrarily
-    double fInterPSGap;                // 0.3cm
+    double fInterPSGap;             // 0.3cm
     double fInterModuleGap;
     double fCap12Gap;
-    double fModuleOffset;           // 1cm
-    double fAlAbsorberThickness;               // 0.6cm
+    double fModuleOffset;        // 1cm
+    double fAlAbsorberThickness; // 0.6cm
     int fTopLayer;
     int fSideLayer;
     int fBottomLayer;

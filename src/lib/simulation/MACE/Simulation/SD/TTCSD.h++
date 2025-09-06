@@ -2,20 +2,16 @@
 
 #include "MACE/Simulation/Hit/TTCHit.h++"
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "G4VSensitiveDetector.hh"
 
-#include <memory>
-#include <unordered_map>
-#include <vector>
+#include "muc/hash_map"
+#include "muc/ptrvec"
 
 namespace MACE::inline Simulation::inline SD {
 
 class TTCSiPMSD;
 
-class TTCSD : public Mustard::NonMoveableBase,
-              public G4VSensitiveDetector {
+class TTCSD : public G4VSensitiveDetector {
 public:
     TTCSD(const G4String& sdName, const TTCSiPMSD* ttcSiPMSD = {});
 
@@ -28,7 +24,7 @@ protected:
 
     double fEnergyDepositionThreshold;
 
-    std::unordered_map<int, std::vector<std::unique_ptr<TTCHit>>> fSplitHit;
+    muc::flat_hash_map<int, muc::unique_ptrvec<TTCHit>> fSplitHit;
     TTCHitCollection* fHitsCollection;
 };
 

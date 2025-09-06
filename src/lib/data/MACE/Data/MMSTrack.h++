@@ -57,7 +57,7 @@ constexpr auto CalculateHelix(Mustard::Data::SuperTuple<Mustard::Data::Tuple<MMS
     const muc::array2d c0{x0[0] - x0Local[0],
                           x0[1] - x0Local[1]};
 
-    // const auto absDeltaPhi{std::acos(-c0 * x0Local) / std::sqrt(Mustard::Math::Norm2(c0) * Mustard::Math::Norm2(x0Local))};
+    // const auto absDeltaPhi{std::acos(-c0 * x0Local) / std::sqrt(Mustard::Math::NormSq(c0) * Mustard::Math::NormSq(x0Local))};
     // const auto deltaPhi{x0Local[0] * c0[1] - c0[0] * x0Local[1] > 0 ? absDeltaPhi : -absDeltaPhi};
     const auto theta0{std::atan2(pXY, p0[2])};
     // const auto z0{x0[3] - r0 * deltaPhi / std::tan(theta0)};
@@ -94,7 +94,7 @@ constexpr auto CalculateVertex(Mustard::Data::SuperTuple<Mustard::Data::Tuple<MM
 
     const auto pXY{-charge * magneticFluxDensity * c_light * r0};
     const auto pZ{pXY / std::tan(theta0)};
-    const auto ek0{std::sqrt(muc::hypot2(pXY, pZ) + muc::pow<2>(electron_mass_c2)) - electron_mass_c2};
+    const auto ek0{std::sqrt(muc::hypot_sq(pXY, pZ) + muc::pow(electron_mass_c2, 2)) - electron_mass_c2};
     const muc::array3d p0{-pXY * sin0,
                           pXY * cos0,
                           pZ};

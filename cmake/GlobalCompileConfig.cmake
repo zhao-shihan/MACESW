@@ -81,3 +81,14 @@ if(MACE_ENABLE_UBSAN_IN_DEBUG_BUILD)
         endif()
     endif()
 endif()
+
+# =============================================================================
+# Add debug information
+# =============================================================================
+
+if(MACE_WITH_DEBUG_INFO)
+    add_compile_options($<$<C_COMPILER_ID:GNU,Clang>:-g>   
+                        $<$<CXX_COMPILER_ID:GNU,Clang>:-g> 
+                        $<$<C_COMPILER_ID:MSVC>:/Zi> 
+                        $<$<CXX_COMPILER_ID:MSVC>:/Zi>)
+endif()

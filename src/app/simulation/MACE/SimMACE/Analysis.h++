@@ -10,11 +10,13 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Simulation/AnalysisBase.h++"
 
+#include "muc/ptrvec"
+
 #include "gsl/gsl"
 
 #include <filesystem>
-#include <memory>
 #include <utility>
+#include <vector>
 
 class TFile;
 
@@ -37,8 +39,8 @@ public:
     auto SaveCDCHitData(bool val) -> void { fSaveCDCHitData = val; }
     auto SaveTTCHitData(bool val) -> void { fSaveTTCHitData = val; }
 
-    auto SubmitPrimaryVertexData(const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>>& data) -> void { fPrimaryVertex = &data; }
-    auto SubmitDecayVertexData(const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>>& data) -> void { fDecayVertex = &data; }
+    auto SubmitPrimaryVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
+    auto SubmitDecayVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
     auto SubmitTTCHC(const std::vector<gsl::owner<TTCHit*>>& hc) -> void { fTTCHit = &hc; }
     auto SubmitCDCHC(const std::vector<gsl::owner<CDCHit*>>& hc) -> void { fCDCHit = &hc; }
     auto SubmitMCPHC(const std::vector<gsl::owner<MCPHit*>>& hc) -> void { fMCPHit = &hc; }
@@ -64,8 +66,8 @@ private:
     std::optional<Mustard::Data::Output<Data::MCPSimHit>> fMCPSimHitOutput;
     std::optional<Mustard::Data::Output<Data::ECALSimHit>> fECALSimHitOutput;
 
-    const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>>* fPrimaryVertex;
-    const std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimDecayVertex>>>* fDecayVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>* fPrimaryVertex;
+    const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>* fDecayVertex;
     const std::vector<gsl::owner<TTCHit*>>* fTTCHit;
     const std::vector<gsl::owner<CDCHit*>>* fCDCHit;
     const std::vector<gsl::owner<MCPHit*>>* fMCPHit;

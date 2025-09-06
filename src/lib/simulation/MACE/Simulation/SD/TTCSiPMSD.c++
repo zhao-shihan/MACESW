@@ -16,7 +16,6 @@
 namespace MACE::inline Simulation::inline SD {
 
 TTCSiPMSD::TTCSiPMSD(const G4String& sdName) :
-    Mustard::NonMoveableBase{},
     G4VSensitiveDetector{sdName},
     fHit{},
     fHitsCollection{} {
@@ -37,7 +36,9 @@ auto TTCSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& particle{*track.GetDefinition()};
     const auto& ttc{MACE::Detector::Description::TTC::Instance()};
 
-    if (&particle != G4OpticalPhoton::Definition()) { return false; }
+    if (&particle != G4OpticalPhoton::Definition()) {
+        return false;
+    }
 
     step.GetTrack()->SetTrackStatus(fStopAndKill);
 
@@ -68,8 +69,8 @@ auto TTCSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
     }
 }
 
-auto TTCSiPMSD::NOpticalPhotonHit() const -> std::unordered_map<int, std::vector<int>> {
-    std::unordered_map<int, std::vector<int>> nHit;
+auto TTCSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, std::vector<int>> {
+    muc::flat_hash_map<int, std::vector<int>> nHit;
     for (auto&& [tileID, hitofDetector] : fHit) {
         if (hitofDetector.size() > 0) {
             auto upSiPMNOpticalPhotonHit = std::ranges::count_if(hitofDetector, [](const auto& hit) { return Get<"SiPMID">(*hit) % 2 != 0; });

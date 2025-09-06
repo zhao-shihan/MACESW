@@ -6,8 +6,7 @@
 #include "Mustard/Data/Processor.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -54,7 +53,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
 
     std::vector<std::string> files;
-    for (auto i{1}; i < argc; ++i) { files.emplace_back(argv[i]); }
+    for (auto i{1}; i < argc; ++i) {
+        files.emplace_back(argv[i]);
+    }
 
     const auto& ecal{Detector::Description::ECAL::Instance()};
     const auto& faceList{ecal.Mesh().fFaceList};
@@ -67,7 +68,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
         i++;
     }
 
-    TFile outputFile{Mustard::MPIX::ParallelizePath("dual_coin.root").generic_string().c_str(), "RECREATE"};
+    TFile outputFile{Mustard::Parallel::ProcessSpecificPath("dual_coin.root").generic_string().c_str(), "RECREATE"};
     using ECALEnergy = Mustard::Data::TupleModel<Mustard::Data::Value<float, "Edep", "Energy deposition">,
                                                  Mustard::Data::Value<float, "Edep1", "Energy deposition 1">,
                                                  Mustard::Data::Value<float, "Edep2", "Energy deposition 2">,
@@ -80,7 +81,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
     processor.Process<Data::ECALSimHit>(
         ROOT::RDataFrame{"G4Run0/ECALSimHit", files}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
-            if (byPass) { return; }
+            if (byPass) {
+                return;
+            }
             muc::timsort(event,
                          [](auto&& hit1, auto&& hit2) {
                              return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
@@ -90,11 +93,15 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
 
             for (auto&& hit : event) {
                 hitDict.try_emplace(Get<"ModID">(*hit), hit);
-                if (Get<"Edep">(*hit) < 50_keV) { continue; }
+                if (Get<"Edep">(*hit) < 50_keV) {
+                    continue;
+                }
                 potentialSeedModule.emplace_back(Get<"ModID">(*hit));
             }
 
-            if (std::ssize(potentialSeedModule) < 2) { return; }
+            if (std::ssize(potentialSeedModule) < 2) {
+                return;
+            }
 
             std::unordered_set<short> firstCluster;
             std::unordered_set<short> secondCluster;
@@ -114,7 +121,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
 
                 float energy{};
                 for (auto&& m : set) {
-                    if (not hitDict.contains(m) or Get<"Edep">(*hitDict.at(m)) < 50_keV) { continue; }
+                    if (not hitDict.contains(m) or Get<"Edep">(*hitDict.at(m)) < 50_keV) {
+                        continue;
+                    }
                     energy += smear(Get<"Edep">(*hitDict.at(m)));
                 }
                 return energy;
@@ -123,7 +132,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
             auto firstClusterEnergy = Clustering(firstCluster, firstSeedModule);
             auto secondClusterEnergy = Clustering(secondCluster, secondSeedModule);
 
-            if (firstClusterEnergy > 590_keV or secondClusterEnergy > 590_keV) { return; }
+            if (firstClusterEnergy > 590_keV or secondClusterEnergy > 590_keV) {
+                return;
+            }
 
             Mustard::Data::Tuple<ECALEnergy> energyTuple;
             Get<"Edep">(energyTuple) = firstClusterEnergy + secondClusterEnergy;

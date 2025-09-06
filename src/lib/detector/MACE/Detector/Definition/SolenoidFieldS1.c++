@@ -24,7 +24,7 @@ auto SolenoidFieldS1::Construct(G4bool checkOverlaps) -> void {
         solenoid.S1Length() / 2,
         0,
         2_pi)};
-   const  auto logic{Make<G4LogicalVolume>(
+    const auto logic{Make<G4LogicalVolume>(
         solid,
         mother->GetMaterial(),
         name)};

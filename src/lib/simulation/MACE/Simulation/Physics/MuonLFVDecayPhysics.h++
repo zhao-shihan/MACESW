@@ -20,7 +20,7 @@
 
 #include "MACE/Simulation/Physics/MuonLFVDecayPhysicsMessenger.h++"
 
-#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
+#include "Mustard/Geant4X/Physics/MuonNLODecayPhysics.h++"
 
 #include "muc/math"
 
@@ -31,7 +31,7 @@ class G4String;
 
 namespace MACE::inline Simulation::inline Physics {
 
-class MuonLFVDecayPhysics : public Mustard::Extension::Geant4X::Physics::MuonNLODecayPhysics {
+class MuonLFVDecayPhysics : public Mustard::Geant4X::Physics::MuonNLODecayPhysics {
 public:
     MuonLFVDecayPhysics(G4int verbose);
 

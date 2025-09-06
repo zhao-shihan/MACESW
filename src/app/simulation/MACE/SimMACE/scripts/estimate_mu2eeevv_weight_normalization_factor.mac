@@ -9,5 +9,5 @@
 /Mustard/Physics/MuonDecay/ICDecay/MetropolisDiscard    10
 /MACE/Physics/MuonDecay/ICDecay/ApplyMACEBias           yes
 
-# Estimate bias scale with 1000*n samples
-/Mustard/Physics/MuonDecay/ICDecay/EstimateBiasScale MuonICDecay mu+ 1000000
+# Estimate weight normalization factor with 1000*n samples
+/Mustard/Physics/MuonDecay/ICDecay/EstimateWeightNormalizationFactor MuonICDecay mu+ 1000000

@@ -3,7 +3,7 @@
 #include "MACE/Data/SimHit.h++"
 
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Extension/Geant4X/Memory/UseG4Allocator.h++"
+#include "Mustard/Geant4X/Memory/UseG4Allocator.h++"
 
 #include "G4THitsCollection.hh"
 #include "G4VHit.hh"

@@ -18,7 +18,7 @@
 
 #include "MACE/Simulation/Physics/MuonLFVDecayPhysics.h++"
 
-#include "Mustard/Extension/Geant4X/Physics/MuonNLODecayPhysics.h++"
+#include "Mustard/Geant4X/Physics/MuonNLODecayPhysics.h++"
 
 #include "G4DecayTable.hh"
 #include "G4PhaseSpaceDecayChannel.hh"

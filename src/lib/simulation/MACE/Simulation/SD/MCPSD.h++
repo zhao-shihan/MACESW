@@ -3,20 +3,17 @@
 #include "MACE/Simulation/Hit/MCPHit.h++"
 #include "MACE/Simulation/SD/MCPSDMessenger.h++"
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "G4VSensitiveDetector.hh"
 
+#include "muc/ptrvec"
+
 #include <algorithm>
-#include <memory>
-#include <vector>
 
 class G4DataInterpolation;
 
 namespace MACE::inline Simulation::inline SD {
 
-class MCPSD : public Mustard::NonMoveableBase,
-              public G4VSensitiveDetector {
+class MCPSD : public G4VSensitiveDetector {
 public:
     MCPSD(const G4String& sdName);
     ~MCPSD();
@@ -32,7 +29,7 @@ protected:
 
     std::unique_ptr<G4DataInterpolation> fEfficiency;
 
-    std::vector<std::unique_ptr<MCPHit>> fSplitHit;
+    muc::unique_ptrvec<MCPHit> fSplitHit;
     MCPHitCollection* fHitsCollection;
 
     MCPSDMessenger::Register<MCPSD> fMessengerRegister;

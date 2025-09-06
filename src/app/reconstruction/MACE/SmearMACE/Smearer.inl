@@ -1,7 +1,7 @@
 namespace MACE::SmearMACE {
 
 template<Mustard::Data::TupleModelizable... Ts>
-auto Smearer::Smear(std::string_view treeName, const std::unordered_map<std::string, std::string>& smearingConfig) const -> void {
+auto Smearer::Smear(std::string_view treeName, const muc::flat_hash_map<std::string, std::string>& smearingConfig) const -> void {
     Mustard::Data::Output<Ts...> output{std::string{treeName}};
 
     std::vector<std::pair<std::string_view, TF1>> smearAction;
@@ -13,7 +13,9 @@ auto Smearer::Smear(std::string_view treeName, const std::unordered_map<std::str
     fProcessor.Process<Ts...>(
         ROOT::RDataFrame{treeName, fInputFile}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
-            if (byPass) { return; }
+            if (byPass) {
+                return;
+            }
             for (auto&& entry : event) {
                 for (auto&& [var, smear] : smearAction) {
                     entry->Visit(var, [&](muc::arithmetic auto& x) { x = smear(x); });

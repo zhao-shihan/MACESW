@@ -19,7 +19,6 @@
 namespace MACE::SimPTS::inline SD {
 
 VirtualSD::VirtualSD(const G4String& sdName) :
-    Mustard::NonMoveableBase{},
     G4VSensitiveDetector{sdName},
     fHitsCollection{} {
     collectionName.insert(sdName + "HC");
@@ -34,7 +33,9 @@ auto VirtualSD::Initialize(G4HCofThisEvent* hitsCollectionOfThisEvent) -> void {
 auto VirtualSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
     const auto& track{*step.GetTrack()};
-    if (not(step.IsFirstStepInVolume() and track.GetCurrentStepNumber() > 1)) { return false; }
+    if (not(step.IsFirstStepInVolume() and track.GetCurrentStepNumber() > 1)) {
+        return false;
+    }
 
     const auto& particle{*track.GetDefinition()};
     const auto& preStepPoint{*step.GetPreStepPoint()};

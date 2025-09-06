@@ -8,7 +8,7 @@
 
 #include "G4UserTrackingAction.hh"
 
-#include "muc/ptr_vector"
+#include "muc/ptrvec"
 
 #include <memory>
 #include <vector>
@@ -34,7 +34,7 @@ private:
 private:
     bool fSaveDecayVertexData;
 
-    muc::unique_ptr_vector<Mustard::Data::Tuple<Data::SimDecayVertex>> fDecayVertexData;
+    muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>> fDecayVertexData;
 
     AnalysisMessenger::Register<TrackingAction> fMessengerRegister;
 };

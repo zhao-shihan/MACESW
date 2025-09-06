@@ -2,7 +2,7 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Extension/Geant4X/Memory/UseG4Allocator.h++"
+#include "Mustard/Geant4X/Memory/UseG4Allocator.h++"
 
 #include "G4THitsCollection.hh"
 #include "G4VHit.hh"

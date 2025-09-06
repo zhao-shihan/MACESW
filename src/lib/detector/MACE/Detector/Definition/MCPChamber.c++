@@ -35,7 +35,7 @@ auto MCPChamber::Construct(G4bool checkOverlaps) -> void {
         vacuumMaterial = nist->BuildMaterialWithNewDensity(vacuum.Name(), "G4_AIR", vacuum.Density(), 293.15_K, vacuum.Pressure());
     }
 
-    const auto zWeld{std::sqrt(muc::pow<2>(mcpChamber.InnerRadius()) - muc::pow<2>(beamPipe.InnerRadius()))};
+    const auto zWeld{std::sqrt(muc::pow(mcpChamber.InnerRadius(), 2) - muc::pow(beamPipe.InnerRadius(), 2))};
 
     { // Spherical chamber
         const auto substractor{Make<G4Box>(

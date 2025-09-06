@@ -69,13 +69,13 @@
 /vis/geometry/set/colour ECALCrystal                   0     1     1     1     0.1
 /vis/geometry/set/colour ECALField                     0     1     1     1     0.05
 /vis/geometry/set/colour ECALMagnet                    0     1     1     1     0.05
-/vis/geometry/set/colour ECALShield                    0     1     1     1     0.05
+/vis/geometry/set/colour ECALMPPCCoupler               0     1     1     1     0.1
+/vis/geometry/set/colour ECALMPPCWindow                0     1     1     1     0.2
+/vis/geometry/set/colour ECALPMCathode                 0     1     1     1     0.3
 /vis/geometry/set/colour ECALPMTCoupler                0     1     1     1     0.1
 /vis/geometry/set/colour ECALPMTShell                  0     1     1     1     0.05
-/vis/geometry/set/colour ECALPMTVacuum                 0     1     1     1     0.
-/vis/geometry/set/colour ECALMPPCWindow                0     1     1     1     0.2
-/vis/geometry/set/colour ECALMPPCCoupler               0     1     1     1     0.1
-/vis/geometry/set/colour ECALPMCathode                 0     1     1     1     0.3
+/vis/geometry/set/colour ECALShield                    0     1     1     1     0.05
+/vis/geometry/set/colour ECALPMTVacuum                 0     1     1     1     0.01
 /vis/geometry/set/colour MCP                           0     1     1     1     0.1
 /vis/geometry/set/colour MCPAnode                      0     1     1     1     0.1
 /vis/geometry/set/colour MCPChamber                    0     1     1     1     0.05
@@ -114,7 +114,12 @@
 /vis/geometry/set/colour SolenoidT1                    0     1     1     1     0.05
 /vis/geometry/set/colour SolenoidT2                    0     1     1     1     0.05
 /vis/geometry/set/colour Target                        0     1     1     1     0.1
-/vis/geometry/set/colour TTC                           0     1     1     1     0.05
+/vis/geometry/set/colour TTCLightCoupler               0     1     1     1     0.05
+/vis/geometry/set/colour TTCPCB                        0     1     1     1     0.05
+/vis/geometry/set/colour TTCScintillator               0     1     1     1     0.05
+/vis/geometry/set/colour TTCSilicone                   0     1     1     1     0.05
+/vis/geometry/set/colour TTCVirtualBox                 0     1     1     1     0.05
+/vis/geometry/set/colour TTCWindow                     0     1     1     1     0.05
 /vis/geometry/set/colour World                         0     1     1     1     0.001
 
 /vis/scene/add/date

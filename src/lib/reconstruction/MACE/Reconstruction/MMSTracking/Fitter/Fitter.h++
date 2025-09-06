@@ -6,11 +6,11 @@
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 
+#include "muc/ptrvec"
+
 #include <concepts>
 #include <iterator>
-#include <memory>
 #include <utility>
-#include <vector>
 
 namespace MACE::inline Reconstruction::MMSTracking::inline Fitter {
 
@@ -28,11 +28,11 @@ concept Fitter =
         { fitter(hitData, seed).fitted } -> std::same_as<std::vector<Mustard::Data::Tuple<typename T::Hit>*>>;
         { fitter(hitData, seed).failed } -> std::same_as<std::vector<Mustard::Data::Tuple<typename T::Hit>*>>;
     } and
-    requires(T fitter, const std::vector<std::shared_ptr<Mustard::Data::Tuple<typename T::Hit>>> hitData, const std::shared_ptr<Mustard::Data::Tuple<typename T::Track>> seed) {
+    requires(T fitter, const muc::shared_ptrvec<Mustard::Data::Tuple<typename T::Hit>> hitData, const std::shared_ptr<Mustard::Data::Tuple<typename T::Track>> seed) {
         { fitter(hitData, seed) };
         { fitter(hitData, seed).track } -> std::same_as<std::shared_ptr<Mustard::Data::Tuple<typename T::Track>>>;
-        { fitter(hitData, seed).fitted } -> std::same_as<std::vector<std::shared_ptr<Mustard::Data::Tuple<typename T::Hit>>>>;
-        { fitter(hitData, seed).failed } -> std::same_as<std::vector<std::shared_ptr<Mustard::Data::Tuple<typename T::Hit>>>>;
+        { fitter(hitData, seed).fitted } -> std::same_as<muc::shared_ptrvec<Mustard::Data::Tuple<typename T::Hit>>>;
+        { fitter(hitData, seed).failed } -> std::same_as<muc::shared_ptrvec<Mustard::Data::Tuple<typename T::Hit>>>;
     };
 
 template<typename T>

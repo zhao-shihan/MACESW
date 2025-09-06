@@ -5,8 +5,8 @@
 #include "MACE/Simulation/Hit/TTCSiPMHit.h++"
 
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/Geant4X/Utility/ConvertGeometry.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 
 #include "TFile.h"
 #include "TMacro.h"
@@ -32,19 +32,33 @@ Analysis::Analysis() :
     fMessengerRegister{this} {}
 
 auto Analysis::RunBeginUserAction(int runID) -> void {
-    if (PrimaryGeneratorAction::Instance().SavePrimaryVertexData()) { fPrimaryVertexOutput.emplace(fmt::format("G4Run{}/SimPrimaryVertex", runID)); }
-    if (TrackingAction::Instance().SaveDecayVertexData()) { fDecayVertexOutput.emplace(fmt::format("G4Run{}/SimDecayVertex", runID)); }
-    if (fSaveTTCHitData) { fTTCSimHitOutput.emplace(fmt::format("G4Run{}/TTCSimHit", runID)); }
-    if (fSaveTTCSiPMHitData) { fTTCSiPMHitOutput.emplace(fmt::format("G4Run{}/TTCSiPMHit", runID)); }
+    if (PrimaryGeneratorAction::Instance().SavePrimaryVertexData()) {
+        fPrimaryVertexOutput.emplace(fmt::format("G4Run{}/SimPrimaryVertex", runID));
+    }
+    if (TrackingAction::Instance().SaveDecayVertexData()) {
+        fDecayVertexOutput.emplace(fmt::format("G4Run{}/SimDecayVertex", runID));
+    }
+    if (fSaveTTCHitData) {
+        fTTCSimHitOutput.emplace(fmt::format("G4Run{}/TTCSimHit", runID));
+    }
+    if (fSaveTTCSiPMHitData) {
+        fTTCSiPMHitOutput.emplace(fmt::format("G4Run{}/TTCSiPMHit", runID));
+    }
 }
 
 auto Analysis::EventEndUserAction() -> void {
-    
-    if (fPrimaryVertex and fPrimaryVertexOutput) { fPrimaryVertexOutput->Fill(*fPrimaryVertex); }
-    if (fDecayVertex and fDecayVertexOutput) { fDecayVertexOutput->Fill(*fDecayVertex); }
-    if (fTTCSimHitOutput) { fTTCSimHitOutput->Fill(*fTTCHit); }
-    if (fTTCSiPMHitOutput) { fTTCSiPMHitOutput->Fill(*fTTCSiPMHit); }
-        
+    if (fPrimaryVertex and fPrimaryVertexOutput) {
+        fPrimaryVertexOutput->Fill(*fPrimaryVertex);
+    }
+    if (fDecayVertex and fDecayVertexOutput) {
+        fDecayVertexOutput->Fill(*fDecayVertex);
+    }
+    if (fTTCSimHitOutput) {
+        fTTCSimHitOutput->Fill(*fTTCHit);
+    }
+    if (fTTCSiPMHitOutput) {
+        fTTCSiPMHitOutput->Fill(*fTTCSiPMHit);
+    }
     fPrimaryVertex = {};
     fDecayVertex = {};
     fTTCHit = {};
@@ -53,10 +67,18 @@ auto Analysis::EventEndUserAction() -> void {
 
 auto Analysis::RunEndUserAction(int) -> void {
     // write data
-    if (fPrimaryVertexOutput) { fPrimaryVertexOutput->Write(); }
-    if (fDecayVertexOutput) { fDecayVertexOutput->Write(); }
-    if (fTTCSimHitOutput) { fTTCSimHitOutput->Write(); }
-    if (fTTCSiPMHitOutput) { fTTCSiPMHitOutput->Write(); }
+    if (fPrimaryVertexOutput) {
+        fPrimaryVertexOutput->Write();
+    }
+    if (fDecayVertexOutput) {
+        fDecayVertexOutput->Write();
+    }
+    if (fTTCSimHitOutput) {
+        fTTCSimHitOutput->Write();
+    }
+    if (fTTCSiPMHitOutput) {
+        fTTCSiPMHitOutput->Write();
+    }
     // reset output
     fPrimaryVertexOutput.reset();
     fDecayVertexOutput.reset();

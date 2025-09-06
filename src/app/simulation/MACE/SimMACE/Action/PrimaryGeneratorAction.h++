@@ -6,13 +6,12 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
-#include "Mustard/Extension/Geant4X/Generator/FromDataPrimaryGenerator.h++"
-#include "Mustard/Extension/Geant4X/Generator/GeneralParticleSourceX.h++"
+#include "Mustard/Geant4X/Generator/DataReaderPrimaryGenerator.h++"
+#include "Mustard/Geant4X/Generator/GeneralParticleSourceX.h++"
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 
-#include <memory>
-#include <vector>
+#include "muc/ptrvec"
 
 namespace MACE::SimMACE::inline Action {
 
@@ -22,7 +21,7 @@ public:
     PrimaryGeneratorAction();
 
     auto SwitchToGPSX() -> void { fGenerator = &fAvailableGenerator.gpsx; }
-    auto SwitchToFromDataPrimaryGenerator() -> void { fGenerator = &fAvailableGenerator.fromDataPrimaryGenerator; }
+    auto SwitchToFromDataPrimaryGenerator() -> void { fGenerator = &fAvailableGenerator.dataReaderPrimaryGenerator; }
 
     auto SavePrimaryVertexData() const -> auto { return fSavePrimaryVertexData; }
     auto SavePrimaryVertexData(bool val) -> void { fSavePrimaryVertexData = val; }
@@ -35,12 +34,12 @@ private:
 private:
     struct {
         Mustard::Geant4X::GeneralParticleSourceX gpsx;
-        Mustard::Geant4X::FromDataPrimaryGenerator fromDataPrimaryGenerator;
+        Mustard::Geant4X::DataReaderPrimaryGenerator dataReaderPrimaryGenerator;
     } fAvailableGenerator;
     G4VPrimaryGenerator* fGenerator;
 
     bool fSavePrimaryVertexData;
-    std::vector<std::unique_ptr<Mustard::Data::Tuple<Data::SimPrimaryVertex>>> fPrimaryVertexData;
+    muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>> fPrimaryVertexData;
 
     AnalysisMessenger::Register<PrimaryGeneratorAction> fAnalysisMessengerRegister;
     PrimaryGeneratorActionMessenger::Register<PrimaryGeneratorAction> fPrimaryGeneratorActionMessengerRegister;

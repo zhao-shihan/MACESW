@@ -7,6 +7,10 @@
 
 namespace MACE::SimTTC {
 
+ActionInitialization::ActionInitialization() :
+    PassiveSingleton{this},
+    G4VUserActionInitialization{} {}
+
 auto ActionInitialization::Build() const -> void {
     SetUserAction(new RunAction);
     SetUserAction(new PrimaryGeneratorAction);

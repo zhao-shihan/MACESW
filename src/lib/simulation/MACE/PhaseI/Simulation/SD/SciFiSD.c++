@@ -41,7 +41,6 @@ namespace MACE::PhaseI::inline Simulation::inline SD {
 using namespace Mustard::LiteralUnit;
 
 SciFiSD::SciFiSD(const G4String& sdName) :
-    Mustard::NonMoveableBase{},
     G4VSensitiveDetector{sdName},
     fSplitHit{},
     fHitsCollection{} {
@@ -61,7 +60,9 @@ auto SciFiSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& track{*step.GetTrack()};
     const auto& particle{*track.GetDefinition()};
 
-    if (&particle == G4OpticalPhoton::Definition()) { return false; }
+    if (&particle == G4OpticalPhoton::Definition()) {
+        return false;
+    }
 
     const auto eDep{step.GetTotalEnergyDeposit()};
     const auto preStepPoint{*step.GetPreStepPoint()};
@@ -138,7 +139,9 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                 // construct real hit
                 Get<"HitID">(*topHit) = hitID++;
                 for (const auto& hit : cluster) {
-                    if (hit == topHit) { continue; }
+                    if (hit == topHit) {
+                        continue;
+                    }
                     Get<"Edep">(*topHit) += Get<"Edep">(*hit);
                 }
                 fHitsCollection->insert(topHit.release());

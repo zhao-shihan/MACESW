@@ -6,14 +6,16 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
-#include "Mustard/Utility/PrettyLog.h++"
+#include "Mustard/IO/PrettyLog.h++"
+
+#include "muc/hash_map"
+#include "muc/hash_set"
 
 #include "fmt/core.h"
 #include "fmt/ranges.h"
 
 #include <iterator>
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 namespace MACE::inline Reconstruction::MMSTracking::inline Finder {
@@ -40,7 +42,7 @@ protected:
             std::vector<AHitPointer> hitData;
             std::shared_ptr<Mustard::Data::Tuple<ATrack>> seed;
         };
-        std::unordered_map<int, GoodTrack> good;
+        muc::flat_hash_map<int, GoodTrack> good;
         std::vector<AHitPointer> garbage;
     };
 

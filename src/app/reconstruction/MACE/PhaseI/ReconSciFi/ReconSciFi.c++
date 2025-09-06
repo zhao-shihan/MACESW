@@ -5,13 +5,12 @@
 #include "MACE/PhaseI/Data/Track.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
 
+#include "Mustard/CLI/BasicCLI.h++"
 #include "Mustard/Data/Output.h++"
 #include "Mustard/Data/Processor.h++"
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Env/CLI/BasicCLI.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -59,7 +58,7 @@ ReconSciFi::ReconSciFi() :
     Subprogram{"ReconSciFi", "Scintilating Fiber Tracker (SciFi Tracker) event reconstruction."} {}
 
 auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
-    Mustard::Env::CLI::BasicCLI<> cli;
+    Mustard::CLI::BasicCLI<> cli;
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
     cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("data"s).required().nargs(1);
     cli->add_argument("-o", "--output").help("Output file path.").required().nargs(1);
@@ -68,7 +67,7 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
     Mustard::Env::MPIEnv env{argc, argv, {}};
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     std::string fileName{argv[1]};
-    TFile file{Mustard::MPIX::ParallelizePath("output.root").generic_string().c_str(), "RECREATE"};
+    TFile file{Mustard::Parallel::ProcessSpecificPath("output.root").generic_string().c_str(), "RECREATE"};
     Mustard::Data::Output<PhaseI::Data::ReconTrack> reconTrack{"G4Run0/ReconTrack"};
 
     Mustard::Data::Processor processor;
@@ -124,7 +123,9 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
     processor.Process<PhaseI::Data::SciFiSiPMRawHit>(
         ROOT::RDataFrame{"G4Run0/SciFiSiPMHit", fileName}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
-            if (byPass) { return; }
+            if (byPass) {
+                return;
+            }
             muc::timsort(event,
                          [](auto&& hit1, auto&& hit2) {
                              return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));

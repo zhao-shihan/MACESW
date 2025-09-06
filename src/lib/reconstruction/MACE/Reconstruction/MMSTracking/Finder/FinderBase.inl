@@ -24,7 +24,7 @@ auto FinderBase<AHit, ATrack>::GoodHitData(const std::vector<AHitPointer>& hitDa
 
     auto good{true};
 
-    std::unordered_set<int> eventID;
+    muc::flat_hash_set<int> eventID;
     eventID.reserve(hitData.size());
     for (auto&& hit : hitData) {
         eventID.emplace(Get<"EvtID">(*hit));

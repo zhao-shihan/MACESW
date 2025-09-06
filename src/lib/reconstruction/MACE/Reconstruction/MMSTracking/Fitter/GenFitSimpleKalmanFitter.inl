@@ -11,9 +11,11 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
     requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
 auto GenFitSimpleKalmanFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitData, ASeedPointer seed) -> std::pair<std::shared_ptr<Mustard::Data::Tuple<ATrack>>,
-                                                                                                                                   std::vector<AHitPointer>> {
+                                                                                                                                 std::vector<AHitPointer>> {
     const auto [genfitTrack, measurementHitMap]{this->Initialize(hitData, seed)};
-    if (genfitTrack == nullptr) { return {}; }
+    if (genfitTrack == nullptr) {
+        return {};
+    }
 
     try {
         this->GenFitter().processTrack(genfitTrack.get(), true);

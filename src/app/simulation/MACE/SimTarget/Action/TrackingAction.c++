@@ -1,7 +1,7 @@
 #include "MACE/SimTarget/Action/TrackingAction.h++"
 
-#include "Mustard/Extension/Geant4X/Particle/Antimuonium.h++"
-#include "Mustard/Extension/Geant4X/Particle/Muonium.h++"
+#include "Mustard/Geant4X/Particle/Antimuonium.h++"
+#include "Mustard/Geant4X/Particle/Muonium.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4Event.hh"

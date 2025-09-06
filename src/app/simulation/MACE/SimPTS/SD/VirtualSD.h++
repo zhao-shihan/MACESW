@@ -2,14 +2,11 @@
 
 #include "MACE/SimPTS/Hit/VirtualHit.h++"
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "G4VSensitiveDetector.hh"
 
 namespace MACE::SimPTS::inline SD {
 
-class VirtualSD : public Mustard::NonMoveableBase,
-                  public G4VSensitiveDetector {
+class VirtualSD : public G4VSensitiveDetector {
 public:
     VirtualSD(const G4String& sdName);
 

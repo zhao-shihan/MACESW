@@ -279,9 +279,13 @@ auto ECAL::ComputeMesh() const -> MeshInformation {
         const auto centroid{Mustard::VectorCast<CLHEP::Hep3Vector>(pmp::centroid(pmpMesh, f))};
         if (const auto rXY{fInnerRadius * centroid.perp()};
             centroid.z() < 0) {
-            if (rXY < fUpstreamWindowRadius) { continue; }
+            if (rXY < fUpstreamWindowRadius) {
+                continue;
+            }
         } else {
-            if (rXY < fDownstreamWindowRadius) { continue; }
+            if (rXY < fDownstreamWindowRadius) {
+                continue;
+            }
         }
         if (std::ranges::any_of(pmpMesh.vertices(f),
                                 [&](const auto& v) {
@@ -361,7 +365,9 @@ auto ECAL::ComputeMesh() const -> MeshInformation {
 
         for (int i{}; i < std::ssize(vertexIndex); ++i) {
             auto top = centroidPriority.top();
-            if (top.first > 0.2) { continue; }
+            if (top.first > 0.2) {
+                continue;
+            }
             clusterMap[moduleID].emplace_back(top.second);
             centroidPriority.pop();
         }

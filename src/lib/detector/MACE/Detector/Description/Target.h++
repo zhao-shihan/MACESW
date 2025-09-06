@@ -3,7 +3,6 @@
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Detector/Description/DescriptionBase.h++"
 #include "Mustard/Env/Memory/WeakSingleton.h++"
-#include "Mustard/Math/Parity.h++"
 
 #include "muc/math"
 #include "muc/utility"

@@ -81,7 +81,9 @@ auto FindCrossCoordinates(double lAngle, double rAngle, double tAngle, double rL
 
         double trueTID1 = std::fmod(lAngle + rAngle - std::numbers::pi, 4 * std::numbers::pi) / 2;
         double trueTID2 = std::fmod(lAngle + rAngle + std::numbers::pi, 4 * std::numbers::pi) / 2;
-        if (trueTID1 < 0) { trueTID1 += 2 * std::numbers::pi; }
+        if (trueTID1 < 0) {
+            trueTID1 += 2 * std::numbers::pi;
+        }
         // std::cout << lAngle / lNumber << " " << rAngle / rNumber << " " << tAngle / tNumber << std::endl;
         double trueTID{
             [&] {
@@ -165,7 +167,7 @@ auto FindCrossCoordinates(double lAngle, double rAngle, double tAngle, double rL
         coordinates.push_back(muc::array3d{x2, y2, z2});
         return coordinates;
     } else {
-        throw std::runtime_error{Mustard::PrettyException(fmt::format("Too much ID are negitive!"))};
+        Mustard::Throw<std::runtime_error>(fmt::format("Too much ID are negitive!"));
         return coordinates;
     }
 }
@@ -510,7 +512,8 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
 
     std::vector<ClusterInfo> lClusters, rClusters, tClusters;
     for (auto&& cluster : data) {
-        if (cluster.empty()) continue;
+        if (cluster.empty())
+            continue;
 
         int firstSiPMID{Get<"SiPMID">(*cluster.front())};
         auto layerType{fiberMap.at(firstSiPMID).layerType};
@@ -579,7 +582,9 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
         auto rCandidates{findCandidates(rClusters, t.avgTime)};
         for (auto l : lCandidates) {
             for (auto r : rCandidates) {
-                if (l->used or r->used or t.used) { continue; }
+                if (l->used or r->used or t.used) {
+                    continue;
+                }
                 if (std::abs(l->avgTime - t.avgTime) < deltaTime and
                     std::abs(r->avgTime - t.avgTime) < deltaTime and
                     AreAdjacent(Get<"SiPMID">(*l->cluster.front()), Get<"SiPMID">(*r->cluster.front()), Get<"SiPMID">(*t.cluster.front()))) {
@@ -608,7 +613,9 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
         for (auto& cluster1 : a) {
             auto candidates{findCandidates(b, cluster1.avgTime)};
             for (auto cluster2 : candidates) {
-                if (cluster1.used and cluster2->used) { continue; }
+                if (cluster1.used and cluster2->used) {
+                    continue;
+                }
 
                 if (std::abs(cluster1.avgTime - cluster2->avgTime) < deltaTime and
                     AreAdjacent(Get<"SiPMID">(*cluster1.cluster.front()), Get<"SiPMID">(*cluster2->cluster.front()))) {
@@ -695,10 +702,11 @@ auto DirectionFit(std::vector<muc::array3d>& points)
         }
     }
     // std::cout << number << std::endl;
-    if (number < 2) return std::tuple(
-        muc::array3d{nan, nan, nan},
-        muc::array3d{nan, nan, nan},
-        nan);
+    if (number < 2)
+        return std::tuple(
+            muc::array3d{nan, nan, nan},
+            muc::array3d{nan, nan, nan},
+            nan);
 
     if (number == 2) {
         Eigen::Vector3d direction{0, 0, 0};

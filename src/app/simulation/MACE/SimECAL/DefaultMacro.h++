@@ -50,8 +50,6 @@ constexpr auto defaultMacro = {
     "",
     "# Colors",
     "/vis/geometry/set/colour ECALCrystal                   0     1     1     1     0.1",
-
-
     "/vis/geometry/set/colour ECALPMCathode                0     1     1     1     0.3",
     "/vis/geometry/set/colour ECALPMTCoupler                0     1     1     1     0.1",
     "/vis/geometry/set/colour ECALPMTShell                  0     1     1     1     0.1",
@@ -105,9 +103,9 @@ constexpr auto defaultMacro = {
     "/vis/viewer/set/autoRefresh true",
     "/vis/geometry/set/visibility World 0 false",
 
-    // "#############################################################################",
-    // "# General Particle Source settings",
-    // "#############################################################################",
+// "#############################################################################",
+// "# General Particle Source settings",
+// "#############################################################################",
 
 // "/gps/particle gamma",
 // "/gps/ene/mono 0.511 MeV",

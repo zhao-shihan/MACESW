@@ -31,7 +31,7 @@ auto Collimator::Construct(G4bool checkOverlaps) -> void {
     const auto x0{-(collimator.Count() - 1) * collimator.Pitch() / 2};
     for (int k{}; k < collimator.Count(); ++k) {
         const auto x{x0 + k * collimator.Pitch()};
-        const auto halfWidth{std::sqrt(muc::pow<2>(collimator.Radius()) - muc::pow<2>(x))};
+        const auto halfWidth{std::sqrt(muc::pow(collimator.Radius(), 2) - muc::pow(x, 2))};
 
         const auto solid{Make<G4Box>(
             collimator.Name(),

@@ -23,7 +23,7 @@ auto CDCBody::Construct(G4bool checkOverlaps) -> void {
     const auto& cdc{Description::CDC::Instance()};
     const auto name{cdc.Name() + "Body"};
 
-    const auto endCapZExtension{cdc.EndCapThickness() * std::sqrt(1 + 1 / muc::pow<2>(cdc.EndCapSlope()))};
+    const auto endCapZExtension{cdc.EndCapThickness() * std::sqrt(1 + 1 / muc::pow(cdc.EndCapSlope(), 2))};
 
     const auto nist{G4NistManager::Instance()};
     { // End cap

@@ -9,6 +9,8 @@ namespace MACE::SimTTC::inline Action {
 class ActionInitialization final : public Mustard::Env::Memory::PassiveSingleton<ActionInitialization>,
                                    public G4VUserActionInitialization {
 public:
+    ActionInitialization();
+
     auto Build() const -> void override;
 };
 

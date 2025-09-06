@@ -3,6 +3,7 @@
 #include "MACE/Simulation/Analysis/MMSTruthTracker.h++"
 
 #include "muc/algorithm"
+#include "muc/hash_set"
 
 #include <cassert>
 #include <utility>
@@ -19,9 +20,11 @@ MMSTruthTracker::MMSTruthTracker() :
 }
 
 auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitHC,
-                                 const std::vector<gsl::owner<TTCHit*>>& ttcHitHC) -> std::vector<std::shared_ptr<Mustard::Data::Tuple<Data::MMSSimTrack>>> {
+                                 const std::vector<gsl::owner<TTCHit*>>& ttcHitHC) -> muc::shared_ptrvec<Mustard::Data::Tuple<Data::MMSSimTrack>> {
     if (ssize(cdcHitHC) < fTrackFinder.MinNHit() or
-        ssize(ttcHitHC) < fMinNTTCHitForQualifiedTrack) { return {}; }
+        ssize(ttcHitHC) < fMinNTTCHitForQualifiedTrack) {
+        return {};
+    }
 
     constexpr auto ByTrackID{
         [](const auto& hit1, const auto& hit2) {
@@ -33,14 +36,14 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
 
     // find CDC hits coincidence with TTC hits
 
-    std::vector<std::shared_ptr<Mustard::Data::Tuple<Data::MMSSimTrack>>> mmsTrackData;
+    muc::shared_ptrvec<Mustard::Data::Tuple<Data::MMSSimTrack>> mmsTrackData;
     mmsTrackData.reserve(cdcHitHC.size() / fTrackFinder.MinNHit());
 
     std::ranges::subrange trackTTCHit{ttcHitHC.cbegin(), ttcHitHC.cbegin()};
     const auto trackCDCHitFirst{std::ranges::lower_bound(cdcHitHC, ttcHitHC.front(), ByTrackID)};
     std::ranges::subrange trackCDCHit{trackCDCHitFirst, trackCDCHitFirst};
 
-    std::unordered_set<short> tileHit;
+    muc::flat_hash_set<short> tileHit;
     tileHit.reserve(2 * fMinNTTCHitForQualifiedTrack);
 
     while (trackTTCHit.end() != ttcHitHC.cend() and
@@ -50,7 +53,7 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
 
         if (std::ranges::ssize(trackTTCHit) < fMinNTTCHitForQualifiedTrack or
             std::ranges::ssize(trackCDCHit) < fTrackFinder.MinNHit() or
-            GetAs<"x0", G4ThreeVector>(**trackCDCHit.begin()).perp2() > muc::pow<2>(fTrackFinder.MaxVertexRxy())) {
+            GetAs<"x0", G4ThreeVector>(**trackCDCHit.begin()).perp2() > muc::pow(fTrackFinder.MaxVertexRxy(), 2)) {
             continue;
         }
 

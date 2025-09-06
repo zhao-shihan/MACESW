@@ -1,7 +1,7 @@
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
 
-#include "Mustard/Extension/Geant4X/Geometry/HelicalBox.h++"
+#include "Mustard/Geant4X/Geometry/HelicalBox.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"

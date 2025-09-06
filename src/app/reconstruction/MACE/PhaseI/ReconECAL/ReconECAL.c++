@@ -3,14 +3,13 @@
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
 #include "MACE/PhaseI/ReconECAL/ReconECAL.h++"
 
+#include "Mustard/CLI/BasicCLI.h++"
 #include "Mustard/Data/Output.h++"
 #include "Mustard/Data/Processor.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Detector/Description/DescriptionIO.h++"
-#include "Mustard/Env/CLI/BasicCLI.h++"
 #include "Mustard/Env/MPIEnv.h++"
-#include "Mustard/Extension/MPIX/DataType.h++"
-#include "Mustard/Extension/MPIX/ParallelizePath.h++"
+#include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -47,7 +46,7 @@ using namespace Mustard::PhysicalConstant;
 using namespace std::literals;
 
 auto ReconECAL::Main(int argc, char* argv[]) const -> int {
-    Mustard::Env::CLI::BasicCLI<> cli;
+    Mustard::CLI::BasicCLI<> cli;
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
     cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("data"s).required().nargs(1);
     cli->add_argument("-o", "--output").help("Output file path.").required().nargs(1);
@@ -73,7 +72,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
         i++;
     }
 
-    TFile outputFile{Mustard::MPIX::ParallelizePath(cli->get("--output").c_str()).generic_string().c_str(), cli->get("--output-mode").c_str()};
+    TFile outputFile{Mustard::Parallel::ProcessSpecificPath(cli->get("--output").c_str()).generic_string().c_str(), cli->get("--output-mode").c_str()};
     using ECALEnergy = Mustard::Data::TupleModel<Mustard::Data::Value<float, "Edep", "Energy deposition">,
                                                  Mustard::Data::Value<float, "Edep1", "Energy deposition 1">,
                                                  Mustard::Data::Value<float, "Edep2", "Energy deposition 2">,
@@ -86,7 +85,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
     processor.Process<Data::ECALSimHit>(
         ROOT::RDataFrame{cli->get("--input-tree"), cli->get<std::vector<std::string>>("input")}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
-            if (byPass) { return; }
+            if (byPass) {
+                return;
+            }
             muc::timsort(event,
                          [](auto&& hit1, auto&& hit2) {
                              return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
@@ -96,11 +97,15 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
 
             for (auto&& hit : event) {
                 hitDict.try_emplace(Get<"ModID">(*hit), hit);
-                if (Get<"Edep">(*hit) < 15_MeV) { continue; }
+                if (Get<"Edep">(*hit) < 15_MeV) {
+                    continue;
+                }
                 potentialSeedModule.emplace_back(Get<"ModID">(*hit));
             }
 
-            if (std::ssize(potentialSeedModule) < 2) { return; }
+            if (std::ssize(potentialSeedModule) < 2) {
+                return;
+            }
 
             std::unordered_set<short> firstCluster;
             std::unordered_set<short> secondCluster;
@@ -112,7 +117,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
             auto secondSeedModule = std::ranges::find_if(
                 potentialSeedModule,
                 [&](short m) { return centroidMap.at(*firstSeedModule).angle(centroidMap.at(m)) > 0.5 * pi; });
-            if (secondSeedModule == potentialSeedModule.end()) { return; }
+            if (secondSeedModule == potentialSeedModule.end()) {
+                return;
+            }
 
             const auto Clustering = [&](std::unordered_set<short>& set,
                                         CLHEP::Hep3Vector& c,
@@ -133,7 +140,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
 
                 for (const auto& module : set) {
                     auto hitIt = hitDict.find(module);
-                    if (hitIt == hitDict.end() or Get<"Edep">(*hitIt->second) < 50_keV) { continue; }
+                    if (hitIt == hitDict.end() or Get<"Edep">(*hitIt->second) < 50_keV) {
+                        continue;
+                    }
                     float energy = Get<"Edep">(*hitIt->second);
                     weightedCentroid += energy * centroidMap.at(module);
                     totalEnergy += energy;
@@ -146,7 +155,9 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
             auto firstClusterEnergy = Clustering(firstCluster, firstCenter, firstSeedModule);
             auto secondClusterEnergy = Clustering(secondCluster, secondCenter, secondSeedModule);
 
-            if (firstClusterEnergy + secondClusterEnergy > muonium_mass_c2) { return; }
+            if (firstClusterEnergy + secondClusterEnergy > muonium_mass_c2) {
+                return;
+            }
 
             Mustard::Data::Tuple<ECALEnergy> energyTuple;
             Get<"Edep">(energyTuple) = firstClusterEnergy + secondClusterEnergy;

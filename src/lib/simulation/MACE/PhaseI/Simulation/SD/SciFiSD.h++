@@ -2,19 +2,14 @@
 
 #include "MACE/PhaseI/Simulation/Hit/SciFiHit.h++"
 
-#include "Mustard/Utility/NonMoveableBase.h++"
-
 #include "G4VSensitiveDetector.hh"
 
-#include <memory>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include "muc/hash_map"
+#include "muc/ptrvec"
 
 namespace MACE::PhaseI::inline Simulation::inline SD {
 
-class SciFiSD : public Mustard::NonMoveableBase,
-                public G4VSensitiveDetector {
+class SciFiSD : public G4VSensitiveDetector {
 public:
     SciFiSD(const G4String& sdName);
 
@@ -23,7 +18,7 @@ public:
     virtual auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
 protected:
-    std::unordered_map<int, std::vector<std::unique_ptr<SciFiHit>>> fSplitHit;
+    muc::flat_hash_map<int, muc::unique_ptrvec<SciFiHit>> fSplitHit;
     SciFiHitCollection* fHitsCollection;
 };
 
