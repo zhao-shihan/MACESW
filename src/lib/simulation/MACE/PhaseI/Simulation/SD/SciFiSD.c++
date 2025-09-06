@@ -62,12 +62,8 @@ auto SciFiSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& particle{*track.GetDefinition()};
 
     if (&particle == G4OpticalPhoton::Definition()) { return false; }
-    if (particle.GetPDGCharge() == 0) { return false; }
-    // std::cout << track.GetParentID() << std::endl;
 
     const auto eDep{step.GetTotalEnergyDeposit()};
-    const auto fEnergyDepositionThreshold = 1.24_keV;
-    if (eDep < fEnergyDepositionThreshold) { return false; }
     const auto preStepPoint{*step.GetPreStepPoint()};
 
     const auto x{preStepPoint.GetPosition()};
@@ -102,12 +98,12 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                 [](auto&& count, auto&& cellHit) {
                                     return count + cellHit.second.size();
                                 }));
-    constexpr auto ByTrackID{
+    constexpr auto ByEventID{
         [](const auto& hit1, const auto& hit2) {
             return Get<"EvtID">(*hit1) < Get<"EvtID">(*hit2);
         }};
     for (int hitID{};
-         auto&& [trackID, splitHit] : fSplitHit) {
+         auto&& [FiberID, splitHit] : fSplitHit) {
         switch (splitHit.size()) {
         case 0:
             muc::unreachable();
@@ -137,7 +133,7 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                                                        return Get<"t">(*hit) <= windowClosingTime;
                                                                    })};
                 // find top hit
-                auto& topHit{*std::ranges::min_element(cluster, ByTrackID)};
+                auto& topHit{*std::ranges::min_element(cluster, ByEventID)};
 
                 // construct real hit
                 Get<"HitID">(*topHit) = hitID++;
