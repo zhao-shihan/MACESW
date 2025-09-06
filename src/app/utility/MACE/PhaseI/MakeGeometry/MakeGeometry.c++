@@ -35,7 +35,7 @@ MakeGeometry::MakeGeometry() :
 auto MakeGeometry::Main(int argc, char* argv[]) const -> int {
 
     Mustard::Env::CLI::BasicCLI<> cli;
-    cli->add_argument("-o", "--output").help("Set output directory path.").default_value("mace_geometry"s).required().nargs(1);
+    cli->add_argument("-o", "--output").help("Set output directory path.").default_value("macephasei_geometry"s).required().nargs(1);
     cli->add_argument("-c", "--opaque").help("Set geometry opacity.").default_value(false).required().nargs(1);
     Mustard::Env::BasicEnv env(argc, argv, cli);
 

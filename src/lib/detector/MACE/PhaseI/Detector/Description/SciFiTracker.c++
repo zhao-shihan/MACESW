@@ -16,25 +16,30 @@ using namespace Mustard::LiteralUnit;
 SciFiTracker::SciFiTracker() : // clang-format off
     DescriptionWithCacheBase{"SciFiTracker"}, // clang-format on
     // Geometry
+    fBracketInnerRadius{43_mm},
+    fBracketOuterRadius{75_mm},
     fSiliconeOilThickness{0.01_mm},
     fFiberCoreWidth{0.96 * 1_mm},
     fFiberCladdingWidth{1_mm},
     fFiberLength{325.4_mm},
     fLightGuideCurvature{80_mm},
-    fSiPMLength{fFiberCladdingWidth},
-    fSiPMWidth{fFiberCladdingWidth},
+    fSiPMLength{1.3_mm},
+    fSiPMWidth{1.3_mm},
     fSiPMThickness{0.055_mm},
-    fTLightGuideLength{25_mm},
+    fTLightGuideLength{10_mm},
     fEpoxyThickness{0.105_mm},
-    fNLayer{this, 6},
-    fTypeOfLayer{this, {"LHelical", "LHelical", "RHelical", "RHelical", "Transverse", "Transverse" /*, "LHelical", "LHelical", "RHelical", "RHelical"*/}},
-    fRLayer{this, {55_mm, 56.2_mm, 50_mm, 51.2_mm, 45_mm, 46.2_mm /*, 80_mm, 81.2_mm, 90_mm, 91.2_mm*/}},
-    fIsSecond{this, {0, 1, 0, 1, 0, 1 /*, 0, 1, 0, 1*/}},
-    fFirstIDOfLayer{this, {0, 120, 240, 360, 480, 600 /*, 720, 840, 960, 1080*/}},
-    fLastIDOfLayer{this, {119, 239, 359, 479, 599, 719 /*, 839, 959, 1079, 1199*/}},
-    fCombinationOfLayer{this, {{0, 1, 2, 3, 4, 5}}},
+    fNLayer{this, 16},
+    fTypeOfLayer{this, {"Transverse", "Transverse", "LHelical", "LHelical", "Transverse", "Transverse", "RHelical", "RHelical", "Transverse", "Transverse", "LHelical", "LHelical", "Transverse", "Transverse", "RHelical", "RHelical" /**/}},
+    fRLayer{this, {45_mm, 46.8_mm, 48.6_mm, 50.4_mm, 52.2_mm, 54_mm, 55.8_mm, 57.6_mm, 59.4_mm, 61.2_mm, 63_mm, 64.8_mm, 66.6_mm, 68.4_mm, 70.2_mm, 72_mm /**/}},
+    // fRLayer{this, {45_mm, 46.8_mm, 50_mm, 51.8_mm, 55_mm, 56.8_mm, 60_mm, 61.8_mm, 65_mm, 66.8_mm, 70_mm, 76.8_mm, 80_mm, 86.8_mm, 90_mm, 91.8_mm /**/}},
+    fIsSecond{this, {0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 /**/}},
+    fNFiber{this, {140, 140, 120, 120, 160, 160, 120, 120, 180, 180, 140, 140, 180, 180, 140, 140 /**/}},
+    fFirstIDOfLayer{this, [this] { return CalculateFirstIDOfLayer(); }},
+    fLastIDOfLayer{this, [this] { return CalculateLastIDOfLayer(); }},
+    fCombinationOfLayer{this, {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} /**/}},
     fPitchOfLayer{this, [this] { return CalculateLayerPitch(); }},
     fLayerConfiguration{this, [this] { return CalculateLayerConfiguration(); }},
+    fFiberMap{this, [this] { return CalculateFiberInformation(); }},
     // Optical properties
     fScintillationYield{8000},
     fScintillationTimeConstant1{3_ns},
@@ -73,7 +78,7 @@ SciFiTracker::SciFiTracker() : // clang-format off
                                 504.8657918, 504.3393085, 503.8915727, 503.1108475, 502.7013606,
                                 501.8823866, 500.9171673, 499.8642007, 498.8112342, 497.7056194,
                                 496.7053012, 495.6523346, 494.5116209, 493.5464016, 492.493435,
-                                491.4404685, 490.387502, 489.3345354, 488.321454},
+                                491.4404685, 490.387502, 489.3345354, 488.321454}, // 3HF
     fScintillationComponent1{4.59E-02, 4.71E-02, 4.81E-02, 4.95E-02, 5.06E-02,
                              5.31E-02, 5.35E-02, 5.47E-02, 5.25E-02, 5.78E-02,
                              5.72E-02, 5.88E-02, 5.97E-02, 6.02E-02, 6.53E-02,
@@ -108,7 +113,7 @@ SciFiTracker::SciFiTracker() : // clang-format off
                              0.129167154, 0.117686518, 0.112024666, 0.094165215, 0.088844921,
                              0.076524238, 0.066023657, 0.05832323, 0.052162889, 0.047626638,
                              0.043762424, 0.040402238, 0.037210061, 0.034801927, 0.033915212,
-                             0.02906161, 0.0252814, 0.021921214, 0.013444381},
+                             0.02906161, 0.0252814, 0.021921214, 0.013444381}, // 3HF
     fSiPMEnergyBin{1.391655126_eV, 1.413303953_eV, 1.436778788_eV, 1.461046623_eV, 1.486148332_eV, 1.512127645_eV, 1.533451437_eV,
                    1.553243676_eV, 1.579239384_eV, 1.601331725_eV, 1.618380329_eV, 1.644070091_eV, 1.668575932_eV, 1.695332333_eV,
                    1.722960822_eV, 1.750124077_eV, 1.769418592_eV, 1.796139112_eV, 1.823679036_eV, 1.850275906_eV, 1.880443107_eV,
@@ -120,7 +125,7 @@ SciFiTracker::SciFiTracker() : // clang-format off
                    3.307290247_eV, 3.327878491_eV, 3.363166032_eV, 3.399209944_eV, 3.435444057_eV, 3.46043183_eV, 3.48852431_eV,
                    3.516457699_eV, 3.550580722_eV, 3.563879348_eV, 3.57404697_eV, 3.587160946_eV, 3.60984247_eV, 3.628195256_eV,
                    3.637441808_eV, 3.651400344_eV, 3.670179231_eV, 3.684390646_eV, 3.696659746_eV, 3.720794081_eV, 3.721383683_eV,
-                   3.742354188_eV, 3.755013028_eV, 3.787037996_eV, 3.809782448_eV, 3.840536792_eV},
+                   3.742354188_eV, 3.755013028_eV, 3.787037996_eV, 3.809782448_eV, 3.840536792_eV}, // S13360
     fSiPMQuantumEfficiency{0.038361565, 0.043881036, 0.050158203, 0.056879188, 0.063896051, 0.071245776, 0.077096023, 0.082806497, 0.09049302,
                            0.096846043, 0.102167517, 0.110439587, 0.118523116, 0.127329437, 0.136497387, 0.144697087, 0.152101728, 0.160383488,
                            0.169784037, 0.17901796, 0.189932435, 0.197788503, 0.2061559, 0.215114701, 0.226013151, 0.23524354, 0.244663368,
@@ -130,12 +135,15 @@ SciFiTracker::SciFiTracker() : // clang-format off
                            0.314742636, 0.300694748, 0.29059875, 0.283296713, 0.270049269, 0.257841507, 0.247144881, 0.237727757, 0.22854291,
                            0.217013978, 0.206721701, 0.200096265, 0.191250653, 0.181575856, 0.168947005, 0.159534377, 0.149674853, 0.139503115,
                            0.129670093, 0.120230653, 0.108280609, 0.091831406, 0.098424138, 0.083937488, 0.073056832, 0.060399447, 0.047887957,
-                           0.034501313},
-    fThreshold{5},
-    fClusterLength{4},
-    fThresholdTime{5},
-    fTimeWindow{5},
-    fDeadtime{10} {}
+                           0.034501313}, // S13360
+    fThreshold{2},
+    fClusterLength{3},
+    fThresholdTime{10},
+    fTimeWindow{10},
+    fDeadTime{10},
+    fCentroidThetaThreshold{0.02 * std::numbers::pi},
+    fCentroidZThreshold{25_mm},
+    fOnePhotonDarkCountRate{1000000} {}
 auto SciFiTracker::CalculateLayerPitch() const -> std::vector<double> {
     std::vector<double> Pitch;
     for (int i{}; i < fNLayer; i++) {
@@ -165,6 +173,44 @@ auto SciFiTracker::CalculateLayerConfiguration() const -> std::vector<LayerConfi
     return layerConfig;
 }
 
+auto SciFiTracker::CalculateFiberInformation() const -> std::vector<FiberInformation> {
+    std::vector<FiberInformation> fiberMap;
+    for (int i{}; i < fNLayer; i++) {
+        for (int j{}; j < fNFiber->at(i); j++) {
+            FiberInformation fiber{};
+            fiber.layerID = i;
+            fiber.localID = j;
+            fiber.layerType = fTypeOfLayer->at(i);
+            fiber.radius = fRLayer->at(i);
+            fiber.pitch = fPitchOfLayer->at(i);
+            fiber.rotationAngle = (j + fIsSecond->at(i) * 0.5) / fNFiber->at(i) * 2_pi;
+            fiberMap.push_back(fiber);
+        }
+    }
+    return fiberMap;
+}
+
+auto SciFiTracker::CalculateFirstIDOfLayer() const -> std::vector<int> {
+    std::vector<int> firstID;
+    int id{0};
+    firstID.push_back(0);
+    for (int i{}; i < (fNLayer - 1); i++) {
+        id += fNFiber->at(i);
+        firstID.push_back(id);
+    }
+    return firstID;
+}
+
+auto SciFiTracker::CalculateLastIDOfLayer() const -> std::vector<int> {
+    std::vector<int> lastID;
+    int id{-1};
+    for (int i{}; i < fNLayer; i++) {
+        id += fNFiber->at(i);
+        lastID.push_back(id);
+    }
+    return lastID;
+}
+
 auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     // Geometry
     ImportValue(node, fEpoxyThickness, "EpoxyThickness");
@@ -180,8 +226,7 @@ auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fTypeOfLayer, "TypeOfLayer");
     ImportValue(node, fRLayer, "RadiusOfLayer");
     ImportValue(node, fIsSecond, "IfThisLayerNumberIsEven");
-    ImportValue(node, fFirstIDOfLayer, "FirstIDOfFiberInALayer");
-    ImportValue(node, fLastIDOfLayer, "LastIDOfFiberInALayer");
+    ImportValue(node, fNFiber, "NFiberOfFiberInALayer");
     ImportValue(node, fCombinationOfLayer, "TheseLayersWillReconstructOneHitPoint");
     // Optical properties
     ImportValue(node, fScintillationWavelengthBin, "ScintillationWavelengthBin");
@@ -194,7 +239,7 @@ auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fClusterLength, "LengthOfCluster");
     ImportValue(node, fThresholdTime, "OptPhoThresholdTimeOfSiPM");
     ImportValue(node, fTimeWindow, "TimeWindowOfSiPM");
-    ImportValue(node, fDeadtime, "DeadTimeOfSiPM");
+    ImportValue(node, fDeadTime, "DeadTimeOfSiPM");
 }
 
 auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
@@ -212,8 +257,7 @@ auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fTypeOfLayer, "TypeOfLayer");
     ExportValue(node, fRLayer, "RadiusOfLayer");
     ExportValue(node, fIsSecond, "IfThisLayerNumberIsEven");
-    ExportValue(node, fFirstIDOfLayer, "FirstIDOfFiberInALayer");
-    ExportValue(node, fLastIDOfLayer, "LastIDOfFiberInALayer");
+    ExportValue(node, fNFiber, "NFiberOfFiberInALayer");
     ExportValue(node, fCombinationOfLayer, "TheseLayersWillReconstructOneHitPoint");
     // Optical properties
     ExportValue(node, fScintillationWavelengthBin, "ScintillationWavelengthBin");
@@ -226,7 +270,7 @@ auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fClusterLength, "LengthOfCluster");
     ExportValue(node, fThresholdTime, "OptPhoThresholdTimeOfSiPM");
     ExportValue(node, fTimeWindow, "TimeWindowOfSiPM");
-    ExportValue(node, fDeadtime, "DeadTimeOfSiPM");
+    ExportValue(node, fDeadTime, "DeadTimeOfSiPM");
 }
 
 } // namespace MACE::PhaseI::Detector::Description
