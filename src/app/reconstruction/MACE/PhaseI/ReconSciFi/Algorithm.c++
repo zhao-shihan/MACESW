@@ -232,7 +232,8 @@ auto FindHLMinDistanceSqaure(
         double theta{xx[1]};
         muc::array3d sp_point{Helix(theta, HelixR, HelixB, rotationAngle)};
         muc::array3d line_point{LinePoint(t, line_p0, line_dir)};
-        double dis{muc::hypot2(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2])};
+        double dis{muc::hypot(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2]) *
+                   muc::hypot(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2])};
         return dis;
     }};
 
