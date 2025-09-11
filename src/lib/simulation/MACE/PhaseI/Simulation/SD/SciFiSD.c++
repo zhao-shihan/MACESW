@@ -99,9 +99,9 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                 [](auto&& count, auto&& cellHit) {
                                     return count + cellHit.second.size();
                                 }));
-    constexpr auto ByEventID{
+    constexpr auto ByTrkID{
         [](const auto& hit1, const auto& hit2) {
-            return Get<"EvtID">(*hit1) < Get<"EvtID">(*hit2);
+            return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
         }};
     for (int hitID{};
          auto&& [FiberID, splitHit] : fSplitHit) {
@@ -134,7 +134,7 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                                                        return Get<"t">(*hit) <= windowClosingTime;
                                                                    })};
                 // find top hit
-                auto& topHit{*std::ranges::min_element(cluster, ByEventID)};
+                auto& topHit{*std::ranges::min_element(cluster, ByTrkID)};
 
                 // construct real hit
                 Get<"HitID">(*topHit) = hitID++;
