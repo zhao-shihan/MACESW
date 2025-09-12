@@ -33,22 +33,22 @@ auto FindLLMinDistanceSqaure(
     const muc::array3d line2_dir  // 直线2方向向量
     ) -> double;
 
-auto HitNumber(std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>& data, double deltaTime)
-    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>;
+auto HitNumber(std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>& data, double deltaTime)
+    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>;
 
-auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>& data, double deltaTime)
-    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>;
+auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>& data, double deltaTime)
+    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>;
 
-auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> data, const muc::array3d dir)
-    -> std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>>>;
+auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> data, const muc::array3d dir)
+    -> std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>>>;
 
 auto DirectionFit(std::vector<muc::array3d>& points)
     -> std::tuple<muc::array3d, muc::array3d, double>;
 
-auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>& cluster,
+auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>& cluster,
               muc::array3d initialS,
               muc::array3d initialP,
               double initialChi2)
-    -> std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>>;
+    -> std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>>;
 
 } // namespace MACE::PhaseI::ReconSciFi

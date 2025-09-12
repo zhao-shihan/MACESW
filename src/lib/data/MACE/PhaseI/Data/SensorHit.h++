@@ -16,12 +16,7 @@ using HitEventIDHitID = Mustard::Data::TupleModel<
 } // namespace internal
 
 using SciFiSiPMHit = Mustard::Data::TupleModel<
+    internal::HitEventIDHitID,
     SciFiSiPMRawHit>;
-
-using SiPMHit = Mustard::Data::TupleModel<
-    Mustard::Data::Value<int, "EvtID", "Event ID">,
-    Mustard::Data::Value<int, "nOptPho", "Number of photon hit">,
-    Mustard::Data::Value<int, "SiPMID", "SiPM ID">,
-    Mustard::Data::Value<double, "t", "Time over threshold">>;
 
 } // namespace MACE::PhaseI::Data

@@ -7,7 +7,7 @@
 
 namespace MACE::PhaseI::Data {
 
-using ReconTrack = Mustard::Data::TupleModel<
+using Track = Mustard::Data::TupleModel<
     Mustard::Data::Value<int, "EvtID", "Event ID">,
     Mustard::Data::Value<muc::array3f, "x", "Hit position">,
     Mustard::Data::Value<muc::array3f, "p", "Momentum vector">,

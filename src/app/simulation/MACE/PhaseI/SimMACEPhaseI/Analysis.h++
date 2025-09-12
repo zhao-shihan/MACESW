@@ -26,8 +26,8 @@ class TFile;
 
 namespace MACE::PhaseI::inline Simulation::inline Hit {
 class MRPCHit;
-class SciFiHit;
-class SciFiSiPMRawHit;
+class SciFiSimHit;
+class SciFiSiPMHit;
 } // namespace MACE::PhaseI::inline Simulation::inline Hit
 
 namespace MACE::inline Simulation::inline Hit {
@@ -49,8 +49,8 @@ public:
     auto SubmitMRPCHC(const std::vector<gsl::owner<MRPCHit*>>& hc) -> void { fMRPCHit = &hc; }
     auto SubmitECALHC(const std::vector<gsl::owner<ECALHit*>>& hc) -> void { fECALHit = &hc; }
     auto SubmitECALPMHC(const std::vector<gsl::owner<ECALPMHit*>>& hc) -> void { fECALPMHit = &hc; }
-    auto SubmitSciFiHC(const std::vector<gsl::owner<SciFiHit*>>& hc) -> void { fSciFiHit = &hc; }
-    auto SubmitSciFiSiPMHC(const std::vector<gsl::owner<SciFiSiPMRawHit*>>& hc) -> void { fSciFiSiPMHit = &hc; }
+    auto SubmitSciFiHC(const std::vector<gsl::owner<SciFiSimHit*>>& hc) -> void { fSciFiSimHit = &hc; }
+    auto SubmitSciFiSiPMHC(const std::vector<gsl::owner<SciFiSiPMHit*>>& hc) -> void { fSciFiSiPMHit = &hc; }
 
     auto RunBeginUserAction(int runID) -> void override;
     auto EventEndUserAction() -> void override;
@@ -65,16 +65,16 @@ private:
     std::optional<Mustard::Data::Output<MACE::PhaseI::Data::MRPCSimHit>> fMRPCSimHitOutput;
     std::optional<Mustard::Data::Output<MACE::Data::ECALSimHit>> fECALSimHitOutput;
     std::optional<Mustard::Data::Output<MACE::Data::ECALPMHit>> fECALPMHitOutput;
-    std::optional<Mustard::Data::Output<MACE::PhaseI::Data::SciFiSimHit>> fSciFiHitOutput;
-    std::optional<Mustard::Data::Output<MACE::PhaseI::Data::SciFiSiPMRawHit>> fSciFiSiPMHitOutput;
+    std::optional<Mustard::Data::Output<MACE::PhaseI::Data::SciFiSimHit>> fSciFiSimHitOutput;
+    std::optional<Mustard::Data::Output<MACE::PhaseI::Data::SciFiSiPMHit>> fSciFiSiPMHitOutput;
 
     const muc::unique_ptrvec<Mustard::Data::Tuple<MACE::Data::SimPrimaryVertex>>* fPrimaryVertex;
     const muc::unique_ptrvec<Mustard::Data::Tuple<MACE::Data::SimDecayVertex>>* fDecayVertex;
     const std::vector<gsl::owner<MRPCHit*>>* fMRPCHit;
     const std::vector<gsl::owner<ECALHit*>>* fECALHit;
     const std::vector<gsl::owner<ECALPMHit*>>* fECALPMHit;
-    const std::vector<gsl::owner<SciFiHit*>>* fSciFiHit;
-    const std::vector<gsl::owner<SciFiSiPMRawHit*>>* fSciFiSiPMHit;
+    const std::vector<gsl::owner<SciFiSimHit*>>* fSciFiSimHit;
+    const std::vector<gsl::owner<SciFiSiPMHit*>>* fSciFiSiPMHit;
 
     AnalysisMessenger::Register<Analysis> fMessengerRegister;
 };

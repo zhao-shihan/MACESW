@@ -23,6 +23,7 @@ using SimHitVertexTruth = Mustard::Data::TupleModel<
 
 using SciFiSimHit = Mustard::Data::TupleModel<
     SciFiHit,
+    Mustard::Data::Value<int, "nOptPho", "Number of optical photon hits on SiPM (MC truth)">,
     Mustard::Data::Value<muc::array3f, "x", "Hit position (MC truth)">,
     Mustard::Data::Value<muc::array3f, "p", "Hit momentum (MC truth)">,
     Mustard::Data::Value<double, "Ek", "Kinetic energy in hit position">,

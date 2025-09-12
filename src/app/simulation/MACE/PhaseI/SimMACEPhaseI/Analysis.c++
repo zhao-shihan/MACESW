@@ -2,8 +2,8 @@
 #include "MACE/PhaseI/SimMACEPhaseI/Action/TrackingAction.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Analysis.h++"
 #include "MACE/PhaseI/Simulation/Hit/MRPCHit.h++"
-#include "MACE/PhaseI/Simulation/Hit/SciFiHit.h++"
-#include "MACE/PhaseI/Simulation/Hit/SciFiSiPMRawHit.h++"
+#include "MACE/PhaseI/Simulation/Hit/SciFiSiPMHit.h++"
+#include "MACE/PhaseI/Simulation/Hit/SciFiSimHit.h++"
 #include "MACE/Simulation/Hit/ECALHit.h++"
 #include "MACE/Simulation/Hit/ECALPMHit.h++"
 
@@ -34,7 +34,7 @@ Analysis::Analysis() :
     fMRPCHit{},
     fECALHit{},
     fECALPMHit{},
-    fSciFiHit{},
+    fSciFiSimHit{},
     fSciFiSiPMHit{},
     fMessengerRegister{this} {}
 
@@ -48,7 +48,7 @@ auto Analysis::RunBeginUserAction(int runID) -> void {
     fMRPCSimHitOutput.emplace(fmt::format("G4Run{}/MRPCSimHit", runID));
     fECALSimHitOutput.emplace(fmt::format("G4Run{}/ECALSimHit", runID));
     fECALPMHitOutput.emplace(fmt::format("G4Run{}/ECALPMHit", runID));
-    fSciFiHitOutput.emplace(fmt::format("G4Run{}/SciFiHit", runID));
+    fSciFiSimHitOutput.emplace(fmt::format("G4Run{}/SciFiSimHit", runID));
     fSciFiSiPMHitOutput.emplace(fmt::format("G4Run{}/SciFiSiPMHit", runID));
 }
 
@@ -71,8 +71,8 @@ auto Analysis::EventEndUserAction() -> void {
         if (fECALPMHit) {
             fECALPMHitOutput->Fill(*fECALPMHit);
         }
-        if (fSciFiHit) {
-            fSciFiHitOutput->Fill(*fSciFiHit);
+        if (fSciFiSimHit) {
+            fSciFiSimHitOutput->Fill(*fSciFiSimHit);
         }
         if (fSciFiSiPMHit) {
             fSciFiSiPMHitOutput->Fill(*fSciFiSiPMHit);
@@ -83,7 +83,7 @@ auto Analysis::EventEndUserAction() -> void {
     fMRPCHit = {};
     fECALHit = {};
     fECALPMHit = {};
-    fSciFiHit = {};
+    fSciFiSimHit = {};
     fSciFiSiPMHit = {};
 }
 
@@ -98,7 +98,7 @@ auto Analysis::RunEndUserAction(int) -> void {
     fMRPCSimHitOutput->Write();
     fECALSimHitOutput->Write();
     fECALPMHitOutput->Write();
-    fSciFiHitOutput->Write();
+    fSciFiSimHitOutput->Write();
     fSciFiSiPMHitOutput->Write();
     // reset output
     fPrimaryVertexOutput.reset();
@@ -106,7 +106,7 @@ auto Analysis::RunEndUserAction(int) -> void {
     fMRPCSimHitOutput.reset();
     fECALSimHitOutput.reset();
     fECALPMHitOutput.reset();
-    fSciFiHitOutput.reset();
+    fSciFiSimHitOutput.reset();
     fSciFiSiPMHitOutput.reset();
 }
 
