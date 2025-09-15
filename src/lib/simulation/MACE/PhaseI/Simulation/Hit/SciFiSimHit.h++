@@ -10,10 +10,10 @@
 
 namespace MACE::PhaseI::inline Simulation::inline Hit {
 
-class SciFiHit final : public Mustard::Geant4X::UseG4Allocator<SciFiHit>,
-                       public G4VHit,
-                       public Mustard::Data::Tuple<PhaseI::Data::SciFiSimHit> {};
+class SciFiSimHit final : public Mustard::Geant4X::UseG4Allocator<SciFiSimHit>,
+                          public G4VHit,
+                          public Mustard::Data::Tuple<PhaseI::Data::SciFiSimHit> {};
 
-using SciFiHitCollection = G4THitsCollection<SciFiHit>;
+using SciFiHitCollection = G4THitsCollection<SciFiSimHit>;
 
 } // namespace MACE::PhaseI::inline Simulation::inline Hit
