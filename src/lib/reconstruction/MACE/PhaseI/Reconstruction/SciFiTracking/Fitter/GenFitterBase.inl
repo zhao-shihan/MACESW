@@ -61,18 +61,24 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
 
-    TVector3 pos(Get<"x">(*seed)[0] * 0.1, Get<"x">(*seed)[1] * 0.1, Get<"x">(*seed)[2] * 0.1);
     TVector3 mom(Get<"p">(*seed)[0] / 20, Get<"p">(*seed)[1] / 20, Get<"p">(*seed)[2] / 20);
-    int pid = 11;
+    int pid = -11;
 
     muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
     measurementHitMap.reserve(hitData.size());
     const auto genfitTrack{
         std::make_shared<genfit::Track>(new genfit::RKTrackRep{pid}, // track rep will be deleted when genfit::Track destructs
-                                        Mustard::ToG3<"Length">(this->ToTVector3(*Get<"x">(*seed))),
-                                        mom)};
-
+                                        Mustard::ToG3<"Length">(this->ToTVector3(*Get<"x">(*seed))), mom)};
+    struct BySiPMID {
+        bool operator()(const AHitPointer& hit1, const AHitPointer& hit2) const {
+            return *Get<"SiPMID">(*hit1) < *Get<"SiPMID">(*hit2);
+        }
+    };
+    std::set<AHitPointer, BySiPMID> dataSet;
     for (auto&& hit : hitData) {
+        dataSet.insert(hit);
+    }
+    for (auto&& hit : dataSet) {
         const auto measurement{
             [&]() -> genfit::AbsMeasurement* {
                 if (fiberMap[*Get<"SiPMID">(*hit)].layerType == "Transverse") {
@@ -92,6 +98,12 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
 
                     TMatrixDSym rawHitCov(7);
                     rawHitCov.UnitMatrix();
+                    rawHitCov(0, 0) = 0.0;
+                    rawHitCov(1, 1) = 0.0;
+                    rawHitCov(2, 2) = 0.0;
+                    rawHitCov(3, 3) = 0.0;
+                    rawHitCov(4, 4) = 0.0;
+                    rawHitCov(5, 5) = 0.0;
                     rawHitCov(6, 6) = 0.0289 * 0.0289;
 
                     return new genfit::WireMeasurement{rawHitCoords, rawHitCov,
@@ -100,16 +112,23 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                 } else {
                     TMatrixDSym hitCov(8);
                     hitCov.UnitMatrix();
+                    hitCov(0, 0) = 0;
+                    hitCov(1, 1) = 0;
+                    hitCov(2, 2) = 0;
+                    hitCov(3, 3) = 0.0;
+                    hitCov(4, 4) = 0.0;
+                    hitCov(5, 5) = 0.0;
+                    hitCov(6, 6) = 0.0;
                     hitCov(7, 7) = 0.0289 * 0.0289;
                     TVectorD hitCoords(8);
-                    hitCoords[0] = 0.;                                                                                                       // x
-                    hitCoords[1] = 0.;                                                                                                       // y
-                    hitCoords[2] = 0.;                                                                                                       // z
-                    hitCoords[3] = Mustard::ToG3<"Length">(fiberMap[*Get<"SiPMID">(*hit)].radius);                                           // r
-                    hitCoords[4] = std::copysign(Mustard::ToG3<"Length">(sciFiTracker.FiberLength()), fiberMap[*Get<"SiPMID">(*hit)].pitch); // pitch
-                    hitCoords[5] = fiberMap[*Get<"SiPMID">(*hit)].rotationAngle;                                                             // phi0
-                    hitCoords[6] = 2 * std::numbers::pi;                                                                                     // phiTotal
-                    hitCoords[7] = 0;                                                                                                        //
+                    hitCoords[0] = 0.;                                                             // x
+                    hitCoords[1] = 0.;                                                             // y
+                    hitCoords[2] = 0.;                                                             // z
+                    hitCoords[3] = Mustard::ToG3<"Length">(fiberMap[*Get<"SiPMID">(*hit)].radius); // r
+                    hitCoords[4] = fiberMap[*Get<"SiPMID">(*hit)].pitch;                           // pitch
+                    hitCoords[5] = fiberMap[*Get<"SiPMID">(*hit)].rotationAngle;                   // rotationAngle
+                    hitCoords[6] = 2 * std::numbers::pi;
+                    hitCoords[7] = 0; //
 
                     return new genfit::HelixMeasurement(hitCoords, hitCov, *Get<"SiPMID">(*hit), Get<"HitID">(*hit), nullptr);
                 }
@@ -117,62 +136,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
         genfitTrack->insertPoint(new genfit::TrackPoint{measurement, genfitTrack.get()});
         measurementHitMap.emplace(measurement, hit);
     }
-    // init fitter
-    // auto fitter = new genfit::KalmanFitterRefTrack();
-
-    // particle pdg code;
-    // const int pdg = -11;
-
-    // // trackrep
-    // genfit::AbsTrackRep* rep = new genfit::RKTrackRep(pdg);
-
-    // // create track
-    // const auto genfitTrack{std::make_shared<genfit::Track>(rep, pos, mom)};
-    // int detID = 0;
-    // int hitID = 0;
-
-    // for (auto&& hit : hitData) {
-    //     if (fiberMap[*Get<"SiPMID">(*hit)].layerType == "Transverse") {
-    //         double x = fiberMap[*Get<"SiPMID">(*hit)].radius * std::cos(fiberMap[*Get<"SiPMID">(*hit)].rotationAngle);
-    //         double y = fiberMap[*Get<"SiPMID">(*hit)].radius * std::sin(fiberMap[*Get<"SiPMID">(*hit)].rotationAngle);
-    //         double z = sciFiTracker.FiberLength() / 2;
-    //         TVector3 startPoint(x, y, -z);
-    //         TVector3 endPoint(x, y, z);
-    //         TVectorD rawHitCoords(7);
-    //         rawHitCoords[0] = Mustard::ToG3<"Length">(startPoint.x());
-    //         rawHitCoords[1] = Mustard::ToG3<"Length">(startPoint.y());
-    //         rawHitCoords[2] = Mustard::ToG3<"Length">(startPoint.z());
-    //         rawHitCoords[3] = Mustard::ToG3<"Length">(endPoint.x());
-    //         rawHitCoords[4] = Mustard::ToG3<"Length">(endPoint.y());
-    //         rawHitCoords[5] = Mustard::ToG3<"Length">(endPoint.z());
-    //         rawHitCoords[6] = Mustard::ToG3<"Length">(0);
-
-    // TMatrixDSym rawHitCov(7);
-    // rawHitCov.UnitMatrix();
-    // rawHitCov(6, 6) = 0.0289 * 0.0289;
-
-    // genfit::WireMeasurement* measurement = new genfit::WireMeasurement(rawHitCoords, rawHitCov, detID++, hitID++, nullptr);
-    // measurementHitMap.emplace(measurement, hit);
-    // genfitTrack->insertPoint(new genfit::TrackPoint(measurement, genfitTrack.get()));
-    // } else {
-    // TMatrixDSym hitCov(8);
-    // hitCov.UnitMatrix();
-    // hitCov(7, 7) = 0.0289 * 0.0289; // 漂移距离的方差
-    // TVectorD hitCoords(8);
-    // hitCoords[0] = 0.;                                                                                    // x
-    // hitCoords[1] = 0.;                                                                                    // y
-    // hitCoords[2] = 0.;                                                                                    // z
-    // hitCoords[3] = fiberMap[*Get<"SiPMID">(*hit)].radius * 0.1;                                           // r
-    // hitCoords[4] = std::copysign(sciFiTracker.FiberLength() * 0.1, fiberMap[*Get<"SiPMID">(*hit)].pitch); // pitch
-    // hitCoords[5] = fiberMap[*Get<"SiPMID">(*hit)].rotationAngle;                                          // phi0
-    // hitCoords[6] = 2 * std::numbers::pi;                                                                  // phiTotal
-    // hitCoords[7] = 0;                                                                                     //
-
-    // genfit::HelixMeasurement* measurement = new genfit::HelixMeasurement(hitCoords, hitCov, detID++, hitID++, nullptr);
-    // measurementHitMap.emplace(measurement, hit);
-    // genfitTrack->insertPoint(new genfit::TrackPoint(measurement, genfitTrack.get()));
-    // }
-    // }
+    genfitTrack->sort();
     return {genfitTrack, measurementHitMap};
 }
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> AHit,
@@ -184,7 +148,7 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
 auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, ASeedPointer seed,
                                                     const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
-
+    const auto& status{*genfitTrack->getFitStatus()};
     const genfit::MeasuredStateOnPlane* firstState;
     try {
         firstState = &genfitTrack->getFittedState();
@@ -205,16 +169,17 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
     const auto t0{Get<"t">(*seed)};
     const auto x0{Mustard::ToG4<"Length">(firstState->getPos())};
     const auto p0{Mustard::ToG4<"Energy">(firstState->getMom()).Unit()};
-    // double mag = p0.Mag();
-    // p0[0] /= mag;
-    // p0[1] /= mag;
-    // p0[2] /= mag;
 
     auto track{std::make_shared_for_overwrite<Mustard::Data::Tuple<ATrack>>()};
     Get<"EvtID">(*track) = Get<"EvtID">(*seed);
     Get<"x">(*track) = this->template FromTVector3<muc::array3d>(x0);
     Get<"p">(*track) = this->template FromTVector3<muc::array3d>(p0);
     Get<"t">(*track) = t0;
+
+    if (fEnableEventDisplay) {
+        genfit::EventDisplay::getInstance()->addEvent(genfitTrack.get());
+        fEventDisplayTrackStore.emplace_back(std::move(genfitTrack)); // genfitTrack is MOVED here
+    }
     return {std::move(track), std::move(fitted), std::move(failed)};
 }
 
