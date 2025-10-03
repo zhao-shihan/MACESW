@@ -38,7 +38,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMACE_signal
+/Mustard/Analysis/FilePath SimMACE_signal.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 8000
 /Mustard/Run/PrintRunSummary

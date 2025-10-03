@@ -21,7 +21,7 @@
 # Run
 #############################################################################
 
-/MACE/Analysis/FilePath SimPTS_signal
+/MACE/Analysis/FilePath SimPTS_signal.root
 /MACE/Analysis/FileMode NEW
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

@@ -55,8 +55,8 @@ public:
     auto Construct() -> G4VPhysicalVolume* override;
 
 public:
-    using DescriptionInUse = muc::tuple_unique_t<muc::tuple_concat_t<
-        Detector::Assembly::MMS::DescriptionInUse,
+    using ProminentDescription = muc::tuple_unique_t<muc::tuple_concat_t<
+        Detector::Assembly::MMS::ProminentDescription,
         std::tuple<Detector::Description::Accelerator,
                    Detector::Description::BeamDegrader,
                    Detector::Description::BeamMonitor,

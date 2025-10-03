@@ -27,7 +27,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimTTC/SimTTC_em_mono_efficiencytest
+/Mustard/Analysis/FilePath SimTTC_em_mono_efficiencytest.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

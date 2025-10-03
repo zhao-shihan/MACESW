@@ -14,7 +14,7 @@
 /run/verbose 2
 
 # I/O & Analysis
-/MACE/Analysis/FilePath                        SimTarget_vis
+/MACE/Analysis/FilePath                        SimTarget_vis.root
 /MACE/Analysis/FileMode                        RECREATE
 /MACE/Analysis/EnableYieldAnalysis             yes
 
@@ -26,19 +26,18 @@
 
 # Muon beam properties
 /gps/particle             mu+
-/gps/direction            0 0 1       # 0 deg
-/gps/pos/centre           0 0 -10 cm  # 0 deg
-#/gps/direction            -1.25 0 10     # 7.125 deg
-#/gps/pos/centre           1.25 0 -10 cm  # 7.125 deg
+/gps/direction            0 0 1
+/gps/pos/centre           0 0 -10 cm
 /gps/pos/type             Beam
 /gps/pos/shape            Circle
-/gps/pos/radius           0 mm
-/gps/pos/sigma_r          5 mm
+/gps/pos/radius           20 mm
 /gps/ene/type             Gauss
-/gps/ene/mono             3.224 MeV    # momentum 26.3 MeV
-/gps/ene/sigma            0.459 MeV    # momentum spreading 1.9 MeV
-/GPSX/NVertex             1
-/GPSX/PulseWidth          0 ns
+# CiADS full-solenoid focusing beam, 0.5-mA-proton beam on C target
+/gps/ene/mono             3.346 MeV    # momentum 26.8 MeV
+/gps/ene/sigma            0.393 MeV    # momentum spreading 1.6 MeV
+## CiADS solenoid + QM focusing beam, 0.5-mA-proton beam on C target
+#/gps/ene/mono             3.248 MeV    # momentum 26.4 MeV
+#/gps/ene/sigma            0.339 MeV    # momentum spreading 1.4 MeV
 
 # Set physics
 /Mustard/Physics/MuoniumPhysics/Formation/ConversionProbability    0

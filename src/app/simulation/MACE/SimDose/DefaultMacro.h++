@@ -74,7 +74,7 @@ constexpr auto defaultMacro = {
     "/MACE/Analysis/MapZMin 1000 mm",
     "/MACE/Analysis/MapZMax 1800 mm",
     "",
-    "/Mustard/Analysis/FilePath SimDose_vis",
+    "/Mustard/Analysis/FilePath SimDose_vis.root",
     "/Mustard/Analysis/FileMode RECREATE",
     "",
 

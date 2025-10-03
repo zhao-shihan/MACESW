@@ -8,6 +8,7 @@
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
+#include "Mustard/Utility/FormatToLocalTime.h++"
 
 #include "TFile.h"
 #include "TMacro.h"
@@ -19,6 +20,7 @@
 #include "fmt/format.h"
 
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <stdexcept>
 
@@ -105,8 +107,15 @@ auto Analysis::CloseResultFile() -> void {
 
 auto Analysis::OpenYieldFile() -> void {
     if (mplr::comm_world().rank() == 0) {
-        fYieldFile = std::fopen(std::string{fFilePath}.append("_yield.csv").c_str(), "w");
-        fmt::println(fYieldFile, "runID,nMuon,nMFormed,nMTargetDecay,nMVacuumDecay,nMDetectableDecay");
+        const auto yieldFilePath{fFilePath.generic_string().append("_yield.csv")};
+        fYieldFile = std::fopen(yieldFilePath.c_str(), "wx");
+        if (fYieldFile) {
+            fmt::println(fYieldFile, "runID,nMuon,nMFormed,nMTargetDecay,nMVacuumDecay,nMDetectableDecay");
+        } else {
+            fYieldFile = std::fopen(yieldFilePath.c_str(), "a");
+            const auto now{std::chrono::system_clock::now()};
+            fmt::println(fYieldFile, "# [{}] Continued from here", Mustard::FormatToLocalTime(now));
+        }
     }
 }
 

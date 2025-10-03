@@ -1,10 +1,4 @@
 #############################################################################
-#
-# Macro file demo for SimTarget in batch session
-#
-#############################################################################
-
-#############################################################################
 # Initialization settings
 #############################################################################
 
@@ -13,7 +7,7 @@
 /run/verbose 0
 
 # I/O & Analysis
-/MACE/Analysis/FilePath                        SimTarget_CiADS
+/MACE/Analysis/FilePath                        SimTarget_CiADS.root
 /MACE/Analysis/FileMode                        NEW
 /MACE/Analysis/EnableYieldAnalysis             yes
 

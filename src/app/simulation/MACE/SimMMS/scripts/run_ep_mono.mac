@@ -28,7 +28,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMMS_ep_mono
+/Mustard/Analysis/FilePath SimMMS_ep_mono.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

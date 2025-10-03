@@ -37,7 +37,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMACE_env_gamma
+/Mustard/Analysis/FilePath SimMACE_env_gamma.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 80
 /Mustard/Run/PrintRunSummary

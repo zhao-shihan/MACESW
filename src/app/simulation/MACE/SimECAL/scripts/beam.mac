@@ -19,7 +19,7 @@
 
 /MACE/Analysis/CoincidenceWithMCP     yes
 
-/MACE/Analysis/FilePath SimECAL_sig
+/MACE/Analysis/FilePath SimECAL_sig.root
 /MACE/Analysis/FileMode NEW
 
 /run/beamOn 1000

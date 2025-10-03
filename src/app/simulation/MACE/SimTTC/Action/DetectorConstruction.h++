@@ -32,7 +32,7 @@ public:
     auto Construct() -> G4VPhysicalVolume* override;
 
 public:
-    using DescriptionInUse = std::tuple<
+    using ProminentDescription = std::tuple<
         Detector::Description::MMSField,
         Detector::Description::TTC,
         Detector::Description::World>;

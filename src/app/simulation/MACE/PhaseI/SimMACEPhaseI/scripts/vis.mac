@@ -38,7 +38,7 @@
 /MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
-/MACE/Analysis/FilePath SimMACEPhaseI_vis
+/MACE/Analysis/FilePath SimMACEPhaseI_vis.root
 /MACE/Analysis/FileMode RECREATE
 
 #############################################################################

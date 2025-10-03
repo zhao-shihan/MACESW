@@ -28,7 +28,7 @@ constexpr auto defaultMacro = {
     "/MACE/Analysis/SaveTTCHitData         yes",
     "/MACE/Analysis/SaveTTCSiPMHitData     yes",
     "",
-    "/Mustard/Analysis/FilePath SimTTC_vis",
+    "/Mustard/Analysis/FilePath SimTTC_vis.root",
     "/Mustard/Analysis/FileMode RECREATE",
     "",
 

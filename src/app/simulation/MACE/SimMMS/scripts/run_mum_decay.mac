@@ -29,7 +29,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMMS_mum_decay
+/Mustard/Analysis/FilePath SimMMS_mum_decay.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

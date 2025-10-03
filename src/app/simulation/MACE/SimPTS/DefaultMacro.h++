@@ -25,7 +25,7 @@ constexpr auto defaultMacro = {
     "/gps/pos/halfz            3 cm",
     "/gps/ene/mono             0 eV",
     "",
-    "/MACE/Analysis/FilePath SimPTS_vis",
+    "/MACE/Analysis/FilePath SimPTS_vis.root",
     "/MACE/Analysis/FileMode RECREATE",
     "",
 

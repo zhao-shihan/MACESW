@@ -32,9 +32,9 @@ public:
     auto SetCheckOverlaps(G4bool checkOverlaps) -> void { fCheckOverlap = checkOverlaps; }
 
 public:
-    using DescriptionInUse = std::tuple<MACE::Detector::Description::ECAL,
-                                        MACE::Detector::Description::Vacuum,
-                                        MACE::Detector::Description::World>;
+    using ProminentDescription = std::tuple<MACE::Detector::Description::ECAL,
+                                            MACE::Detector::Description::Vacuum,
+                                            MACE::Detector::Description::World>;
 
 private:
     G4bool fCheckOverlap;

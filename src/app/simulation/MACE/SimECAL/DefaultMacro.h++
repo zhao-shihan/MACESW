@@ -21,7 +21,7 @@ constexpr auto defaultMacro = {
     "#/MACE/Generator/SwitchToEcoMug",
     "/MACE/Generator/SwitchToGPSX",
     "",
-    "/MACE/Analysis/FilePath SimECAL_vis",
+    "/MACE/Analysis/FilePath SimECAL_vis.root",
     "/MACE/Analysis/FileMode RECREATE",
     "",
 

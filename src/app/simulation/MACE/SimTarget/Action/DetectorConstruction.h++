@@ -30,10 +30,10 @@ public:
     auto SetCheckOverlaps(G4bool checkOverlaps) -> void { fCheckOverlap = checkOverlaps; }
 
 public:
-    using DescriptionInUse = std::tuple<Detector::Description::BeamDegrader,
-                                        Detector::Description::BeamMonitor,
-                                        Detector::Description::Target,
-                                        Detector::Description::World>;
+    using ProminentDescription = std::tuple<Detector::Description::BeamDegrader,
+                                            Detector::Description::BeamMonitor,
+                                            Detector::Description::Target,
+                                            Detector::Description::World>;
 
 private:
     G4bool fCheckOverlap;

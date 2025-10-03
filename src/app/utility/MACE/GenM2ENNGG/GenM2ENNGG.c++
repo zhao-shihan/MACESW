@@ -1,7 +1,4 @@
-#include "MACE/Detector/Description/CDC.h++"
-#include "MACE/Detector/Description/MMSField.h++"
-#include "MACE/Detector/Description/TTC.h++"
-#include "MACE/GenM2ENNEE/GenM2ENNEE.h++"
+#include "MACE/GenM2ENNGG/GenM2ENNGG.h++"
 #include "MACE/Utility/InitialStateCLIModule.h++"
 #include "MACE/Utility/MCMCGeneratorCLI.h++"
 #include "MACE/Utility/WriteAutocorrelationFunction.h++"
@@ -13,7 +10,7 @@
 #include "Mustard/Execution/Executor.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/Print.h++"
-#include "Mustard/Physics/Generator/M2ENNEEGenerator.h++"
+#include "Mustard/Physics/Generator/M2ENNGGGenerator.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -28,66 +25,35 @@
 #include <string>
 #include <type_traits>
 
-namespace MACE::GenM2ENNEE {
+namespace MACE::GenM2ENNGG {
 
 using namespace Mustard::LiteralUnit::Energy;
 using namespace Mustard::MathConstant;
 using namespace Mustard::PhysicalConstant;
 using namespace std::string_literals;
 
-GenM2ENNEE::GenM2ENNEE() :
-    Subprogram{"GenM2ENNEE", "Generate internal conversion muon decay (mu -> e nu nu e e)."} {}
+GenM2ENNGG::GenM2ENNGG() :
+    Subprogram{"GenM2ENNGG", "Generate double radiative muon decay (mu -> e nu nu gamma gamma)."} {}
 
-auto GenM2ENNEE::Main(int argc, char* argv[]) const -> int {
+auto GenM2ENNGG::Main(int argc, char* argv[]) const -> int {
     MCMCGeneratorCLI<InitialStateCLIModule<"polarized", "muon">> cli;
-    cli.DefaultOutput("m2ennee.root");
-    cli.DefaultOutputTree("m2ennee");
+    cli.DefaultOutput("m2enngg.root");
+    cli.DefaultOutputTree("m2enngg");
+    cli->add_argument("--ir-cut").help("IR cut for final state photons.").default_value(electron_mass_c2).required().nargs(1).scan<'g', double>();
     auto& biasCLI{cli->add_mutually_exclusive_group()};
-    biasCLI.add_argument("--mace-bias").help("Enable MACE detector signal region importance sampling.").flag();
-    biasCLI.add_argument("--ep-ek-bias").help("Apply soft upper bound for atomic positron kinetic energy.").flag();
     biasCLI.add_argument("--emiss-bias").help("Apply soft upper bound for missing energy.").flag();
-    cli->add_argument("--pxy-softening-factor").help("Softening factor for transverse momentum soft cut in --mace-bias.").default_value(0.25_MeV).required().nargs(1).scan<'g', double>();
-    cli->add_argument("--cos-theta-softening-factor").help("Softening factor for momentum cosine soft cut in --mace-bias.").default_value(0.025).required().nargs(1).scan<'g', double>();
-    cli->add_argument("--ep-ek-soft-upper-bound").help("Soft upper bound for atomic positron kinetic energy in --ep-ek-bias or --mace-bias.").default_value(0_eV).required().nargs(1).scan<'g', double>();
-    cli->add_argument("--ep-ek-softening-factor").help("Softening factor for atomic positron kinetic energy upper bound in --ep-ek-bias or --mace-bias.").default_value(1_keV).required().nargs(1).scan<'g', double>();
     cli->add_argument("--emiss-soft-upper-bound").help("Soft upper bound for missing energy in --emiss-bias.").default_value(0_MeV).required().nargs(1).scan<'g', double>();
     cli->add_argument("--emiss-softening-factor").help("Softening factor for missing energy upper bound in --emiss-bias.").default_value(1_MeV).required().nargs(1).scan<'g', double>();
     Mustard::Env::MPIEnv env{argc, argv, cli};
     Mustard::UseXoshiro<256> random{cli};
 
-    Mustard::M2ENNEEGenerator generator("mu+", cli.Momentum(), cli.Polarization(),
+    Mustard::M2ENNGGGenerator generator("mu+", cli.Momentum(), cli.Polarization(), cli->get<double>("--ir-cut"),
                                         cli->present<double>("--thinning-ratio"), cli->present<unsigned>("--acf-sample-size"));
 
-    if (cli["--mace-bias"] == true) {
-        const auto& cdc{Detector::Description::CDC::Instance()};
-        const auto& ttc{Detector::Description::TTC::Instance()};
-        const auto mmsB{Detector::Description::MMSField::Instance().FastField()};
-        generator.Acceptance([inPxyCut = (cdc.GasInnerRadius() / 2) * mmsB * c_light,
-                              outPxyCut = (ttc.Radius() / 2) * mmsB * c_light,
-                              cosCut = 1 / muc::hypot(2 * cdc.GasOuterRadius() / cdc.GasOuterLength(), 1.),
-                              epEkCut = cli->get<double>("--ep-ek-soft-upper-bound"),
-                              scPxy = muc::soft_cmp{cli->get<double>("--pxy-softening-factor")},
-                              scCos = muc::soft_cmp{cli->get<double>("--cos-theta-softening-factor")},
-                              scEk = muc::soft_cmp{cli->get<double>("--ep-ek-softening-factor")}](auto&& momenta) {
-            // .         e+ n   n   e-  e+
-            const auto& [p0, _1, _2, p3, p4]{momenta};
-            const auto p3Seen{scPxy(p3.perp()) > scPxy(outPxyCut) and scCos(muc::abs(p3.cosTheta())) < scCos(cosCut)};
-            const auto p0Miss{scPxy(p0.perp()) < scPxy(inPxyCut) or scCos(muc::abs(p0.cosTheta())) > scCos(cosCut)};
-            const auto p4Miss{scPxy(p4.perp()) < scPxy(inPxyCut) or scCos(muc::abs(p4.cosTheta())) > scCos(cosCut)};
-            const auto p0Low{scEk(p0.e() - electron_mass_c2) < scEk(epEkCut)};
-            const auto p4Low{scEk(p4.e() - electron_mass_c2) < scEk(epEkCut)};
-            return p3Seen and ((p0Miss and p4Low) or (p4Miss and p0Low));
-        });
-    } else if (cli["--ep-ek-bias"] == true) {
-        generator.Acceptance([epEkCut = cli->get<double>("--ep-ek-soft-upper-bound"),
-                              scEk = muc::soft_cmp{cli->get<double>("--ep-ek-softening-factor")}](auto&& p) {
-            const auto epEk{p[0].e() - electron_mass_c2};
-            return scEk(epEk) < scEk(epEkCut);
-        });
-    } else if (cli["--emiss-bias"] == true) {
+    if (cli["--emiss-bias"] == true) {
         generator.Acceptance([eMissCut = cli->get<double>("--emiss-soft-upper-bound"),
                               scEMiss = muc::soft_cmp{cli->get<double>("--emiss-softening-factor")}](auto&& momenta) {
-            // .         e+ n   n   e-  e+
+            //.          e+  n   n   g   g
             const auto& [p0, _1, _2, p3, p4]{momenta};
             const auto eMiss{muon_mass_c2 - (p0.e() + p3.e() + p4.e())};
             return scEMiss(eMiss) < scEMiss(eMissCut);
@@ -125,7 +91,7 @@ auto GenM2ENNEE::Main(int argc, char* argv[]) const -> int {
     executor(*nEvent, [&](auto) {
         const auto [weight, pdgID, p]{generator(rng)};
         Mustard::Data::Tuple<Mustard::Data::GeneratedKinematics> event;
-        // 0: e+, 3: e-, 4: e+
+        // 0: e+, 3: g, 4: g
         Get<"pdgID">(event) = {pdgID[0], pdgID[3], pdgID[4]};
         Get<"E">(event) = {float(p[0].e()), float(p[3].e()), float(p[4].e())};
         Get<"px">(event) = {float(p[0].x()), float(p[3].x()), float(p[4].x())};
@@ -140,4 +106,4 @@ auto GenM2ENNEE::Main(int argc, char* argv[]) const -> int {
     return EXIT_SUCCESS;
 }
 
-} // namespace MACE::GenM2ENNEE
+} // namespace MACE::GenM2ENNGG

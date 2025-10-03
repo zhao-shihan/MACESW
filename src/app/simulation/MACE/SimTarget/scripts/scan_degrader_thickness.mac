@@ -7,12 +7,12 @@
 /run/verbose 0
 
 # I/O & Analysis
-/MACE/Analysis/FilePath                        SimTarget_result.root
-/MACE/Analysis/FileMode                        NEW
+/MACE/Analysis/FilePath                        scan_degrader_thickness_result.root
+/MACE/Analysis/FileMode                        RECREATE
 /MACE/Analysis/EnableYieldAnalysis             yes
 
 # Geometry
-#/Mustard/Detector/Description/Import              geom.yaml
+/Mustard/Detector/Description/Import           scan_degrader_thickness.yaml
 
 # Initialize kernel
 /run/initialize
@@ -43,4 +43,3 @@
 #############################################################################
 
 /run/beamOn 100000
-/Mustard/Run/PrintRunSummary

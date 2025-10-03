@@ -37,7 +37,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMACE_env_neutron
+/Mustard/Analysis/FilePath SimMACE_env_neutron.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 80
 /Mustard/Run/PrintRunSummary

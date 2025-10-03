@@ -1,7 +1,6 @@
 # MACE
 
 - [MACE](#mace)
-  - [Pre-built binaries](#pre-built-binaries)
   - [Dependencies](#dependencies)
     - [Toolchain](#toolchain)
     - [Libraries](#libraries)
@@ -9,11 +8,11 @@
 
 ![MACE](document/picture/MACE_logo_v2.svg)
 
-## Pre-built binaries
+<!-- ## Pre-built binaries
 
 Pre-built, optimized binaries are available through [Apptainer](https://apptainer.org/) (formerly known as Singularity).
 
-For more information, please check out [the image repository homepage](https://github.com/zhao-shihan/MACE-apptainer).
+For more information, please check out [the image repository homepage](https://github.com/zhao-shihan/MACE-apptainer). -->
 
 ## Dependencies
 
@@ -28,7 +27,7 @@ For more information, please check out [the image repository homepage](https://g
 
 Required:
 
-1. [Mustard (A modern, distributed offline software framework for HEP experiments)](https://github.com/zhao-shihan/Mustard) (≥ 0.25.831, built-in if not found)
+1. [Mustard (A modern, distributed offline software framework for HEP experiments)](https://github.com/zhao-shihan/Mustard) (≥ 0.25.930, built-in if not found)
 
 Required, built-in if not found (network or pre-downloaded source is required):
 

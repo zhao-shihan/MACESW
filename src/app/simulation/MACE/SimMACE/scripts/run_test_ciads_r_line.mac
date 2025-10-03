@@ -28,7 +28,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMACE_CiADS_R_line
+/Mustard/Analysis/FilePath SimMACE_CiADS_R_line.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 1000000
 /Mustard/Run/PrintRunSummary

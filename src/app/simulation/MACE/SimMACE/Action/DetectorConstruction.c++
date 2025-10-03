@@ -236,9 +236,12 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     // Register SDs
     ////////////////////////////////////////////////////////////////
     {
-        mms.Get<Detector::Definition::CDCCell>().RegisterSD("CDCSensitiveVolume", new SD::CDCSD{Detector::Description::CDC::Instance().Name()});
-        mms.Get<Detector::Definition::TTC>().RegisterSD(new SD::TTCSD{Detector::Description::TTC::Instance().Name()});
-        mcp.RegisterSD(new SD::MCPSD{Detector::Description::MCP::Instance().Name()});
+        const auto& cdcName{Detector::Description::CDC::Instance().Name()};
+        mms.Get<Detector::Definition::CDCCell>().RegisterSD(cdcName + "SensitiveVolume", new SD::CDCSD{cdcName});
+        const auto& ttcName{Detector::Description::TTC::Instance().Name()};
+        mms.Get<Detector::Definition::TTC>().RegisterSD(ttcName + "Scintillator", new SD::TTCSD{ttcName});
+        const auto& mcpName{Detector::Description::MCP::Instance().Name()};
+        mcp.RegisterSD(mcpName + "Anode", new SD::MCPSD{mcpName});
         ecalCrystal.RegisterSD(new SD::ECALSD{Detector::Description::ECAL::Instance().Name()});
     }
 

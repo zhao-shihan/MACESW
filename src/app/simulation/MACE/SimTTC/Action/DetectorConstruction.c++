@@ -47,9 +47,10 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     // Register SDs
     ////////////////////////////////////////////////////////////////
 
-    const auto ttcSiPM(new SD::TTCSiPMSD{Detector::Description::TTC::Instance().Name() + "SiPM"});
-    mmsTTC.RegisterSD("TTCScintillator", new SD::TTCSD{Detector::Description::TTC::Instance().Name(), ttcSiPM});
-    mmsTTC.RegisterSD("TTCSilicone", ttcSiPM);
+    const auto& ttcName{Detector::Description::TTC::Instance().Name()};
+    const auto ttcSiPM(new SD::TTCSiPMSD{ttcName + "SiPM"});
+    mmsTTC.RegisterSD(ttcName + "Scintillator", new SD::TTCSD{ttcName, ttcSiPM});
+    mmsTTC.RegisterSD(ttcName + "Silicone", ttcSiPM);
 
     ////////////////////////////////////////////////////////////////
     // Register background fields

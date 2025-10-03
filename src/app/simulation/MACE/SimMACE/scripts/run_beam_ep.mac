@@ -38,7 +38,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMACE_beam_ep
+/Mustard/Analysis/FilePath SimMACE_beam_ep.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 1000
 /Mustard/Run/PrintRunSummary

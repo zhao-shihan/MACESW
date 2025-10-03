@@ -27,7 +27,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimTTC_mum_decay
+/Mustard/Analysis/FilePath SimTTC_mum_decay.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

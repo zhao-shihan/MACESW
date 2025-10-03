@@ -36,7 +36,7 @@ constexpr auto defaultMacro = {
     "/MACE/Analysis/CoincidenceWithMCP     no",
     "/MACE/Analysis/CoincidenceWithECAL    no",
     "",
-    "/Mustard/Analysis/FilePath SimMACE_vis",
+    "/Mustard/Analysis/FilePath SimMACE_vis.root",
     "/Mustard/Analysis/FileMode RECREATE",
     "",
 

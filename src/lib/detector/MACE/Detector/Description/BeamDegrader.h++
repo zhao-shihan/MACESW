@@ -22,10 +22,12 @@ public:
     // Geometry
 
     auto Width() const -> auto { return fWidth; }
+    auto Height() const -> auto { return fHeight; }
     auto Thickness() const -> auto { return fThickness; }
     auto DistanceToTarget() const -> auto { return fDistanceToTarget; }
 
     auto Width(double val) -> void { fWidth = val; }
+    auto Height(double val) -> void { fHeight = val; }
     auto Thickness(double val) -> void { fThickness = val; }
     auto DistanceToTarget(double val) -> void { fDistanceToTarget = val; }
 
@@ -45,6 +47,7 @@ private:
     // Geometry
 
     double fWidth;
+    double fHeight;
     double fThickness;
     double fDistanceToTarget;
 

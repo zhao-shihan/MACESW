@@ -9,7 +9,7 @@ namespace MACE::inline Utility {
 MatrixElementBasedGeneratorCLIModule::MatrixElementBasedGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli) :
     ModuleBase{cli} {
     TheCLI()
-        ->add_argument("--phase-space-integral")
+        ->add_argument("-i", "--phase-space-integral")
         .help("Pre-computed phase-space integral. Program will skip integration and use this value if set.")
         .nargs(1)
         .scan<'g', double>();

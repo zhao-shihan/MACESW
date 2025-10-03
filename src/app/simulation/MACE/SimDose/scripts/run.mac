@@ -70,7 +70,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimDose_result
+/Mustard/Analysis/FilePath SimDose_result.root
 /Mustard/Analysis/FileMode NEW
 
 /run/beamOn 100

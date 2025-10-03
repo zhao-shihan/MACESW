@@ -10,7 +10,7 @@
 
 /MACE/Generator/SwitchToEcoMug
 
-/MACE/Analysis/FilePath SimECAL_crmu
+/MACE/Analysis/FilePath SimECAL_crmu.root
 /MACE/Analysis/FileMode NEW
 
 /run/beamOn 19350000

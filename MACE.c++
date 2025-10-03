@@ -1,4 +1,5 @@
 #include "MACE/GenM2ENNEE/GenM2ENNEE.h++"
+#include "MACE/GenM2ENNGG/GenM2ENNGG.h++"
 #include "MACE/MakeGeometry/MakeGeometry.h++"
 #include "MACE/PhaseI/PhaseI.h++"
 #include "MACE/ReconECAL/ReconECAL.h++"
@@ -8,15 +9,16 @@
 #include "MACE/SimMACE/SimMACE.h++"
 #include "MACE/SimMMS/SimMMS.h++"
 #include "MACE/SimPTS/SimPTS.h++"
+#include "MACE/SimTTC/SimTTC.h++"
 #include "MACE/SimTarget/SimTarget.h++"
 #include "MACE/SmearMACE/SmearMACE.h++"
-#include "MACE/SimTTC/SimTTC.h++"
 
 #include "Mustard/Application/SubprogramLauncher.h++"
 
 auto main(int argc, char* argv[]) -> int {
     Mustard::Application::SubprogramLauncher launcher;
     launcher.AddSubprogram<MACE::GenM2ENNEE::GenM2ENNEE>();
+    launcher.AddSubprogram<MACE::GenM2ENNGG::GenM2ENNGG>();
     launcher.AddSubprogram<MACE::MakeGeometry::MakeGeometry>();
     launcher.AddSubprogram<MACE::PhaseI::PhaseI>();
     launcher.AddSubprogram<MACE::ReconECAL::ReconECAL>();

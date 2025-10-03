@@ -2,9 +2,10 @@
 
 BeamDegrader:
   Enabled: true
-  Width: 50
-  Thickness: 0.5
-  DistanceToTarget: 10
+  Width: 100
+  Height: 50
+  Thickness: 0.40000000000000002
+  DistanceToTarget: 5
   MaterialName: G4_MYLAR
 BeamMonitor:
   Enabled: false
@@ -12,16 +13,17 @@ BeamMonitor:
   Thickness: 0.5
   DistanceToTarget: 5
 Target:
-  ShapeType: MultiLayer
+  ShapeType: Cuboid
   Cuboid:
-    Width: 60
-    Thickness: 10
+    Width: 120
+    Thickness: 5
     DetailType: Perforated
     Perforated:
-      Extent: 40
+      WidthExtent: 100
+      HeightExtent: 50
       Spacing: 0.055
       Diameter: 0.184
-      Depth: 2
+      Depth: 5
   MultiLayer:
     Width: 60
     Height: 50

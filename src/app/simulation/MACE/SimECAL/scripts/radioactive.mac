@@ -28,7 +28,7 @@
 /gps/ene/mono 0 MeV
 /gps/pos/centre 0 0 0 cm
 
-/MACE/Analysis/FilePath SimECAL_source
+/MACE/Analysis/FilePath SimECAL_source.root
 /MACE/Analysis/FileMode NEW
 /run/beamOn 1000
 /Mustard/Run/PrintRunSummary

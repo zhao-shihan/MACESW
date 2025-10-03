@@ -14,13 +14,13 @@ namespace MACE::Detector::Assembly {
 
 class MMS : public Mustard::Detector::Assembly::AssemblyBase {
 public:
-    using DescriptionInUse = std::tuple<Detector::Description::CDC,
-                                        Detector::Description::FieldOption,
-                                        Detector::Description::MMSBeamPipe,
-                                        Detector::Description::MMSField,
-                                        Detector::Description::MMSMagnet,
-                                        Detector::Description::MMSShield,
-                                        Detector::Description::TTC>;
+    using ProminentDescription = std::tuple<Detector::Description::CDC,
+                                            Detector::Description::FieldOption,
+                                            Detector::Description::MMSBeamPipe,
+                                            Detector::Description::MMSField,
+                                            Detector::Description::MMSMagnet,
+                                            Detector::Description::MMSShield,
+                                            Detector::Description::TTC>;
 
 public:
     MMS(Mustard::Detector::Definition::DefinitionBase& mother, bool checkOverlap);

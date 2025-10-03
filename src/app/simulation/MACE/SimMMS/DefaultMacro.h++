@@ -31,7 +31,7 @@ constexpr auto defaultMacro = {
     "/MACE/Analysis/SaveTTCSiPMHitData     yes",
     "/MACE/Analysis/SaveCDCHitData         yes",
     "",
-    "/Mustard/Analysis/FilePath SimMMS_vis",
+    "/Mustard/Analysis/FilePath SimMMS_vis.root",
     "/Mustard/Analysis/FileMode RECREATE",
     "",
 

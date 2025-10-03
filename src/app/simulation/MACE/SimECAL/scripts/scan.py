@@ -42,7 +42,7 @@ for i in range(10, 20):
 /gps/pos/centre 0. 0. 0. cm
 /gps/direction -0.231259 0.883817 -0.386541
 
-/MACE/Analysis/FilePath {name}
+/MACE/Analysis/FilePath {name}.root
 /MACE/Analysis/FileMode RECREATE
 /run/beamOn 1000000
 /MPIRun/PrintRunSummary

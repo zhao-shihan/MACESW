@@ -40,7 +40,7 @@ constexpr auto defaultMacro = {
     "/Mustard/Physics/MuoniumDecay/ElectronPairDecay/BR 1",
     "/Mustard/Physics/MuoniumDecay/UpdateDecayBR",
     "",
-    "/MACE/Analysis/FilePath SimMACEPhaseI_vis",
+    "/MACE/Analysis/FilePath SimMACEPhaseI_vis.root",
     "/MACE/Analysis/FileMode RECREATE",
     "",
 

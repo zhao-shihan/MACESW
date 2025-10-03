@@ -17,7 +17,7 @@
 /gps/pos/centre 0. 0. 0. cm
 /gps/direction -0.231259 0.883817 -0.386541
 
-/MACE/Analysis/FilePath test
+/MACE/Analysis/FilePath test.root
 /MACE/Analysis/FileMode RECREATE
 /run/beamOn 1000
 /MPIRun/PrintRunSummary

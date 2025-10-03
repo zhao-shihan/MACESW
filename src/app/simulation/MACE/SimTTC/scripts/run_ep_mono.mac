@@ -25,7 +25,7 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimTTC_ep_mono
+/Mustard/Analysis/FilePath SimTTC_ep_mono.root
 /Mustard/Analysis/FileMode NEW
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

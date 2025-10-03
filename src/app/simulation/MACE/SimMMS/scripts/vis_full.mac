@@ -25,7 +25,7 @@
 /MACE/Analysis/SaveTTCSiPMHitData     yes
 /MACE/Analysis/SaveCDCHitData         yes
 
-/Mustard/Analysis/FilePath SimMACE_vis
+/Mustard/Analysis/FilePath SimMACE_vis.root
 /Mustard/Analysis/FileMode RECREATE
 
 #############################################################################

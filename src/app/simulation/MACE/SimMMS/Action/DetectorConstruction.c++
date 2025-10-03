@@ -80,13 +80,11 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     // Register SDs
     ////////////////////////////////////////////////////////////////
     {
-        mms.Get<Detector::Definition::CDCCell>()
-            .RegisterSD("CDCSensitiveVolume", new SD::CDCSD{Detector::Description::CDC::Instance().Name()});
-        auto ttcSiPM = new SD::TTCSiPMSD{Detector::Description::TTC::Instance().Name() + "SiPM"};
-        mms.Get<Detector::Definition::TTC>()
-            .RegisterSD("TTCScintillator", new SD::TTCSD{Detector::Description::TTC::Instance().Name(), ttcSiPM});
-        mms.Get<Detector::Definition::TTC>()
-            .RegisterSD("TTCSilicone", ttcSiPM);
+        const auto& cdcName{Detector::Description::CDC::Instance().Name()};
+        mms.Get<Detector::Definition::CDCCell>().RegisterSD(cdcName + "SensitiveVolume", new SD::CDCSD{cdcName});
+        const auto& ttcName{Detector::Description::TTC::Instance().Name()};
+        mms.Get<Detector::Definition::TTC>().RegisterSD(ttcName + "Scintillator", new SD::TTCSD{ttcName});
+        mms.Get<Detector::Definition::TTC>().RegisterSD(ttcName + "Silicone", new SD::TTCSiPMSD{ttcName + "SiPM"});
     }
 
     ////////////////////////////////////////////////////////////////

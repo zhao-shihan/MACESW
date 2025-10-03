@@ -36,12 +36,12 @@ public:
     auto SetCheckOverlaps(G4bool checkOverlaps) -> void { fCheckOverlap = checkOverlaps; }
 
 public:
-    using DescriptionInUse = std::tuple<MACE::Detector::Description::ECAL,
-                                        PhaseI::Detector::Description::MRPC,
-                                        PhaseI::Detector::Description::CentralBeamPipe,
-                                        MACE::Detector::Description::Target,
-                                        PhaseI::Detector::Description::SciFiTracker,
-                                        PhaseI::Detector::Description::World>;
+    using ProminentDescription = std::tuple<MACE::Detector::Description::ECAL,
+                                            PhaseI::Detector::Description::MRPC,
+                                            PhaseI::Detector::Description::CentralBeamPipe,
+                                            MACE::Detector::Description::Target,
+                                            PhaseI::Detector::Description::SciFiTracker,
+                                            PhaseI::Detector::Description::World>;
 
 private:
     G4bool fCheckOverlap;
