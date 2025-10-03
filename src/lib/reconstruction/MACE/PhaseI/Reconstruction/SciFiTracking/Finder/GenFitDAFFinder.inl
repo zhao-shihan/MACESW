@@ -121,7 +121,6 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::PositionTransform(const std::tuple<std:
             indices.push_back(fiberMap[id].layerID / 2);
         }
         std::sort(indices.begin(), indices.end());
-
         bool is_consecutive{
             std::adjacent_find(
                 indices.begin(),
@@ -168,14 +167,16 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::PositionTransform(const std::tuple<std:
                 auto tAvgAngle = calculateAvgAngle(tHits);
                 auto tAvgTime = calculateAvgTime(tHits);
 
-                double angleCondition1 = std::fmod(lAvgAngle + rAvgAngle + std::numbers::pi, 4 * std::numbers::pi) / 2;
-                double angleCondition2 = std::fmod(lAvgAngle + rAvgAngle - std::numbers::pi, 4 * std::numbers::pi) / 2;
+                double angleCondition1 = std::fmod(lAvgAngle + rAvgAngle, 4 * std::numbers::pi) / 2;
+                double angleCondition2 = (angleCondition1 > std::numbers::pi) ?
+                                             angleCondition1 - std::numbers::pi :
+                                             std::fmod(angleCondition1 + std::numbers::pi, 2 * std::numbers::pi);
 
                 if (std::abs(lAvgTime - tAvgTime) < sciFiTracker.ThresholdTime() and
                     std::abs(rAvgTime - tAvgTime) < sciFiTracker.ThresholdTime() and
                     AreAdjacent({Get<"SiPMID">(*lHits.front()), Get<"SiPMID">(*rHits.front()), Get<"SiPMID">(*tHits.front())}) and
-                    (std::abs(angleCondition1 - tAvgAngle) <= 0.1 or
-                     std::abs(angleCondition2 - tAvgAngle) <= 0.1)) {
+                    (std::abs(angleCondition1 - tAvgAngle) <= 0.05 * std::numbers::pi or
+                     std::abs(angleCondition2 - tAvgAngle) <= 0.05 * std::numbers::pi)) {
                     result.insert({lHits, rHits, tHits});
                 }
             }
@@ -236,6 +237,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoorderinates(const std::set<std::ve
     };
 
     auto calculateRightZ = [](double rAngle, double tAngle, double fiberLength) -> double {
+        rAngle -= std::numbers::pi;
         return (tAngle > rAngle + std::numbers::pi) ?
                    -(fiberLength / 2) + std::fmod(rAngle + 3 * std::numbers::pi - tAngle, 2 * std::numbers::pi) / (2 * std::numbers::pi) * fiberLength :
                    -(fiberLength / 2) + std::fmod(rAngle + std::numbers::pi - tAngle, 2 * std::numbers::pi) / (2 * std::numbers::pi) * fiberLength;
@@ -318,12 +320,12 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoorderinates(const std::set<std::ve
             double trueTID1 = std::fmod(lAngle + rAngle - std::numbers::pi, 4 * std::numbers::pi) / 2;
             double trueTID2 = std::fmod(lAngle + rAngle + std::numbers::pi, 4 * std::numbers::pi) / 2;
 
-            // 第一个可能的点
+            // first point
             double x1 = x0 * std::cos(trueTID1);
             double y1 = x0 * std::sin(trueTID1);
             double z1 = calculateLeftZ(lAngle, trueTID1, sciFiTracker.FiberLength());
 
-            // 第二个可能的点
+            // second point
             double x2 = x0 * std::cos(trueTID2);
             double y2 = x0 * std::sin(trueTID2);
             double z2 = calculateLeftZ(lAngle, trueTID2, sciFiTracker.FiberLength());
@@ -371,10 +373,10 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoorderinates(const std::set<std::ve
         }
         auto coordinates = calculateCoordinates(lAngle, rAngle, tAngle, rLLayer, rRLayer, rTLayer);
 
-        for (auto&& coordinate : coordinates)
+        for (auto&& coordinate : coordinates) {
             coordinateMap[coordinate] = hitLists;
+        }
     }
-
     return coordinateMap;
 };
 
@@ -383,7 +385,7 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
 template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::DividedPoint(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
-    -> const std::set<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> {
+    -> const std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
 
     std::vector<std::vector<std::pair<muc::array3d, std::vector<std::vector<AHitPointer>>>>> tempDivData;
@@ -418,13 +420,13 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividedPoint(const std::map<muc::array3
         }
     }
 
-    std::set<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData;
+    std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData;
     for (const auto& group : tempDivData) {
         std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> groupMap;
         for (const auto& [coord, clusters] : group) {
             groupMap[coord] = clusters;
         }
-        divData.insert(std::move(groupMap));
+        divData.push_back(std::move(groupMap));
     }
 
     return divData;
@@ -450,7 +452,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DirectionFit(const std::map<muc::array3
             centroid += c;
         }
     }
-    if (hitData.size() <= 4) {
+    if (hitData.size() < 3) {
         for (auto [direction, hitLists] : hitData) {
             fiberLists.insert(fiberLists.end(), hitLists.begin(), hitLists.end());
         }
@@ -476,22 +478,20 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DirectionFit(const std::map<muc::array3
     if (direction[0] * centroid.x() + direction[1] * centroid.y() + direction[2] * centroid.z() < 0) {
         direction *= -1;
     }
-
+    // std::cout << "DirectionFit: direction = (" << direction[0] << ", " << direction[1] << ", " << direction[2] << "), centroid = (" << centroid[0] << ", " << centroid[1] << ", " << centroid[2] << "), nhit = " << fiberLists.size() << std::endl;
     return std::tuple(muc::array3d{direction.x(), direction.y(), direction.z()}, muc::array3d{centroid.x(), centroid.y(), centroid.z()}, fiberLists);
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-template<std::indirectly_readable AHitPointer>
-    requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::Helix(double theta, double r, double b, double rotationAngle) -> const muc::array3d {
-    return {-std::copysign(r, b) * std::cos(theta + rotationAngle), -std::copysign(r, b) * std::sin(theta + rotationAngle), b * (theta)};
+    double u{theta + rotationAngle};
+    double zOffset{b * std::numbers::pi};
+    return {r * std::cos(u), r * std::sin(u), b * theta - zOffset};
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-template<std::indirectly_readable AHitPointer>
-    requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::Line(double t, const muc::array3d s0, const muc::array3d d) -> const muc::array3d {
     return muc::array3d{
         s0[0] + t * d[0],
@@ -501,71 +501,57 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::Line(double t, const muc::array3d s0, c
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-template<std::indirectly_readable AHitPointer>
-    requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::FindHLMinDistanceSquare(
     double HelixR, double HelixB, double rotationAngle,
     const muc::array3d line_p0, const muc::array3d line_dir,
     double initialT, double initialTheta) -> std::tuple<double, double, double> {
-    const auto& sciFiTracker = MACE::PhaseI::Detector::Description::SciFiTracker::Instance();
+    const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     ROOT::Minuit2::Minuit2Minimizer minimizer;
 
-    auto targetFunction = [&](const double* xx) {
-        muc::array3d sp_point = Helix(xx[1], HelixR, HelixB, rotationAngle);
-        muc::array3d line_point = Line(xx[0], line_p0, line_dir);
-        double dx = sp_point[0] - line_point[0];
-        double dy = sp_point[1] - line_point[1];
-        double dz = sp_point[2] - line_point[2];
-        return dx * dx + dy * dy + dz * dz;
-    };
+    std::function targetFunction{[HelixR, HelixB, rotationAngle, line_p0, line_dir, this](const double* xx) {
+        double t{xx[0]};
+        double theta{xx[1]};
+        muc::array3d sp_point{this->Helix(theta, HelixR, HelixB, rotationAngle)};
+        muc::array3d line_point{this->Line(t, line_p0, line_dir)};
+        double dis{muc::hypot(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2]) *
+                   muc::hypot(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2])};
+        return dis;
+    }};
 
-    minimizer.SetFunction(ROOT::Math::Functor(targetFunction, 2));
-
-    double halfLength = sciFiTracker.FiberLength() / 2;
-    minimizer.SetLimitedVariable(0, "t", initialT, 0.01, -halfLength, halfLength);
-    minimizer.SetLimitedVariable(1, "theta", initialTheta, 0.01, -std::numbers::pi, std::numbers::pi);
-
+    ROOT::Math::Functor f(targetFunction, 2);
+    minimizer.SetFunction(f);
+    minimizer.SetLimitedVariable(0, "x", initialT, 0.01, -sciFiTracker.FiberLength() / 2, sciFiTracker.FiberLength() / 2);
+    minimizer.SetLimitedVariable(1, "y", initialTheta, 0.01, 0, 2 * std::numbers::pi);
     minimizer.Minimize();
-
-    return {minimizer.MinValue(),
-            minimizer.X()[0],
-            minimizer.X()[1]};
+    return std::tuple{minimizer.MinValue(), minimizer.State().Parameter(0).Value(), minimizer.State().Parameter(1).Value()};
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-template<std::indirectly_readable AHitPointer>
-    requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::FindLLMinDistanceSquare(
     const muc::array3d line1_point, const muc::array3d line1_dir,
     const muc::array3d line2_point, const muc::array3d line2_dir) -> double {
 
-    Eigen::Vector3d u = line1_dir;
-    Eigen::Vector3d v = line2_dir;
-    Eigen::Vector3d w = {line1_point[0] - line2_point[0], line1_point[1] - line2_point[1], line1_point[2] - line2_point[2]};
+    muc::array3d vector1{line1_point[0] - line2_point[0], line1_point[1] - line2_point[1], line1_point[2] - line2_point[2]};
+    muc::array3d cross{
+        line1_dir[1] * line2_dir[2] - line2_dir[1] * line1_dir[2],
+        line1_dir[2] * line2_dir[0] - line2_dir[2] * line1_dir[0],
+        line1_dir[0] * line2_dir[1] - line2_dir[0] * line1_dir[1]};
+    if (std::hypot(cross[0], cross[1], cross[2]) < 1e-9) {
+        double dot = ((line1_point[0] - line2_point[0]) * line2_dir[0] +
+                      (line1_point[1] - line2_point[1]) * line2_dir[1] +
+                      (line1_point[2] - line2_point[2]) * line2_dir[2]) /
+                     sqrt(line2_dir[0] * line2_dir[0] + line2_dir[1] * line2_dir[1] + line2_dir[2] * line2_dir[2]);
 
-    double a = u.dot(u);
-    double b = u.dot(v);
-    double c = u.dot(v);
-    double d = u.dot(w);
-    double e = u.dot(w);
-
-    double denom = a * c - b * b;
-
-    if (denom < 1e-9) { // 平行线情况
-        double t = w.dot(v) / c;
-        Eigen::Vector3d closest = {w[0] - t * v[0], w[1] - t * v[1], w[2] - t * v[2]};
-        return closest.dot(closest);
+        return ((line1_point[0] - line2_point[0]) * (line1_point[0] - line2_point[0]) +
+                (line1_point[1] - line2_point[1]) * (line1_point[1] - line2_point[1]) +
+                (line1_point[2] - line2_point[2]) * (line1_point[2] - line2_point[2]) - dot * dot);
+        // return DLDistance(line1_point, line2_point, line2_dir);
     }
-
-    double t = (b * e - c * d) / denom;
-    double s = (a * e - b * d) / denom;
-
-    Eigen::Vector3d closest = {w[0] + t * u[0] - s * v[0],
-                               w[1] + t * u[1] - s * v[1],
-                               w[2] + t * u[2] - s * v[2]};
-
-    return closest.dot(closest);
+    double min_dis = ((vector1[0] * cross[0] + vector1[1] * cross[1] + vector1[2] * cross[2]) / std::hypot(cross[0], cross[1], cross[2])) *
+                     ((vector1[0] * cross[0] + vector1[1] * cross[1] + vector1[2] * cross[2]) / std::hypot(cross[0], cross[1], cross[2]));
+    // std::cout << min_dis << std::endl;
+    return min_dis;
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
@@ -585,18 +571,19 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
     double initialSPhi{std::atan2(initialCentroid[1], initialCentroid[0])};
     double initialPTheta{std::acos(initialDirection[2] / muc::hypot(initialDirection[0], initialDirection[1], initialDirection[2]))};
     double initialPPhi{std::atan2(initialDirection[1], initialDirection[0])};
-    double initialT{(-initialCentroid[2] + r * std::cos(initialPTheta)) / initialDirection[2]};
+    double initialT{(initialCentroid[2] - r * std::cos(initialSTheta)) / initialDirection[2]};
     double initialTheta{};
-    double minDistance{};
 
     ROOT::Minuit2::Minuit2Minimizer minimizer;
     std::function targetFunction{
         [&](const double* xx) {
-            muc::array3d p0{r * std::cos(xx[1]) * std::sin(xx[0]), r * std::sin(xx[1]) * std::sin(xx[0]), r * std::cos(xx[0])};
+            muc::array3d s0{r * std::cos(xx[1]) * std::sin(xx[0]), r * std::sin(xx[1]) * std::sin(xx[0]), r * std::cos(xx[0])};
             const muc::array3d dir{std::cos(xx[3]) * std::sin(xx[2]), std::sin(xx[3]) * std::sin(xx[2]), std::cos(xx[2])};
+
             double t{};
             double theta{};
             double distance{};
+
             std::unordered_set<int> processedSiPMIDs;
             for (int i{}; i < std::ssize(clusterLists); ++i) {
                 auto&& cluster = clusterLists[i];
@@ -610,18 +597,24 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
 
                     if (fiberMap.at(Get<"SiPMID">(*hit)).layerType == "LHelical") {
                         double b{sciFiTracker.FiberLength() / (2 * std::numbers::pi)};
-                        std::tie(minDistance, t, theta) = MACE::PhaseI::ReconSciFi::FindHLMinDistanceSqaure(rLayer, b, rotationAngle, p0, dir, initialT, initialTheta);
+                        double minDistance;
+                        std::tie(minDistance, t, theta) = this->FindHLMinDistanceSquare(rLayer, b, rotationAngle,
+                                                                                        s0, dir, initialT, initialTheta);
                         distance += minDistance;
                     } else if (fiberMap.at(Get<"SiPMID">(*hit)).layerType == "RHelical") {
                         double b{-sciFiTracker.FiberLength() / (2 * std::numbers::pi)};
-                        std::tie(minDistance, t, theta) = MACE::PhaseI::ReconSciFi::FindHLMinDistanceSqaure(rLayer, b, rotationAngle, p0, dir, initialT, initialTheta);
+                        double minDistance;
+                        std::tie(minDistance, t, theta) = this->FindHLMinDistanceSquare(rLayer, b, rotationAngle,
+                                                                                        s0, dir, initialT, initialTheta);
                         distance += minDistance;
                     } else {
                         double x0{rLayer};
                         double y0{};
+                        double minDistance;
                         double x = x0 * std::cos(rotationAngle) - y0 * std::sin(rotationAngle);
                         double y = x0 * std::sin(rotationAngle) + y0 * std::cos(rotationAngle);
-                        distance += MACE::PhaseI::ReconSciFi::FindLLMinDistanceSqaure(p0, dir, {x, y, 0}, {0, 0, 1});
+                        minDistance = this->FindLLMinDistanceSquare(s0, dir, {x, y, 0}, {0, 0, 1});
+                        distance += minDistance;
                     }
 
                     initialT = t;
@@ -634,10 +627,11 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
     ROOT::Math::Functor f(targetFunction, 4);
     minimizer.SetFunction(f);
     minimizer.SetStrategy(2);
+    // minimizer.SetPrintLevel(2);
     minimizer.SetLimitedVariable(0, "theta", initialSTheta, 1e-2, initialSTheta - std::numbers::pi / 4, initialSTheta + std::numbers::pi / 4);
-    minimizer.SetLimitedVariable(1, "phi", initialSPhi, 1e-2, initialSPhi - 2 * std::numbers::pi / 4, initialSPhi + 2 * std::numbers::pi / 4);
+    minimizer.SetLimitedVariable(1, "phi", initialSPhi, 1e-2, initialSPhi - std::numbers::pi / 4, initialSPhi + std::numbers::pi / 4);
     minimizer.SetLimitedVariable(2, "thetap", initialPTheta, 1e-2, initialPTheta - std::numbers::pi / 4, initialPTheta + std::numbers::pi / 4);
-    minimizer.SetLimitedVariable(3, "phip", initialPPhi, 1e-2, initialPPhi - 2 * std::numbers::pi / 4, initialPPhi + 2 * std::numbers::pi / 4);
+    minimizer.SetLimitedVariable(3, "phip", initialPPhi, 1e-2, initialPPhi - std::numbers::pi / 4, initialPPhi + std::numbers::pi / 4);
     minimizer.Minimize();
 
     muc::array3d x{r * std::cos(minimizer.State().Parameter(1).Value()) * std::sin(minimizer.State().Parameter(0).Value()),
