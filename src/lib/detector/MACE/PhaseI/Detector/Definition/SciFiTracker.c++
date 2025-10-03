@@ -362,7 +362,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         [&](auto helicalRadius, auto logicalFiber, auto logicalLightGuide, auto nFiber, auto pitch, int second) {
             for (int i{}; i < nFiber; i++) {
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber + 1_pi},
+                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber},
                     logicalFiber,
                     scifiName + "HelicalFiber_" + std::to_string(fiberNumber),
                     logicalBracket,
@@ -371,29 +371,29 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber + ((pitch > 0) ? 0 : 1_pi)} *
                         G4Translate3D{0, 0, -sciFiTracker.FiberLength() / 2 - (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch))) / 2} *
                         G4RotateY3D{1.5 * 1_pi - std::copysign(1, pitch) * 0.5 * 1_pi},
                     logicalLightGuide,
                     scifiName + "HelicalLightGuide",
                     Mother().LogicalVolume(),
                     false,
-                    0,
+                    fiberNumber,
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber + ((pitch > 0) ? 0 : 1_pi)} *
                         G4Translate3D{0, 0, sciFiTracker.FiberLength() / 2 + (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch))) / 2} *
                         G4RotateY3D{1.5 * 1_pi + std::copysign(1, pitch) * 0.5 * 1_pi},
                     logicalLightGuide,
                     scifiName + "HelicalLightGuide",
                     Mother().LogicalVolume(),
                     false,
-                    0,
+                    fiberNumber,
                     checkOverlaps);
                 fiberNumber++;
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber + ((pitch > 0) ? 0 : 1_pi)} *
                         G4Translate3D{0,
                                       helicalRadius,
                                       sciFiTracker.FiberLength() / 2 + (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch)))} *
