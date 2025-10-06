@@ -45,22 +45,22 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     using namespace MACE::Detector::Definition;
 
     fWorld = std::make_unique<PhaseI::World>();
-    // auto& ecalCrystal{fWorld->NewDaughter<ECALCrystal>(fCheckOverlap)};
-    //  auto& ecalPhotoSensor{fWorld->NewDaughter<ECALPhotoSensor>(fCheckOverlap)};
+    auto& ecalCrystal{fWorld->NewDaughter<ECALCrystal>(fCheckOverlap)};
+    auto& ecalPhotoSensor{fWorld->NewDaughter<ECALPhotoSensor>(fCheckOverlap)};
     auto& centralBeamPipe{fWorld->NewDaughter<PhaseI::CentralBeamPipe>(fCheckOverlap)};
-    // auto& mrpc{fWorld->NewDaughter<PhaseI::MRPC>(fCheckOverlap)};
+    auto& mrpc{fWorld->NewDaughter<PhaseI::MRPC>(fCheckOverlap)};
     auto& sciFiTracker{fWorld->NewDaughter<PhaseI::SciFiTracker>(fCheckOverlap)};
 
     centralBeamPipe.NewDaughter<Target>(fCheckOverlap);
 
-    // const auto& ecalName{MACE::Detector::Description::ECAL::Instance().Name()};
+    const auto& ecalName{MACE::Detector::Description::ECAL::Instance().Name()};
     const auto& scifiName{MACE::PhaseI::Detector::Description::SciFiTracker::Instance().Name()};
 
-    // onst auto fECALPMSD{new SD::ECALPMSD{ecalName + "PM"}};
-    // ecalPhotoSensor.RegisterSD("ECALPMCathode", fECALPMSD);
+    const auto fECALPMSD{new SD::ECALPMSD{ecalName + "PM"}};
+    ecalPhotoSensor.RegisterSD("ECALPMCathode", fECALPMSD);
 
-    // const auto ecalSD(new SD::ECALSD{ecalName, fECALPMSD});
-    // ecalCrystal.RegisterSD(ecalSD);
+    const auto ecalSD(new SD::ECALSD{ecalName, fECALPMSD});
+    ecalCrystal.RegisterSD(ecalSD);
 
     const auto fSciFiSD{new SD::SciFiSD{scifiName}};
     sciFiTracker.RegisterSD(scifiName + "HelicalFiberCore", fSciFiSD);
