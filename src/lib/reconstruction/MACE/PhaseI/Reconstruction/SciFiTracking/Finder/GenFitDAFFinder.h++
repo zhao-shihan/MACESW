@@ -54,7 +54,7 @@ public:
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-    auto DividedHit(const std::vector<std::vector<AHitPointer>>& hitData)
+    auto DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
         -> const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>;
 
     template<std::indirectly_readable AHitPointer>
@@ -64,17 +64,17 @@ public:
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-    auto CalCoorderinates(const std::set<std::vector<std::vector<AHitPointer>>>& hitData, const muc::array3d& direction)
+    auto CalCoordinates(const std::set<std::vector<std::vector<AHitPointer>>>& hitData, const muc::array3d& direction)
         -> const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-    auto DividedPoint(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
+    auto DividePoints(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
         -> const std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-    auto DirectionFit(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
+    auto EstimateInitialDirection(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
         -> std::tuple<muc::array3d, muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
     auto Helix(double theta, double r, double b, double rotationAngle)
