@@ -110,27 +110,27 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                                                        *Get<"SiPMID">(*hit), Get<"HitID">(*hit),
                                                        nullptr};
                 } else {
-                    TMatrixDSym hitCov(8);
-                    hitCov.UnitMatrix();
-                    hitCov(0, 0) = 0;
-                    hitCov(1, 1) = 0;
-                    hitCov(2, 2) = 0;
-                    hitCov(3, 3) = 0.0;
-                    hitCov(4, 4) = 0.0;
-                    hitCov(5, 5) = 0.0;
-                    hitCov(6, 6) = 0.0;
-                    hitCov(7, 7) = 0.0289 * 0.0289;
-                    TVectorD hitCoords(8);
-                    hitCoords[0] = 0.;                                                             // x
-                    hitCoords[1] = 0.;                                                             // y
-                    hitCoords[2] = 0.;                                                             // z
-                    hitCoords[3] = Mustard::ToG3<"Length">(fiberMap[*Get<"SiPMID">(*hit)].radius); // r
-                    hitCoords[4] = fiberMap[*Get<"SiPMID">(*hit)].pitch;                           // pitch
-                    hitCoords[5] = fiberMap[*Get<"SiPMID">(*hit)].rotationAngle;                   // rotationAngle
-                    hitCoords[6] = 2 * std::numbers::pi;
-                    hitCoords[7] = 0; //
+                    TVectorD rawHitCoords(8);
+                    rawHitCoords[0] = 0.;                                                             // x
+                    rawHitCoords[1] = 0.;                                                             // y
+                    rawHitCoords[2] = 0.;                                                             // z
+                    rawHitCoords[3] = Mustard::ToG3<"Length">(fiberMap[*Get<"SiPMID">(*hit)].radius); // r
+                    rawHitCoords[4] = fiberMap[*Get<"SiPMID">(*hit)].pitch;                           // pitch
+                    rawHitCoords[5] = fiberMap[*Get<"SiPMID">(*hit)].rotationAngle;                   // rotationAngle
+                    rawHitCoords[6] = 2 * std::numbers::pi;
+                    rawHitCoords[7] = 0; //
 
-                    return new genfit::HelixMeasurement(hitCoords, hitCov, *Get<"SiPMID">(*hit), Get<"HitID">(*hit), nullptr);
+                    TMatrixDSym rawHitCov(8);
+                    rawHitCov.UnitMatrix();
+                    rawHitCov(0, 0) = 0;
+                    rawHitCov(1, 1) = 0;
+                    rawHitCov(2, 2) = 0;
+                    rawHitCov(3, 3) = 0.0;
+                    rawHitCov(4, 4) = 0.0;
+                    rawHitCov(5, 5) = 0.0;
+                    rawHitCov(6, 6) = 0.0;
+                    rawHitCov(7, 7) = 0.0289 * 0.0289;
+                    return new genfit::HelixMeasurement(rawHitCoords, rawHitCov, *Get<"SiPMID">(*hit), Get<"HitID">(*hit), nullptr);
                 }
             }()};
         genfitTrack->insertPoint(new genfit::TrackPoint{measurement, genfitTrack.get()});
@@ -148,7 +148,7 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
 auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, ASeedPointer seed,
                                                     const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
-    const auto& status{*genfitTrack->getFitStatus()};
+    // const auto& status{*genfitTrack->getFitStatus()};
     const genfit::MeasuredStateOnPlane* firstState;
     try {
         firstState = &genfitTrack->getFittedState();

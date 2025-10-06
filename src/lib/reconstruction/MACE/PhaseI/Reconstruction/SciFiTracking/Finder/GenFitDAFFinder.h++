@@ -59,7 +59,7 @@ public:
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-    auto PositionTransform(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
+    auto FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
         -> const std::set<std::vector<std::vector<AHitPointer>>>;
 
     template<std::indirectly_readable AHitPointer>

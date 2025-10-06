@@ -17,10 +17,10 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
     Result r;
 
     auto clusterLists{this->ClusterHits(hitData)};
-    auto hitLists{this->PositionTransform(this->DividedHit(clusterLists))};
+    auto hitLists{this->FindCompatibleClusterCombinations(this->DividedHit(clusterLists))};
     auto coordinateMap{this->CalCoorderinates(hitLists, muc::array3d{})};
-    auto dividedMap{this->DividedPoint(coordinateMap)};
-    for (auto&& hitCluster : dividedMap) {
+    auto dividedPointMap{this->DividedPoint(coordinateMap)};
+    for (auto&& hitCluster : dividedPointMap) {
         auto initialResult = this->DirectionFit(hitCluster);
         auto result{this->TrackFit(initialResult)};
         std::vector<AHitPointer> resultData;
@@ -104,7 +104,7 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-auto GenFitDAFFinder<ASciFiHit, ATrack>::PositionTransform(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
+auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
     -> const std::set<std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
