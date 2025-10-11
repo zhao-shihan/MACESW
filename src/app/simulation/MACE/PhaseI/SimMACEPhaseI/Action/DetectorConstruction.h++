@@ -5,6 +5,7 @@
 #include "MACE/PhaseI/Detector/Description/CentralBeamPipe.h++"
 #include "MACE/PhaseI/Detector/Description/MRPC.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
+#include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/PhaseI/Detector/Description/World.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Region.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/ECALPMSD.h++"
@@ -37,10 +38,10 @@ public:
 
 public:
     using ProminentDescription = std::tuple<MACE::Detector::Description::ECAL,
-                                            PhaseI::Detector::Description::MRPC,
                                             PhaseI::Detector::Description::CentralBeamPipe,
                                             MACE::Detector::Description::Target,
                                             PhaseI::Detector::Description::SciFiTracker,
+                                            PhaseI::Detector::Description::TTC,
                                             PhaseI::Detector::Description::World>;
 
 private:

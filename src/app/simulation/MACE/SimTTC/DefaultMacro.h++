@@ -13,7 +13,7 @@ constexpr auto defaultMacro = {
     "#/control/saveHistory",
     "/run/verbose 2",
     "",
-    "/Mustard/Detector/Description/Ixport SimTTC.yaml",
+    "#/Mustard/Detector/Description/Ixport SimTTC.yaml",
     "",
     "/MACE/Physics/UseOpticalPhysics",
     "/run/initialize",

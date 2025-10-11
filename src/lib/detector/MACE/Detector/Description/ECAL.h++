@@ -40,7 +40,7 @@ public:
     auto PMTEnergyBin() const -> const auto& { return fPMTEnergyBin; }
     auto PMTQuantumEfficiency() const -> const auto& { return fPMTQuantumEfficiency; }
 
-    auto MPPCNPixelRows() const -> const auto& { return fMPPCNPixelRows; }
+    auto MPPCNPixelRow() const -> const auto& { return fMPPCNPixelRow; }
     auto MPPCPixelSizeSet() const -> const auto& { return fMPPCPixelSizeSet; }
     auto MPPCPitch() const -> auto { return fMPPCPitch; }
     auto MPPCThickness() const -> auto { return fMPPCThickness; }
@@ -78,7 +78,7 @@ public:
     auto PMTEnergyBin(std::vector<double> val) -> void { fPMTEnergyBin = std::move(val); }
     auto PMTQuantumEfficiency(std::vector<double> val) -> void { fPMTQuantumEfficiency = std::move(val); }
 
-    auto MPPCNPixelRows(std::vector<int> val) -> void { fMPPCNPixelRows = std::move(val); }
+    auto MPPCNPixelRow(std::vector<int> val) -> void { fMPPCNPixelRow = std::move(val); }
     auto MPPCPixelSizeSet(std::vector<double> val) -> void { fMPPCPixelSizeSet = std::move(val); }
     auto MPPCPitch(double val) -> void { fMPPCPitch = val; }
     auto MPPCThickness(double val) -> void { fMPPCThickness = val; }
@@ -143,7 +143,7 @@ private:
     std::vector<double> fPMTEnergyBin;
     std::vector<double> fPMTQuantumEfficiency;
 
-    std::vector<int> fMPPCNPixelRows;
+    std::vector<int> fMPPCNPixelRow;
     std::vector<double> fMPPCPixelSizeSet;
     double fMPPCPitch;
     double fMPPCThickness;

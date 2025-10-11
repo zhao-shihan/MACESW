@@ -45,7 +45,7 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
     const auto& ecal{Description::ECAL::Instance()};
     const auto name{ecal.Name()};
 
-    const auto mppcNPixelRows{ecal.MPPCNPixelRows()};
+    const auto mppcNPixelRows{ecal.MPPCNPixelRow()};
     const auto mppcPixelSizeSet{ecal.MPPCPixelSizeSet()};
     const auto mppcPitch{ecal.MPPCPitch()};
     const auto mppcThickness{ecal.MPPCThickness()};

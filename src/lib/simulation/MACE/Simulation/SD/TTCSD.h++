@@ -13,7 +13,13 @@ class TTCSiPMSD;
 
 class TTCSD : public G4VSensitiveDetector {
 public:
-    TTCSD(const G4String& sdName, const TTCSiPMSD* ttcSiPMSD = {});
+    enum struct Type {
+        MACE,
+        MACEPhaseI
+    };
+
+public:
+    TTCSD(const G4String& sdName, const Type type, const TTCSiPMSD* ttcSiPMSD = {});
 
     virtual auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
     virtual auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
@@ -21,6 +27,8 @@ public:
 
 protected:
     const TTCSiPMSD* const fTTCSiPMSD;
+
+    Type type;
 
     double fEnergyDepositionThreshold;
 

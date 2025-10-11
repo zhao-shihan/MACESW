@@ -8,9 +8,9 @@ using namespace Mustard::LiteralUnit::Length;
 
 World::World() :
     DescriptionBase{"World"},
-    fXExtent{1_m},
-    fYExtent{1_m},
-    fZExtent{1_m} {}
+    fXExtent{2_m},
+    fYExtent{2_m},
+    fZExtent{2_m} {}
 
 auto World::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fXExtent, "XExtent");

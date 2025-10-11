@@ -22,8 +22,9 @@ auto UsePhaseIDefault() -> void {
     }
     { // bigger windows for ECAL
         auto& ecal{MACE::ECAL::Instance()};
-        ecal.UpstreamWindowRadius(100_mm);
-        ecal.DownstreamWindowRadius(100_mm);
+        ecal.UpstreamWindowRadius(104_mm);
+        ecal.DownstreamWindowRadius(104_mm);
+        ecal.InnerRadius(260_mm);
     }
 }
 

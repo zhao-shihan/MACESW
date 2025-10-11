@@ -1,4 +1,4 @@
-#include "MACE/Detector/Description/TTC.h++"
+#include "MACE/PhaseI/Detector/Description/TTC.h++"
 
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
@@ -10,7 +10,7 @@
 #include <cmath>
 #include <deque>
 
-namespace MACE::Detector::Description {
+namespace MACE::PhaseI::Detector::Description {
 
 using namespace Mustard::LiteralUnit;
 using namespace Mustard::MathConstant;
@@ -19,14 +19,14 @@ using namespace Mustard::PhysicalConstant;
 TTC::TTC() : // clang-format off
     DescriptionWithCacheBase{"TTC"}, // clang-format on
     // Geometry
-    fLength{this, 7_cm},
-    fWidthDown{this, 3_cm},
-    fWidthUp{this, 5_cm},
+    fLength{this, 5.5_cm},
+    fWidth{this, 5_cm},
     fThickness{this, 0.5_cm},
-    fRadius{this, 48_cm},
-    fSlantAngle{this, 46_deg},
-    fNAlongPhi{this, 122},
-    fBarrelLength{this, 180_cm},
+    fRadius{this, {8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm}},
+    fSlantAngle{this, 17_deg},
+    fNAlongPhi{this, {12,12,12,12,12,12,12,12,12}},
+    fZPosition{this, {-20.6_cm,-15.45_cm,-10.3_cm,-5.15_cm,0_cm,5.15_cm,10.3_cm,15.45_cm,20.6_cm}},
+    fBarrelLength{this, 30_cm},
 
     fPCBLength{this, 3_cm},
     fPCBWidth{this, 1_cm},
@@ -44,9 +44,6 @@ TTC::TTC() : // clang-format off
     fSiliconeWidth{this, 0.2_cm},
     fSiliconeThickness{this, 0.03_cm},
     fNSiPM{this, 2},
-
-    fWidth{this, [this] { return CalculateWidth(); }},
-    fPosition{this, [this] { return CalculatePosition(); }},
 
     // Material
     // Scintillator
@@ -74,7 +71,7 @@ TTC::TTC() : // clang-format off
     fWindowCarbonElement{this, 0.7362},
     fWindowHydrogenElement{this, 0.0675},
     fWindowOxygenElement{this, 0.1963},
-    fWindowRefractiveIndex{this, {1.55, 1.55}},
+    fWindowRIndex{this, {1.55, 1.55}},
 
     fSiPMEnergyBin{this, {}},
     fSiPMEfficiency{this, {}}, // S13360-3050VE
@@ -91,55 +88,15 @@ TTC::TTC() : // clang-format off
     fSiPMEfficiency = {3.425656704, 3.648011349, 4.27165845, 4.946418576, 5.668359955, 6.429619045, 7.11080412, 7.497475278, 8.039291484, 8.821556901, 9.725285753, 10.25184232, 10.83322274, 11.69811431, 12.64197787, 13.57371735, 13.9856202, 14.80405969, 15.76358392, 16.75862246, 17.6931202, 18.89748135, 19.87240864, 20.95305937, 22.05877027, 23.28104155, 24.20768377, 25.00459784, 25.80394272, 26.89978015, 27.83080795, 28.83258008, 30.09983902, 31.17956649, 32.19281801, 33.10216044, 34.03745256, 34.97274467, 35.91391372, 36.90276753, 37.50595677, 38.13880536, 38.91429156, 39.30108444, 39.61979201, 39.86809295, 40.14914912, 40.16543674, 39.9601454, 39.64945991, 39.23407951, 38.63977117, 37.62528396, 36.96457658, 36.28223308, 35.54774213, 34.47404186, 33.17361068, 32.28915844, 30.68109949, 29.99828974, 29.44758984, 28.30684101, 27.12648793, 25.99030638, 24.78502023, 23.73010063, 22.79343306, 21.55889817, 20.49402454, 19.57991462, 18.52052398, 17.43525619, 16.35128295, 15.24864181, 14.15760743, 13.13714031, 12.12532309, 10.86827626, 9.937387296, 9.115710781, 8.311601404, 7.157647218, 5.786493629, 4.148860814, 2.819490889}; // S13360-3050VE
 }
 
-auto TTC::CalculateWidth() -> std::vector<double> {
-    std::deque<double> dequeWidth;
-    const auto omega{2 * pi * std::cos(atan(fRadius / fWidthDown))};
-    const auto nMax{static_cast<int>(std::floor(2 * pi / omega))};
-    for (gsl::index nSameSolidAngle{1}; nSameSolidAngle <= nMax; nSameSolidAngle++) {
-        auto temporaryWidth{fRadius * (1 / std::tan(std::acos(nSameSolidAngle * omega / (2 * pi))) - 1 / std::tan(std::acos((nSameSolidAngle - 1) * omega / (2 * pi))))};
-        if (temporaryWidth >= fWidthUp or fRadius * (1 / std::tan(std::acos(nSameSolidAngle * omega / (2 * pi)))) <= fBarrelLength / 2) {
-            break;
-        }
-        dequeWidth.push_front(temporaryWidth);
-        dequeWidth.push_back(temporaryWidth);
-    }
-    auto nFinalSameSolidAngle{dequeWidth.size() / 2};
-    for (gsl::index nWidthUp = nFinalSameSolidAngle + 1; fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp <= fBarrelLength / 2; nWidthUp++) { // 第n块（上限宽度条件）
-        dequeWidth.push_front(fWidthUp);
-        dequeWidth.push_back(fWidthUp);
-    }
-    return std::vector<double>(dequeWidth.begin(), dequeWidth.end());
-}
-
-auto TTC::CalculatePosition() -> std::vector<muc::array3d> {
-    std::deque<muc::array3d> dequePosition;
-    const auto omega{2 * pi * std::cos(atan(fRadius / fWidthDown))};
-    const auto nMax{static_cast<int>(std::floor(2 * pi / omega))};
-    for (gsl::index nSameSolidAngle{1}; nSameSolidAngle <= nMax; nSameSolidAngle++) {
-        auto temporaryWidth{fRadius * (1 / std::tan(std::acos(nSameSolidAngle * omega / (2 * pi))) - 1 / std::tan(std::acos((nSameSolidAngle - 1) * omega / (2 * pi))))};
-        if (temporaryWidth >= fWidthUp or fRadius * (1 / std::tan(std::acos(nSameSolidAngle * omega / (2 * pi)))) <= fBarrelLength / 2) {
-            break;
-        }
-        dequePosition.push_front(muc::array3d{fRadius, 0, -1 * (fRadius / 2 * (1 / std::tan(std::acos(nSameSolidAngle * omega / (2 * pi))) + 1 / std::tan(std::acos((nSameSolidAngle - 1) * omega / (2 * pi)))))});
-        dequePosition.push_back(muc::array3d{fRadius, 0, fRadius / 2 * (1 / std::tan(std::acos(nSameSolidAngle * omega / (2 * pi))) + 1 / std::tan(std::acos((nSameSolidAngle - 1) * omega / (2 * pi))))});
-    }
-    auto nFinalSameSolidAngle{dequePosition.size() / 2};
-    for (gsl::index nWidthUp = nFinalSameSolidAngle + 1; fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp <= fBarrelLength / 2; nWidthUp++) { // 第n块（上限宽度条件）
-        dequePosition.push_front(muc::array3d{fRadius, 0, -1 * (fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp)});
-        dequePosition.push_back(muc::array3d{fRadius, 0, fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp});
-    }
-    return std::vector<muc::array3d>(dequePosition.begin(), dequePosition.end());
-}
-
 auto TTC::ImportAllValue(const YAML::Node& node) -> void {
     // Geometry
     ImportValue(node, fLength, "Length");
-    ImportValue(node, fWidthDown, "WidthDown");
-    ImportValue(node, fWidthUp, "WidthUp");
+    ImportValue(node, fWidth, "Width");
     ImportValue(node, fThickness, "Thickness");
     ImportValue(node, fRadius, "DistanceToCDC");
     ImportValue(node, fSlantAngle, "SlantAngle");
     ImportValue(node, fNAlongPhi, "NAlongPhi");
+    ImportValue(node, fZPosition, "ZPosition");
     ImportValue(node, fBarrelLength, "BarrelLength");
     ImportValue(node, fPCBLength, "PCBLength");
     ImportValue(node, fPCBWidth, "PCBWidth");
@@ -177,7 +134,7 @@ auto TTC::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fWindowCarbonElement, "WindowCarbonElement");
     ImportValue(node, fWindowHydrogenElement, "WindowHydrogenElement");
     ImportValue(node, fWindowOxygenElement, "WindowOxygenElement");
-    ImportValue(node, fWindowRefractiveIndex, "WindowRefractiveIndex");
+    ImportValue(node, fWindowRIndex, "WindowRIndex");
     ImportValue(node, fSiPMEnergyBin, "SiPMEnergyBin");
     ImportValue(node, fSiPMEfficiency, "SiPMEfficiency");
     ImportValue(node, fReflectorReflectivity, "ReflectorReflectivity");
@@ -189,12 +146,12 @@ auto TTC::ImportAllValue(const YAML::Node& node) -> void {
 auto TTC::ExportAllValue(YAML::Node& node) const -> void {
     // Geometry
     ExportValue(node, fLength, "Length");
-    ExportValue(node, fWidthDown, "WidthDown");
-    ExportValue(node, fWidthUp, "WidthUp");
+    ExportValue(node, fWidth, "Width");
     ExportValue(node, fThickness, "Thickness");
     ExportValue(node, fRadius, "DistanceToCDC");
     ExportValue(node, fSlantAngle, "SlantAngle");
     ExportValue(node, fNAlongPhi, "NAlongPhi");
+    ExportValue(node, fZPosition, "ZPosition");
     ExportValue(node, fBarrelLength, "BarrelLength");
     ExportValue(node, fPCBLength, "PCBLength");
     ExportValue(node, fPCBWidth, "PCBWidth");
@@ -232,7 +189,7 @@ auto TTC::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fWindowCarbonElement, "WindowCarbonElement");
     ExportValue(node, fWindowHydrogenElement, "WindowHydrogenElement");
     ExportValue(node, fWindowOxygenElement, "WindowOxygenElement");
-    ExportValue(node, fWindowRefractiveIndex, "WindowRefractiveIndex");
+    ExportValue(node, fWindowRIndex, "WindowRIndex");
     ExportValue(node, fSiPMEnergyBin, "SiPMEnergyBin");
     ExportValue(node, fSiPMEfficiency, "SiPMEfficiency");
     ExportValue(node, fReflectorReflectivity, "ReflectorReflectivity");

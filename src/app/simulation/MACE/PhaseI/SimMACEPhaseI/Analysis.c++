@@ -6,6 +6,8 @@
 #include "MACE/PhaseI/Simulation/Hit/SciFiSimHit.h++"
 #include "MACE/Simulation/Hit/ECALHit.h++"
 #include "MACE/Simulation/Hit/ECALPMHit.h++"
+#include "MACE/Simulation/Hit/TTCHit.h++"
+#include "MACE/Simulation/Hit/TTCSiPMHit.h++"
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
@@ -24,6 +26,8 @@ Analysis::Analysis() :
     AnalysisBase{this},
     fCoincidenceWithMRPC{true},
     fCoincidenceWithECAL{true},
+    fSaveTTCHitData{true},
+    fSaveTTCSiPMHitData{true},
     fPrimaryVertexOutput{},
     fDecayVertexOutput{},
     fMRPCSimHitOutput{},
@@ -36,6 +40,10 @@ Analysis::Analysis() :
     fECALPMHit{},
     fSciFiSimHit{},
     fSciFiSiPMHit{},
+    fTTCSimHitOutput{},
+    fTTCSiPMHitOutput{},
+    fTTCHit{},
+    fTTCSiPMHit{},
     fMessengerRegister{this} {}
 
 auto Analysis::RunBeginUserAction(int runID) -> void {
@@ -44,6 +52,12 @@ auto Analysis::RunBeginUserAction(int runID) -> void {
     }
     if (TrackingAction::Instance().SaveDecayVertexData()) {
         fDecayVertexOutput.emplace(fmt::format("G4Run{}/SimDecayVertex", runID));
+    }
+    if (fSaveTTCHitData) {
+        fTTCSimHitOutput.emplace(fmt::format("G4Run{}/TTCSimHit", runID));
+    }
+    if (fSaveTTCSiPMHitData) {
+        fTTCSiPMHitOutput.emplace(fmt::format("G4Run{}/TTCSiPMHit", runID));
     }
     fMRPCSimHitOutput.emplace(fmt::format("G4Run{}/MRPCSimHit", runID));
     fECALSimHitOutput.emplace(fmt::format("G4Run{}/ECALSimHit", runID));
@@ -77,6 +91,12 @@ auto Analysis::EventEndUserAction() -> void {
         if (fSciFiSiPMHit) {
             fSciFiSiPMHitOutput->Fill(*fSciFiSiPMHit);
         }
+        if (fTTCSimHitOutput) {
+            fTTCSimHitOutput->Fill(*fTTCHit);
+        }
+        if (fTTCSiPMHitOutput) {
+            fTTCSiPMHitOutput->Fill(*fTTCSiPMHit);
+        }
     }
     fPrimaryVertex = {};
     fDecayVertex = {};
@@ -85,6 +105,8 @@ auto Analysis::EventEndUserAction() -> void {
     fECALPMHit = {};
     fSciFiSimHit = {};
     fSciFiSiPMHit = {};
+    fTTCHit = {};
+    fTTCSiPMHit = {};
 }
 
 auto Analysis::RunEndUserAction(int) -> void {
@@ -94,6 +116,12 @@ auto Analysis::RunEndUserAction(int) -> void {
     }
     if (fDecayVertexOutput) {
         fDecayVertexOutput->Write();
+    }
+    if (fTTCSimHitOutput) {
+        fTTCSimHitOutput->Write();
+    }
+    if (fTTCSiPMHitOutput) {
+        fTTCSiPMHitOutput->Write();
     }
     fMRPCSimHitOutput->Write();
     fECALSimHitOutput->Write();
@@ -108,6 +136,8 @@ auto Analysis::RunEndUserAction(int) -> void {
     fECALPMHitOutput.reset();
     fSciFiSimHitOutput.reset();
     fSciFiSiPMHitOutput.reset();
+    fTTCSimHitOutput.reset();
+    fTTCSiPMHitOutput.reset();
 }
 
 } // namespace MACE::PhaseI::SimMACEPhaseI

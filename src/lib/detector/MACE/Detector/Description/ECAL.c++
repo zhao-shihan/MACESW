@@ -157,8 +157,8 @@ using namespace Mustard::PhysicalConstant;
 ECAL::ECAL() : // clang-format off
     DescriptionBase{"ECAL"}, // clang-format on
     fNSubdivision{3},
-    fInnerRadius{20_cm},
-    fCrystalHypotenuse{10_cm},
+    fInnerRadius{25_cm},
+    fCrystalHypotenuse{20_cm},
     fUpstreamWindowRadius{50_mm},
     fDownstreamWindowRadius{5_mm},
     // BGO optical param.s
@@ -187,7 +187,7 @@ ECAL::ECAL() : // clang-format off
     fScintillationYield{10000},
     fScintillationTimeConstant1{300_ns},
     fResolutionScale{1.},
-    fUseMPPC{false},
+    fUseMPPC{true},
     fPMTDimensions{{29.3_mm, 25_mm, 87_mm},    // 9442B Type-HEX01
                    {29.3_mm, 25_mm, 87_mm},    // 9442B Type-PEN
                    {39.9_mm, 32_mm, 98.5_mm},  // 9902B Type-HEX02
@@ -215,8 +215,8 @@ ECAL::ECAL() : // clang-format off
                           0.18987, 0.19886, 0.2083, 0.21794, 0.228, 0.23806, 0.24644, 0.25312, 0.25713, 0.25932, 0.25835, 0.25279,
                           0.24266, 0.23367, 0.22357, 0.2143, 0.20344, 0.19319, 0.18363, 0.17294, 0.16265, 0.15232, 0.14053, 0.12759,
                           0.11486, 0.10345, 0.09229, 0.08193, 0.07198, 0.06108, 0.05136, 0.04241, 0.0337, 0.02403, 0.01447, 0.00466}, // ET 9269B
-    fMPPCNPixelRows{4,
-                    4,
+    fMPPCNPixelRow{8,
+                    8,
                     8,
                     8,
                     8,
@@ -435,7 +435,7 @@ auto ECAL::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fPMTCathodeThickness, "PMTCathodeThickness");
     ImportValue(node, fPMTEnergyBin, "PMTEnergyBin");
     ImportValue(node, fPMTQuantumEfficiency, "PMTQuantumEfficiency");
-    ImportValue(node, fMPPCNPixelRows, "MPPCNPixelRows");
+    ImportValue(node, fMPPCNPixelRow, "MPPCNPixelRow");
     ImportValue(node, fMPPCPixelSizeSet, "MPPCPixelSizeSet");
     ImportValue(node, fMPPCPitch, "MPPCPitch");
     ImportValue(node, fMPPCThickness, "MPPCThickness");
@@ -467,7 +467,7 @@ auto ECAL::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fPMTCathodeThickness, "PMTCathodeThickness");
     ExportValue(node, fPMTEnergyBin, "PMTEnergyBin");
     ExportValue(node, fPMTQuantumEfficiency, "PMTQuantumEfficiency");
-    ExportValue(node, fMPPCNPixelRows, "MPPCNPixelRows");
+    ExportValue(node, fMPPCNPixelRow, "MPPCNPixelRow");
     ExportValue(node, fMPPCPixelSizeSet, "MPPCPixelSizeSet");
     ExportValue(node, fMPPCPitch, "MPPCPitch");
     ExportValue(node, fMPPCThickness, "MPPCThickness");

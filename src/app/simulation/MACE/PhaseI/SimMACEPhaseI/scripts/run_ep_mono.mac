@@ -2,7 +2,7 @@
 /run/verbose 0
 
 #/MACE/Physics/UseRadioactiveDecayPhysics
-#/MACE/Physics/UseOpticalPhysics
+/MACE/Physics/UseOpticalPhysics
 
 #/Mustard/Detector/Description/Import SimMACEPhaseI_geom.yaml
 
@@ -18,8 +18,8 @@
 /MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
-/MACE/Analysis/FilePath SimMACEPhaseI_test.root
+/MACE/Analysis/FilePath SimMACEPhaseI_ep_mono.root
 /MACE/Analysis/FileMode RECREATE
 
-/run/beamOn 1000
+/run/beamOn 1000000
 /Mustard/Run/PrintRunSummary

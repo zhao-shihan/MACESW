@@ -4,6 +4,7 @@
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
+#include "TDirectory.h"
 #include "TH3F.h"
 
 #include "G4ParticleDefinition.hh"

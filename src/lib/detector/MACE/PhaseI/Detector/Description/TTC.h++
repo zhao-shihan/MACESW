@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-namespace MACE::Detector::Description {
+namespace MACE::PhaseI::Detector::Description {
 
 class TTC final : public Mustard::Detector::Description::DescriptionWithCacheBase<TTC> {
     friend Mustard::Env::Memory::SingletonInstantiator;
@@ -20,12 +20,12 @@ public:
     // Geometry
 
     auto Length() const -> auto { return *fLength; }
-    auto WidthDown() const -> auto { return *fWidthDown; }
-    auto WidthUp() const -> auto { return *fWidthUp; }
+    auto Width() const -> auto { return *fWidth; }
     auto Thickness() const -> auto { return *fThickness; }
-    auto Radius() const -> auto { return *fRadius; }
+    auto Radius() const -> const auto& { return *fRadius; }
     auto SlantAngle() const -> auto { return *fSlantAngle; }
-    auto NAlongPhi() const -> auto { return *fNAlongPhi; }
+    auto NAlongPhi() const -> const auto& { return *fNAlongPhi; }
+    auto ZPosition() const -> auto { return *fZPosition; }
     auto BarrelLength() const -> auto { return *fBarrelLength; }
     auto PCBLength() const -> auto { return *fPCBLength; }
     auto PCBWidth() const -> auto { return *fPCBWidth; }
@@ -42,12 +42,12 @@ public:
     auto NSiPM() const -> auto { return *fNSiPM; }
 
     auto Length(double val) -> void { fLength = val; }
-    auto WidthDown(double val) -> void { fWidthDown = val; }
-    auto WidthUp(double val) -> void { fWidthUp = val; }
+    auto Width(double val) -> void { fWidth = val; }
     auto Thickness(double val) -> void { fThickness = val; }
-    auto Radius(double val) -> void { fRadius = val; }
+    auto Radius(std::vector<double> val) -> void { fRadius = std::move(val); }
     auto SlantAngle(double val) -> void { fSlantAngle = val; }
-    auto NAlongPhi(int val) -> void { fNAlongPhi = val; }
+    auto NAlongPhi(std::vector<int> val) -> void { fNAlongPhi = std::move(val); }
+    auto ZPosition(std::vector<double> val) -> void { fZPosition = std::move(val); }
     auto BarrelLength(int val) -> void { fBarrelLength = val; }
     auto PCBLength(double val) -> void { fPCBLength = val; }
     auto PCBWidth(double val) -> void { fPCBWidth = val; }
@@ -62,9 +62,6 @@ public:
     auto SiliconeWidth(double val) -> void { fSiliconeWidth = val; }
     auto SiliconeThickness(double val) -> void { fSiliconeThickness = val; }
     auto NSiPM(int val) -> void { fNSiPM = val; }
-
-    auto Width() const -> const auto& { return *fWidth; }
-    auto Position() const -> const auto& { return *fPosition; }
 
     // Material
 
@@ -90,7 +87,7 @@ public:
     auto WindowCarbonElement() const -> auto { return *fWindowCarbonElement; }
     auto WindowHydrogenElement() const -> auto { return *fWindowHydrogenElement; }
     auto WindowOxygenElement() const -> auto { return *fWindowOxygenElement; }
-    auto WindowRefractiveIndex() const -> const auto& { return *fWindowRefractiveIndex; }
+    auto WindowRIndex() const -> const auto& { return *fWindowRIndex; }
     auto SiPMEnergyBin() const -> const auto& { return *fSiPMEnergyBin; }
     auto SiPMEfficiency() const -> const auto& { return *fSiPMEfficiency; }
     auto ReflectorReflectivity() const -> const auto& { return *fReflectorReflectivity; }
@@ -120,7 +117,7 @@ public:
     auto WindowCarbonElement(double val) -> void { fWindowCarbonElement = val; }
     auto WindowHydrogenElement(double val) -> void { fWindowHydrogenElement = val; }
     auto WindowOxygenElement(double val) -> void { fWindowOxygenElement = val; }
-    auto WindowRefractiveIndex(std::vector<double> val) -> void { fWindowRefractiveIndex = std::move(val); }
+    auto WindowRIndex(std::vector<double> val) -> void { fWindowRIndex = std::move(val); }
     auto SiPMEnergyBin(std::vector<double> val) -> void { fSiPMEnergyBin = std::move(val); }
     auto SiPMEfficiency(std::vector<double> val) -> void { fSiPMEfficiency = std::move(val); }
     auto ReflectorReflectivity(std::vector<double> val) -> void { fReflectorReflectivity = std::move(val); }
@@ -129,8 +126,6 @@ public:
     auto CathodeSurface(std::vector<double> val) -> void { fCathodeSurface = std::move(val); }
 
 private:
-    auto CalculateWidth() -> std::vector<double>;
-    auto CalculatePosition() -> std::vector<muc::array3d>;
     auto ImportAllValue(const YAML::Node& node) -> void override;
     auto ExportAllValue(YAML::Node& node) const -> void override;
 
@@ -138,12 +133,12 @@ private:
     // Geometry
 
     Simple<double> fLength;
-    Simple<double> fWidthDown;
-    Simple<double> fWidthUp;
+    Simple<double> fWidth;
     Simple<double> fThickness;
-    Simple<double> fRadius;
+    Simple<std::vector<double>> fRadius;
     Simple<double> fSlantAngle;
-    Simple<int> fNAlongPhi;
+    Simple<std::vector<int>> fNAlongPhi;
+    Simple<std::vector<double>> fZPosition;
     Simple<double> fBarrelLength;
     Simple<double> fPCBLength;
     Simple<double> fPCBWidth;
@@ -158,9 +153,6 @@ private:
     Simple<double> fSiliconeWidth;
     Simple<double> fSiliconeThickness;
     Simple<int> fNSiPM;
-
-    Cached<std::vector<double>> fWidth;
-    Cached<std::vector<muc::array3d>> fPosition;
 
     // Material
 
@@ -186,7 +178,7 @@ private:
     Simple<double> fWindowCarbonElement;
     Simple<double> fWindowHydrogenElement;
     Simple<double> fWindowOxygenElement;
-    Simple<std::vector<double>> fWindowRefractiveIndex;
+    Simple<std::vector<double>> fWindowRIndex;
     Simple<std::vector<double>> fSiPMEnergyBin;
     Simple<std::vector<double>> fSiPMEfficiency;
     Simple<std::vector<double>> fReflectorReflectivity;

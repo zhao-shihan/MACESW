@@ -1,5 +1,8 @@
 #include "MACE/Detector/Description/TTC.h++"
+#include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/Simulation/SD/TTCSiPMSD.h++"
+
+#include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
@@ -15,8 +18,11 @@
 
 namespace MACE::inline Simulation::inline SD {
 
-TTCSiPMSD::TTCSiPMSD(const G4String& sdName) :
+using namespace Mustard::PhysicalConstant;
+
+TTCSiPMSD::TTCSiPMSD(const G4String& sdName, const Type type) :
     G4VSensitiveDetector{sdName},
+    type{type},
     fHit{},
     fHitsCollection{} {
     collectionName.insert(sdName + "HC");
@@ -34,7 +40,7 @@ auto TTCSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
     const auto& track{*step.GetTrack()};
     const auto& particle{*track.GetDefinition()};
-    const auto& ttc{MACE::Detector::Description::TTC::Instance()};
+    const auto& nSiPM{(type == TTCSiPMSD::Type::MACE) ? MACE::Detector::Description::TTC::Instance().NSiPM() : MACE::PhaseI::Detector::Description::TTC::Instance().NSiPM()};
 
     if (&particle != G4OpticalPhoton::Definition()) {
         return false;
@@ -43,16 +49,19 @@ auto TTCSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     step.GetTrack()->SetTrackStatus(fStopAndKill);
 
     const auto postStepPoint{*step.GetPostStepPoint()};
+    const auto preStepPoint{*step.GetPreStepPoint()};
     const auto tileID{postStepPoint.GetTouchable()->GetReplicaNumber(2)};
     const auto siPMLocalID{postStepPoint.GetTouchable()->GetReplicaNumber(1)};
+    const auto position{postStepPoint.GetTouchable()->GetHistory()->GetTopTransform().TransformPoint(postStepPoint.GetPosition())};
     // new a hit
     auto hit{std::make_unique_for_overwrite<TTCSiPMHit>()};
     Get<"EvtID">(*hit) = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
     Get<"HitID">(*hit) = -1; // to be determined
     Get<"TileID">(*hit) = tileID;
-    Get<"SiPMID">(*hit) = tileID * ttc.NSiPM() - siPMLocalID;
+    Get<"SiPMID">(*hit) = tileID * nSiPM - siPMLocalID;
     Get<"t">(*hit) = postStepPoint.GetGlobalTime();
-    // Get<"TTCHitID">(*hit) = -1; // to be determined
+    Get<"x">(*hit) = {position.x(), position.z()};
+    Get<"k">(*hit) = preStepPoint.GetTouchable()->GetHistory()->GetTopTransform().TransformAxis(preStepPoint.GetMomentumDirection()) / hbar_Planck;
     fHit[tileID].emplace_back(std::move(hit));
 
     return true;

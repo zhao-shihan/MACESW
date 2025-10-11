@@ -9,7 +9,7 @@
 #/MACE/Physics/UseRadioactiveDecayPhysics
 #/MACE/Physics/UseOpticalPhysics
 
-/Mustard/Detector/Description/Import SimMACEPhaseI_geom.yaml
+#/Mustard/Detector/Description/Import SimMACEPhaseI_geom.yaml
 
 /run/initialize
 
@@ -68,6 +68,9 @@
 /vis/geometry/set/visibility ECALPMCathode              0 no
 /vis/geometry/set/visibility ECALPMTCoupler             0 no
 /vis/geometry/set/visibility MRPCGas                    0 no
+/vis/geometry/set/visibility TTCVirtualBox              -1 no
+/vis/geometry/set/visibility TTCScintillator            0 yes
+
 
 # Colors
 /vis/geometry/set/colour CentralBeamPipe                        0     1     1     1     0.1
@@ -98,8 +101,14 @@
 /vis/geometry/set/colour SciFiTrackerTransverseLightGuideCore   0     1     1     1     0.05
 /vis/geometry/set/colour SciFiTrackerBraket                     0     1     1     1     0.05
 
+/vis/geometry/set/colour TTCVirtualBox                          0     1     1     1     0.05
+/vis/geometry/set/colour TTCPCB                                 0     1     1     1     0.05
+/vis/geometry/set/colour TTCWindow                              0     1     1     1     0.05
+/vis/geometry/set/colour TTCSilicone                            0     1     1     1     0.05
+/vis/geometry/set/colour TTCLightCoupler                        0     1     1     1     0.05
+/vis/geometry/set/colour TTCScintillator                        0     1     1     1     0.1
 
-/vis/geometry/set/colour Target                             0     1     1     1     0.1
+/vis/geometry/set/colour Target                                 0     1     1     1     0.1
 
 /vis/scene/add/date
 /vis/scene/add/axes 0 0 0 10 cm

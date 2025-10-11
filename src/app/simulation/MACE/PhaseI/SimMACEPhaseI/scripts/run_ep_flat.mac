@@ -1,0 +1,29 @@
+/control/verbose 0
+/run/verbose 0
+
+#/MACE/Physics/UseRadioactiveDecayPhysics
+/MACE/Physics/UseOpticalPhysics
+
+#/Mustard/Detector/Description/Import SimMACEPhaseI_geom.yaml
+
+/run/initialize
+
+/MACE/Generator/SwitchToGPSX
+
+/gps/particle e+
+/gps/pos/centre 0. 0. 0. cm
+/gps/ang/type iso
+/gps/ene/type                         Lin
+/gps/ene/gradient                     0
+/gps/ene/intercept                    1
+/gps/ene/min                          1 keV
+/gps/ene/max                          52.83 MeV
+
+/MACE/Analysis/CoincidenceWithMRPC    no
+/MACE/Analysis/CoincidenceWithECAL    no
+
+/MACE/Analysis/FilePath SimMACEPhaseI_ep_flat
+/MACE/Analysis/FileMode RECREATE
+
+/run/beamOn 5000000
+/Mustard/Run/PrintRunSummary
