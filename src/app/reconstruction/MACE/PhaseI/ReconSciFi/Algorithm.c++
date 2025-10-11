@@ -222,11 +222,6 @@ auto FindHLMinDistanceSqaure(
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     ROOT::Minuit2::Minuit2Minimizer minimizer;
 
-    // minimizer.SetMaxFunctionCalls(10000); // for Minuit/Minuit2
-    // minimizer.SetMaxIterations(10000);    // for GSL
-    // minimizer.SetTolerance(0.0001);
-    // minimizer.SetPrintLevel(0);
-
     std::function targetFunction{[HelixR, HelixB, rotationAngle, line_p0, line_dir](const double* xx) {
         double t{xx[0]};
         double theta{xx[1]};
@@ -246,11 +241,10 @@ auto FindHLMinDistanceSqaure(
 }
 
 auto FindLLMinDistanceSqaure(
-    const muc::array3d line1_p0,  // 直线1起点
-    const muc::array3d line1_dir, // 直线1方向向量
-    const muc::array3d line2_p0,  // 直线2起点
-    const muc::array3d line2_dir  // 直线2方向向量
-    ) -> double {
+    const muc::array3d line1_p0,
+    const muc::array3d line1_dir,
+    const muc::array3d line2_p0,
+    const muc::array3d line2_dir) -> double {
     muc::array3d vector1{line1_p0[0] - line2_p0[0], line1_p0[1] - line2_p0[1], line1_p0[2] - line2_p0[2]};
     muc::array3d cross{
         line1_dir[1] * line2_dir[2] - line2_dir[1] * line1_dir[2],
@@ -273,11 +267,11 @@ auto FindLLMinDistanceSqaure(
     return min_dis;
 }
 
-auto HitNumber(std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>& data, double deltaTime)
-    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> {
+auto HitNumber(std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>& data, double deltaTime)
+    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
-    std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> clusterList;
+    std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> clusterList;
     muc::timsort(data,
                  [](auto&& hit1, auto&& hit2) {
                      return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));
@@ -310,20 +304,20 @@ auto HitNumber(std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Da
     return clusterList;
 }
 
-// auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>& data, double deltaTime)
-//     -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> {
+// auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>& data, double deltaTime)
+//     -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> {
 //     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
 //     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> data0;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> lData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> rData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> tData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> usedLData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> usedRData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> usedTData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> newLData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> newRData;
-//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> newTData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> data0;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> lData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> rData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> tData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> usedLData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> usedRData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> usedTData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> newLData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> newRData;
+//     std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> newTData;
 //     for (auto&& cluster : data) {
 //         if (fiberMap.at(Get<"SiPMID">(*cluster.front())).layerType == "LHelical") {
 //             lData.emplace_back(cluster);
@@ -497,17 +491,17 @@ auto HitNumber(std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Da
 // return data0;
 // }
 
-auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>& data, double deltaTime)
-    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> {
+auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>& data, double deltaTime)
+    -> std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
-    std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> data0;
+    std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> data0;
 
     struct ClusterInfo {
         double avgTime{};
         double avgAngle{};
         int totalOptPho{};
-        std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>> cluster;
+        std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> cluster;
         bool used{false};
     };
 
@@ -639,17 +633,17 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
     // for (auto&& cluster : data0) {
     //     std::cout << "cluster" << std::endl;
     //     for (auto&& hit : cluster) {
-    //         std::cout << Get<"SiPMID">(*hit) << " " << fiberMap.at(Get<"SiPMID">(*hit)).layerType << " " << fiberMap.at(Get<"SiPMID">(*hit)).layerID << std::endl;
+    //         std::cout << Get<"SiPMID">(*hit) << " " << fiberMap.at(Get<"SiPMID">(*hit)).layerType << " " << fiberMap.at(Get<"SiPMID">(*hit)).rotationAngle << std::endl;
     //     }
     // }
 
     return data0;
 }
 
-auto DivPoint(std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>> data)
-    -> std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>>> {
+auto DivPoint(std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>> data)
+    -> std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>>> divData;
+    std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>>> divData;
     for (auto&& pair1 : data) {
         auto [x1, cluster1] = pair1;
         const auto pairCluster{std::ranges::find_if(
@@ -784,12 +778,12 @@ auto DirectionFit(std::vector<muc::array3d>& points)
     return std::tuple{c, v, chi2};
 }
 
-auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> data, const muc::array3d dir)
-    -> std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>>> {
+auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> data, const muc::array3d dir)
+    -> std::vector<std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
-    std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>> divData;
-    std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>> data0;
+    std::vector<std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>> divData;
+    std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>> data0;
     // constexpr double nan = std::numeric_limits<double>::quiet_NaN();
     for (auto&& cluster : data) {
         double avarageLAngle{}, avarageRAngle{}, avarageTAngle{};
@@ -834,12 +828,12 @@ auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Da
             rLLayer /= lNOptPho;
             rRLayer /= rNOptPho;
             rTLayer /= tNOptPho;
-            data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>());
+            data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>());
             *Get<"t">(*data0.back()) = (avarageLTime * (lNOptPho) + avarageRTime * (rNOptPho) + avarageTTime * (tNOptPho)) / (lNOptPho + rNOptPho + tNOptPho);
             *Get<"EvtID">(*data0.back()) = *Get<"EvtID">(*cluster.front());
             auto coordinates{FindCrossCoordinates(avarageLAngle, avarageRAngle, avarageTAngle, rLLayer, rRLayer, rTLayer, y0, dir)};
             for (auto&& coordinate : coordinates) {
-                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> div1;
+                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> div1;
                 div1.first = (coordinate);
                 div1.second = (cluster);
                 divData.push_back(div1);
@@ -859,13 +853,13 @@ auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Da
             rRLayer /= rNOptPho;
             rTLayer /= tNOptPho;
 
-            data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>());
+            data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>());
             *Get<"t">(*data0.back()) = (avarageRTime * (rNOptPho) + avarageTTime * (tNOptPho)) / (rNOptPho + tNOptPho);
             *Get<"EvtID">(*data0.back()) = *Get<"EvtID">(*cluster.front());
             auto coordinates{FindCrossCoordinates(-1, avarageRAngle, avarageTAngle, -1, rRLayer, rTLayer, y0, dir)};
             for (auto&& coordinate : coordinates) {
                 Get<"x">(*data0.back()) = coordinate;
-                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> div1;
+                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> div1;
                 div1.first = (coordinate);
                 div1.second = (cluster);
                 divData.push_back(div1);
@@ -878,13 +872,13 @@ auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Da
             rLLayer /= lNOptPho;
             rTLayer /= tNOptPho;
 
-            data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>());
+            data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>());
             *Get<"t">(*data0.back()) = (avarageLTime * lNOptPho + avarageTTime * tNOptPho) / (lNOptPho + tNOptPho);
             *Get<"EvtID">(*data0.back()) = *Get<"EvtID">(*cluster.front());
             auto coordinates{FindCrossCoordinates(avarageLAngle, -1, avarageTAngle, rLLayer, -1, rTLayer, y0, dir)};
             for (auto&& coordinate : coordinates) {
                 Get<"x">(*data0.back()) = coordinate;
-                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> div1;
+                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> div1;
                 div1.first = (coordinate);
                 div1.second = (cluster);
                 divData.push_back(div1);
@@ -900,11 +894,11 @@ auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Da
             // double rRLyaer = sciFiTracker.RLayer()->at(FindLayerID((int)avarageRID));
             auto coordinates{FindCrossCoordinates(avarageLAngle, avarageRAngle, -1, rLLayer, rRLayer, -1, y0, dir)};
             for (auto&& coordinate : coordinates) {
-                data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>());
+                data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>());
                 *Get<"t">(*data0.back()) = (avarageLTime * lNOptPho + avarageRTime * rNOptPho) / (lNOptPho + rNOptPho);
                 *Get<"EvtID">(*data0.back()) = *Get<"EvtID">(*cluster.front());
                 Get<"x">(*data0.back()) = coordinate;
-                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> div1;
+                std::pair<muc::array3d, std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> div1;
                 div1.first = (coordinate);
                 div1.second = (cluster);
                 divData.push_back(div1);
@@ -917,9 +911,9 @@ auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Da
     auto divData1 = DivPoint(divData);
     for (auto&& clusterlist : divData1) {
         // std::cout << "div" << std::endl;
-        std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>> data1;
+        std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>> data1;
         for (auto cluster : clusterlist) {
-            data1.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>());
+            data1.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>());
             Get<"x">(*data1.back()) = cluster.first;
             // std::cout << Get<"x">(*data1.back())[0] << " " << Get<"x">(*data1.back())[1] << " " << Get<"x">(*data1.back())[2] << std::endl;
         }
@@ -934,15 +928,16 @@ auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Da
     return divData1;
 }
 
-auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>& clusterList,
+auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>>& clusterList,
               muc::array3d initialS, muc::array3d initialP, double initialChi2)
-    -> std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>> {
+    -> std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
     const auto& ecal{MACE::Detector::Description::ECAL::Instance()};
     auto r{sciFiTracker.BracketInnerRadius() + sciFiTracker.BracketOuterRadius() / 2};
-    std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>> data0;
-
+    std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>> data0;
+    std::cout << initialS[0] << " " << initialS[1] << " " << initialS[2] << std::endl;
+    std::cout << initialP[0] << " " << initialP[1] << " " << initialP[2] << std::endl;
     double initialSTheta{std::acos(initialS[2] / muc::hypot(initialS[0], initialS[1], initialS[2]))};
     double initialSPhi{std::atan2(initialS[1], initialS[0])};
     double initialPTheta{std::acos(initialP[2] / muc::hypot(initialP[0], initialP[1], initialP[2]))};
@@ -987,7 +982,6 @@ auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple
                         //<< " "
                         //<< rLayer << " " << b << " " << rotationAngle << " "
                         //<< std::endl;
-
                         distance += minDistance;
                     } else if (fiberMap.at(Get<"SiPMID">(*hit)).layerType == "RHelical") {
                         double b{-sciFiTracker.FiberLength() / (2 * std::numbers::pi)};
@@ -1003,6 +997,7 @@ auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple
                         //  << " "
                         //<< rLayer << " " << b << " " << rotationAngle << " "
                         //<< std::endl;
+                        std::cout << "R " << minDistance << std::endl;
 
                         distance += minDistance;
                     } else {
@@ -1052,7 +1047,7 @@ auto TrackFit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple
     //                std::sin(minimizer.State().Parameter(3).Value()) * std::sin(minimizer.State().Parameter(2).Value()),
     //                std::cos(minimizer.State().Parameter(2).Value())};
 
-    data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>());
+    data0.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::Track>>());
 
     muc::array3d x{r * std::cos(minimizer.State().Parameter(1).Value()) * std::sin(minimizer.State().Parameter(0).Value()),
                    r * std::sin(minimizer.State().Parameter(1).Value()) * std::sin(minimizer.State().Parameter(0).Value()),

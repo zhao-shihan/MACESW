@@ -148,7 +148,7 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
 auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, ASeedPointer seed,
                                                     const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
-    // const auto& status{*genfitTrack->getFitStatus()};
+    const auto& status{*genfitTrack->getFitStatus()};
     const genfit::MeasuredStateOnPlane* firstState;
     try {
         firstState = &genfitTrack->getFittedState();
@@ -175,7 +175,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
     Get<"x">(*track) = this->template FromTVector3<muc::array3d>(x0);
     Get<"p">(*track) = this->template FromTVector3<muc::array3d>(p0);
     Get<"t">(*track) = t0;
-
+    Get<"chi2">(*track) = status.getChi2() / status.getNdf();
     if (fEnableEventDisplay) {
         genfit::EventDisplay::getInstance()->addEvent(genfitTrack.get());
         fEventDisplayTrackStore.emplace_back(std::move(genfitTrack)); // genfitTrack is MOVED here

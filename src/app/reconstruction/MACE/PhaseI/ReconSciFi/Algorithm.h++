@@ -14,7 +14,7 @@
 
 namespace MACE::PhaseI::ReconSciFi {
 
-auto FindCrossCoordinates(double lAngle, double rAngle, double tAngle, double rLLayer, double rRLayer, double rTLayer, double y0, double t)
+auto FindCrossCoordinates(double lAngle, double rAngle, double tAngle, double rLLayer, double rRLayer, double rTLayer, double y0, const muc::array3d dir)
     -> std::vector<muc::array3d>;
 
 auto FindLayerID(int id) -> int;

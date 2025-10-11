@@ -68,59 +68,10 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     std::string fileName{argv[1]};
     TFile file{Mustard::Parallel::ProcessSpecificPath("output.root").generic_string().c_str(), "RECREATE"};
-    Mustard::Data::Output<PhaseI::Data::ReconTrack> reconTrack{"G4Run0/ReconTrack"};
-
+    Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
     Mustard::Data::Processor processor;
-    std::unordered_map<int, std::vector<int>> trueIDs;
-    int testID{15999};
-    double theta{}, z{}, phi{};
-    int count1{};
-    std::unordered_map<int, muc::array3d> truedir;
-    processor.Process<PhaseI::Data::SciFiSimHit>(
-        ROOT::RDataFrame{"G4Run0/SciFiHit", fileName}, int{}, "EvtID",
-        [&](bool byPass, auto&& event) {
-            if (byPass) { return; }
-            muc::timsort(event,
-                         [](auto&& hit1, auto&& hit2) {
-                             return std::tie(Get<"EvtID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"EvtID">(*hit2), Get<"t">(*hit2));
-                         });
-            for (auto&& hit : event) {
-                int minid{100};
-                // if (Get<"EvtID">(*hit) != testID) { continue; }
-                if (Get<"TrkID">(*hit) == 1) {
-                    if (sciFiTracker.TypeOfLayer()->at(FindLayerID(Get<"FiberID">(*hit))) == "RHelical") {
-                        auto layerID1{FindLayerID(Get<"FiberID">(*hit))};
-                        auto firstID1{sciFiTracker.FirstIDOfLayer()->at(layerID1)};
-                        auto lastID1{sciFiTracker.LastIDOfLayer()->at(layerID1)};
-                        trueIDs[Get<"EvtID">(*hit)].push_back(Get<"FiberID">(*hit) - (lastID1 - firstID1 + 1.) / 2);
-                        trueIDs[Get<"EvtID">(*hit)].push_back(Get<"FiberID">(*hit) + (lastID1 - firstID1 + 1.) / 2);
-                    } else if (Get<"Edep">(*hit) < 0.03) {
-                        trueIDs[Get<"EvtID">(*hit)].push_back(Get<"FiberID">(*hit));
-                        // eDepcount++;
-                    }
-                }
-                double p0 = sqrt(Get<"p0">(*hit)[0] * Get<"p0">(*hit)[0] + Get<"p0">(*hit)[1] * Get<"p0">(*hit)[1] + Get<"p0">(*hit)[2] * Get<"p0">(*hit)[2]);
-                phi = std::atan2(Get<"p0">(*hit)[1], Get<"p0">(*hit)[0]);
-                z = Get<"p0">(*hit)[2] / p0;
-                theta = std::acos(Get<"p0">(*hit)[2] / p0);
-                if (Get<"TrkID">(*hit) < minid) {
-                    truedir[Get<"EvtID">(*hit)] = {Get<"p0">(*hit)[0] / p0, Get<"p0">(*hit)[1] / p0, Get<"p0">(*hit)[2] / p0};
-                    minid = Get<"TrkID">(*hit);
-                }
-                // std::cout << truedir[testID][0] << " " << truedir[testID][1] << " " << truedir[testID][2] << std::endl;
-                //  truedir = {Get<"p0">(*hit)[0] / p0, Get<"p0">(*hit)[1] / p0, Get<"p0">(*hit)[2] / p0};
-                //  std::cout << Get<"p0">(*hit)[1] / Get<"p0">(*hit)[0] << " " << theta << " " << z << std::endl;
-                // double p = sqrt(Get<"p">(*hit)[0] * Get<"p">(*hit)[0] + Get<"p">(*hit)[1] * Get<"p">(*hit)[1] + Get<"p">(*hit)[2] * Get<"p">(*hit)[2]);
-                // std::cout << Get<"EvtID">(*hit) << " FiberID:" << Get<"FiberID">(*hit) << " TrkID:" << Get<"TrkID">(*hit) << " " << Get<"p0">(*hit)[0] / p0 << " " << Get<"p0">(*hit)[1] / p0 << " " << Get<"p0">(*hit)[2] / p0 << std::endl;
-                // std::cout << Get<"EvtID">(*hit) << " FiberID:" << Get<"FiberID">(*hit) << " TrkID:" << Get<"TrkID">(*hit) << " " << Get<"p">(*hit)[0] / p << " " << Get<"p">(*hit)[1] / p << " " << Get<"p">(*hit)[2] / p << " " << Get<"Edep">(*hit) << std::endl;
-                // std::cout << Get<"EvtID">(*hit) << " FiberID:" << Get<"FiberID">(*hit) << " TrkID:" << Get<"TrkID">(*hit) << " " << Get<"x">(*hit)[0] << " " << Get<"x">(*hit)[1] << " " << Get<"x">(*hit)[2] << std::endl;
-            }
-            // for (auto&& id : trueIDs[15999]) {
-            //     std::cout << id << std::endl;
-            // }
-        });
 
-    processor.Process<PhaseI::Data::SciFiSiPMRawHit>(
+    processor.Process<PhaseI::Data::SciFiSiPMHit>(
         ROOT::RDataFrame{"G4Run0/SciFiSiPMHit", fileName}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
             if (byPass) {
@@ -131,7 +82,7 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                              return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));
                          });
 
-            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>> siPMHitData;
+            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> siPMHitData;
             for (std::ranges::subrange siPMHitRange{event.begin(), event.begin()};
                  siPMHitRange.begin() != event.end();
                  siPMHitRange = {siPMHitRange.end(), siPMHitRange.end()}) {
@@ -146,13 +97,15 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                         count++;
                         if (count == sciFiTracker.Threshold()) {
                             endTime = initialTime + sciFiTracker.TimeWindow();
-                            // if (*Get<"EvtID">(**siPMHitRange.begin()) != testID) { continue; }
-                            //  if (std::find(trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].begin(),
-                            //                trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].end(),
-                            //                *Get<"SiPMID">(*siPMHitRange[j])) == trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].end()) {
-                            //      continue;
-                            //  }
-                            siPMHitData.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>());
+                            if (*Get<"EvtID">(**siPMHitRange.begin()) != 8) {
+                                continue;
+                            }
+                            // if (std::find(trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].begin(),
+                            //               trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].end(),
+                            //               *Get<"SiPMID">(*siPMHitRange[j])) == trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].end()) {
+                            //     continue;
+                            // }
+                            siPMHitData.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>());
                             *Get<"t">(*siPMHitData.back()) = *Get<"t">(*siPMHitRange[j]);
                             *Get<"EvtID">(*siPMHitData.back()) = *Get<"EvtID">(*siPMHitRange[j]);
                             *Get<"SiPMID">(*siPMHitData.back()) = *Get<"SiPMID">(*siPMHitRange[j]);
@@ -201,14 +154,9 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
             auto cluster{HitNumber(siPMHitData, sciFiTracker.ThresholdTime())};
             auto divHit{DividedHit(cluster, sciFiTracker.ThresholdTime())};
             auto initialPosition{PositionTransform(divHit, muc::array3d{})};
-            if (std::ssize(siPMHitData) > 0) {
-                // std::cout << *Get<"EvtID">(*siPMHitData.front()) << " " << 1 << std::endl;
-            } else if (std::ssize(siPMHitData) > 0 && std::ssize(siPMHitData) < 4) {
-                // std::cout << *Get<"EvtID">(*siPMHitData.front()) << " " << 0 << std::endl;
-            }
             for (auto&& initialclusterList : initialPosition) {
                 std::vector<muc::array3d> point;
-                std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> hit;
+                std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> hit;
                 for (auto&& initialcluster : initialclusterList) {
                     point.push_back(initialcluster.first);
                     hit.push_back(initialcluster.second);
@@ -238,9 +186,6 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                 auto [initialS, initialP, initialChi2] = DirectionFit(point);
                 if (std::ssize(hit) >= 4) {
                     auto momentum = TrackFit(hit, initialS, initialP, initialChi2);
-                    for (auto&& track : momentum) {
-                        Get<"nfiber">(*track) = std::ssize(siPMHitData);
-                    }
                     reconTrack.Fill(std::move(momentum));
                 }
             }
