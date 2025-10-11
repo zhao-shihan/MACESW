@@ -647,9 +647,20 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
         p[1] *= -1;
         p[2] *= -1;
     }
+
+    double t{};
+    int fiberSize{};
+    for (auto&& cluster : clusterLists) {
+        for (auto&& hit : cluster) {
+            t += Get<"t">(*hit);
+            fiberSize++;
+        }
+    }
+
     Get<"EvtID">(*result) = Get<"EvtID">(*clusterLists.front().front());
     Get<"x">(*result) = x;
     Get<"p">(*result) = p;
+    Get<"t">(*result) = t / fiberSize;
     return result;
 }
 
