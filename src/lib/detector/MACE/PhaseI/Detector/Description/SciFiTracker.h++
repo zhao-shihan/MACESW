@@ -27,7 +27,6 @@ public:
     auto SiPMThickness() const -> auto { return fSiPMThickness; }
     auto FiberCoreWidth() const -> auto { return fFiberCoreWidth; }
     auto FiberCladdingWidth() const -> auto { return fFiberCladdingWidth; }
-    auto LightGuideCurvature() const -> auto { return fLightGuideCurvature; }
     auto FiberLength() const -> auto { return fFiberLength; }
     auto TLightGuideLength() const -> auto { return fTLightGuideLength; }
     auto DetectorLayerConfiguration() const -> const auto& { return *fLayerConfiguration; }
@@ -67,7 +66,6 @@ public:
     auto SiPMThickness(double val) -> void { fSiPMThickness = val; }
     auto FiberCoreRadius(double val) -> void { fFiberCoreWidth = val; }
     auto FiberCladdingRadius(double val) -> void { fFiberCladdingWidth = val; }
-    auto LightGuideCurvature(double val) -> void { fLightGuideCurvature = val; }
     auto FiberLength(double val) -> void { fFiberLength = val; }
     auto TLightGuideLength(double val) -> void { fTLightGuideLength = val; }
     auto ScintillationTimeConstant1(double val) -> void { fScintillationTimeConstant1 = val; }
@@ -126,7 +124,6 @@ private:
     double fFiberCoreWidth;
     double fFiberCladdingWidth;
     double fFiberLength;
-    double fLightGuideCurvature;
     double fSiPMLength;
     double fSiPMWidth;
     double fSiPMThickness;

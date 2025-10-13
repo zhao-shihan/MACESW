@@ -22,7 +22,6 @@ SciFiTracker::SciFiTracker() : // clang-format off
     fFiberCoreWidth{0.96 * 1_mm},
     fFiberCladdingWidth{1_mm},
     fFiberLength{325.4_mm},
-    fLightGuideCurvature{80_mm},
     fSiPMLength{1.3_mm},
     fSiPMWidth{1.3_mm},
     fSiPMThickness{0.055_mm},
@@ -174,7 +173,6 @@ auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fSiPMThickness, "SiPMThickness");
     ImportValue(node, fFiberCoreWidth, "CoreRadius");
     ImportValue(node, fFiberCladdingWidth, "CladdingRadius");
-    ImportValue(node, fLightGuideCurvature, "CurvatureOfLightGuide");
     ImportValue(node, fFiberLength, "FiberHalfLength");
     ImportValue(node, fTLightGuideLength, "LengthOFTransverseLightGuide");
     ImportValue(node, fNLayer, "NumberOfFiber");
@@ -205,7 +203,6 @@ auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fSiPMThickness, "SiPMThickness");
     ExportValue(node, fFiberCoreWidth, "CoreRadius");
     ExportValue(node, fFiberCladdingWidth, "CladdingRadius");
-    ExportValue(node, fLightGuideCurvature, "CurvatureOfLightGuide");
     ExportValue(node, fFiberLength, "FiberHalfLength");
     ExportValue(node, fTLightGuideLength, "LengthOFTransverseLightGuide");
     ExportValue(node, fNLayer, "NumberOfFiber");

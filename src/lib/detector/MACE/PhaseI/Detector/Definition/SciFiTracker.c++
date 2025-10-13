@@ -194,15 +194,6 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         0,
         checkOverlaps);
 
-    auto rotationVector{
-        [&](double i, double pitch, double x0, double y0, double pm_z) {
-            return CLHEP::Hep3Vector(
-                std::cos(i) * x0 - std::sin(i) * y0,
-                std::cos(i) * y0 + std::sin(i) * x0,
-                pm_z * ((sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2 +
-                        sciFiTracker.FiberLength() / 2 + sciFiTracker.LightGuideCurvature() * std::cos(pitch)));
-        }};
-
     auto logicalHelicalFiber{
         [&](auto helicalRadius, auto fiberCladdingWidth, auto fiberCoreWidth, auto pitch) {
             const auto solidHelicalFiberCladding{Make<Mustard::Geant4X::HelicalBox>(
