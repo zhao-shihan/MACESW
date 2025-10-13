@@ -1,6 +1,6 @@
-#include "MACE/Detector/Definition/TTC.h++"
 #include "MACE/PhaseI/Detector/Assembly/TrackerSystem.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
+#include "MACE/PhaseI/Detector/Definition/TTC.h++"
 
 namespace MACE::PhaseI::Detector::Assembly {
 
