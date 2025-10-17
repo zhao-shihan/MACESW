@@ -65,9 +65,9 @@ set(MACE_COMPILE_DEFINITIONS "")
 
 # Surpress some, if required
 if(NOT MACE_SHOW_MORE_COMPILER_WARNINGS)
-    if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # nothing for now
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
         # nothing for now
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # TODO: below is ancient; need update.
@@ -88,9 +88,9 @@ if(NOT MACE_SHOW_MORE_COMPILER_WARNINGS)
     endif()
 # Even more warnings, if required
 elseif(MACE_SHOW_EVEN_MORE_COMPILER_WARNINGS)
-    if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         list(APPEND MACE_COMPILE_OPTIONS -Weffc++)
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|IntelLLVM)$")
         list(APPEND MACE_COMPILE_OPTIONS -Weverything)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         list(APPEND MACE_COMPILE_OPTIONS /Wall)

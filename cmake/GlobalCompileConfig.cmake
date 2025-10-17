@@ -39,7 +39,7 @@ endif()
 # =============================================================================
 
 if(MACE_ENABLE_ASAN_IN_DEBUG_BUILD)
-    if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|IntelLLVM)$")
         add_compile_options($<$<CONFIG:Debug>:-fsanitize=undefined>
                             $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
                             $<$<CONFIG:RelWithDebInfo>:-fsanitize=undefined>
@@ -65,7 +65,7 @@ endif()
 # =============================================================================
 
 if(MACE_ENABLE_UBSAN_IN_DEBUG_BUILD)
-    if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|IntelLLVM)$")
         add_compile_options($<$<CONFIG:Debug>:-fsanitize=undefined> $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
                             $<$<CONFIG:RelWithDebInfo>:-fsanitize=undefined>)
         add_link_options($<$<CONFIG:Debug>:-fsanitize=undefined> $<$<CONFIG:Debug>:-fno-omit-frame-pointer>

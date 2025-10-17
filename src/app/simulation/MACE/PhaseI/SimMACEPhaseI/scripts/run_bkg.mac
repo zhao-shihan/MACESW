@@ -24,10 +24,6 @@
 /GPSX/NVertex             1
 /GPSX/PulseWidth          0 ns
 
-/Mustard/Physics/MuoniumDecay/DoubleRadiativeDecay/BR 0
-/Mustard/Physics/MuoniumDecay/ElectronPairDecay/BR 0
-/Mustard/Physics/MuoniumDecay/UpdateDecayBR
-
 #############################################################################
 # Run
 #############################################################################

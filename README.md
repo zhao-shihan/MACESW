@@ -27,7 +27,7 @@ For more information, please check out [the image repository homepage](https://g
 
 Required:
 
-1. [Mustard (A modern, distributed offline software framework for HEP experiments)](https://github.com/zhao-shihan/Mustard) (≥ 0.25.930, built-in if not found)
+1. [Mustard (A modern, distributed offline software framework for HEP experiments)](https://github.com/zhao-shihan/Mustard) (≥ 0.25.1015, built-in if not found)
 
 Required, built-in if not found (network or pre-downloaded source is required):
 

@@ -1,8 +1,8 @@
 #include "MACE/PhaseI/SimMACEPhaseI/Action/ActionInitialization.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Action/DetectorConstruction.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Analysis.h++"
-#include "MACE/PhaseI/SimMACEPhaseI/PhysicsList.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/RunManager.h++"
+#include "MACE/Simulation/Physics/StandardPhysicsList.h++"
 
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
@@ -16,8 +16,7 @@ using namespace Mustard::LiteralUnit::Energy;
 RunManager::RunManager() :
     MPIRunManager{},
     fAnalysis{std::make_unique_for_overwrite<Analysis>()} {
-
-    SetUserInitialization(new PhysicsList);
+    SetUserInitialization(new StandardPhysicsList);
 
     const auto detectorConstruction{new DetectorConstruction};
     detectorConstruction->SetCheckOverlaps(Mustard::Env::VerboseLevelReach<'I'>());

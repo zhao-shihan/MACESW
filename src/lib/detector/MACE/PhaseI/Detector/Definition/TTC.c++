@@ -1,7 +1,8 @@
 #include "MACE/PhaseI/Detector/Definition/TTC.h++"
 #include "MACE/PhaseI/Detector/Description/TTC.h++"
 
-#include "Mustard/Utility/LiteralUnit.h++"
+#include "Mustard/Utility/MathConstant.h++"
+#include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/VectorCast.h++"
 
 #include "G4Box.hh"
@@ -10,7 +11,6 @@
 #include "G4NistManager.hh"
 #include "G4OpticalSurface.hh"
 #include "G4PVPlacement.hh"
-#include "G4PhysicalConstants.hh"
 #include "G4Transform3D.hh"
 
 #include "gsl/gsl"
@@ -22,7 +22,8 @@
 
 namespace MACE::PhaseI::Detector::Definition {
 
-using namespace Mustard::LiteralUnit::MathConstantSuffix;
+using namespace Mustard::MathConstant;
+using namespace Mustard::PhysicalConstant;
 
 auto TTC::Construct(G4bool checkOverlaps) -> void {
     const auto& ttc{Description::TTC::Instance()};
@@ -82,7 +83,7 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
 
     // Construct Detector
     int tileID{};
-    const auto nCircle{ttc.NAlongPhi().size()};
+    const auto nCircle{ssize(ttc.NAlongPhi())};
 
     // set up the PCB
     const auto ttcPCBSolid{Make<G4Box>(

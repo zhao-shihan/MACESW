@@ -1,3 +1,4 @@
+#include "MACE/GenM2ENNE/GenM2ENNE.h++"
 #include "MACE/GenM2ENNEE/GenM2ENNEE.h++"
 #include "MACE/GenM2ENNGG/GenM2ENNGG.h++"
 #include "MACE/MakeGeometry/MakeGeometry.h++"
@@ -17,6 +18,7 @@
 
 auto main(int argc, char* argv[]) -> int {
     Mustard::Application::SubprogramLauncher launcher;
+    launcher.AddSubprogram<MACE::GenM2ENNE::GenM2ENNE>();
     launcher.AddSubprogram<MACE::GenM2ENNEE::GenM2ENNEE>();
     launcher.AddSubprogram<MACE::GenM2ENNGG::GenM2ENNGG>();
     launcher.AddSubprogram<MACE::MakeGeometry::MakeGeometry>();

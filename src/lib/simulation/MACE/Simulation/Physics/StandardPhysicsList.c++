@@ -1,10 +1,9 @@
 #include "MACE/Detector/Description/Target.h++"
-#include "MACE/Simulation/Physics/MuonLFVDecayPhysics.h++"
 #include "MACE/Simulation/Physics/StandardPhysicsList.h++"
 
 #include "Mustard/Env/BasicEnv.h++"
-#include "Mustard/Geant4X/Physics/MuonNLODecayPhysics.h++"
-#include "Mustard/Geant4X/Physics/MuoniumNLODecayPhysics.h++"
+#include "Mustard/Geant4X/Physics/MuonLFVDecayPhysics.h++"
+#include "Mustard/Geant4X/Physics/MuoniumLFVDecayPhysics.h++"
 #include "Mustard/Geant4X/Physics/MuoniumPhysics.h++"
 #include "Mustard/Geant4X/Physics/PionKaonDecayMakeSpinPhysics.h++"
 #include "Mustard/IO/PrettyLog.h++"
@@ -35,12 +34,10 @@ StandardPhysicsListBase::StandardPhysicsListBase() :
     // Muonium physics
     RegisterPhysics(new Mustard::Geant4X::MuoniumPhysics<Detector::Description::Target>{verboseLevel});
     // HP decay for muon and muonium
-    RegisterPhysics(new Mustard::Geant4X::MuonNLODecayPhysics{verboseLevel});
-    RegisterPhysics(new Mustard::Geant4X::MuoniumNLODecayPhysics{verboseLevel});
+    RegisterPhysics(new Mustard::Geant4X::MuonLFVDecayPhysics{verboseLevel});
+    RegisterPhysics(new Mustard::Geant4X::MuoniumLFVDecayPhysics{verboseLevel});
     // Pion/Kaon decay into polarized muon
     RegisterPhysics(new Mustard::Geant4X::PionKaonDecayMakeSpinPhysics{verboseLevel});
-    // Muon LFV decay
-    RegisterPhysics(new MuonLFVDecayPhysics{verboseLevel});
 
     // Set EM parameters
     using namespace Mustard::LiteralUnit::Energy;

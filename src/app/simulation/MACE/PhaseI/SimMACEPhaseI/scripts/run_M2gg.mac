@@ -27,12 +27,8 @@
 /GPSX/PulseWidth          0 ns
 
 /Mustard/Physics/MuonDecay/RadiativeDecay/BR 0
-/Mustard/Physics/MuonDecay/ICDecay/BR 0
-/Mustard/Physics/MuonDecay/DoubleRadiativeDecay/BR 0
+/Mustard/Physics/MuoniumDecay/AnnihilativeDecay/BR 1
 /Mustard/Physics/MuonDecay/UpdateDecayBR
-/Mustard/Physics/MuoniumDecay/DoubleRadiativeDecay/BR 1
-/Mustard/Physics/MuoniumDecay/ElectronPairDecay/BR 0
-/Mustard/Physics/MuoniumDecay/UpdateDecayBR
 
 /MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no

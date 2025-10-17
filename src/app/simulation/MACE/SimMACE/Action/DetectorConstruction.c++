@@ -57,7 +57,6 @@
 #include "MACE/Detector/Field/SolenoidFieldT2.h++"
 #include "MACE/SimMACE/Action/DetectorConstruction.h++"
 #include "MACE/SimMACE/Messenger/DetectorMessenger.h++"
-#include "MACE/SimMACE/PhysicsList.h++"
 #include "MACE/SimMACE/SD/CDCSD.h++"
 #include "MACE/SimMACE/SD/ECALSD.h++"
 #include "MACE/SimMACE/SD/MCPSD.h++"

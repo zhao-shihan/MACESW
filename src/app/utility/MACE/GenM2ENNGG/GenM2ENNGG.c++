@@ -33,13 +33,13 @@ using namespace Mustard::PhysicalConstant;
 using namespace std::string_literals;
 
 GenM2ENNGG::GenM2ENNGG() :
-    Subprogram{"GenM2ENNGG", "Generate double radiative muon decay (mu -> e nu nu gamma gamma)."} {}
+    Subprogram{"GenM2ENNGG", "Generate double radiative muon decay (mu+ -> e+ nu nu gamma gamma)."} {}
 
 auto GenM2ENNGG::Main(int argc, char* argv[]) const -> int {
     MCMCGeneratorCLI<InitialStateCLIModule<"polarized", "muon">> cli;
     cli.DefaultOutput("m2enngg.root");
     cli.DefaultOutputTree("m2enngg");
-    cli->add_argument("--ir-cut").help("IR cut for final state photons.").default_value(electron_mass_c2).required().nargs(1).scan<'g', double>();
+    cli->add_argument("--ir-cut").help("IR cut for final-state photons.").default_value(electron_mass_c2).required().nargs(1).scan<'g', double>();
     auto& biasCLI{cli->add_mutually_exclusive_group()};
     biasCLI.add_argument("--emiss-bias").help("Apply soft upper bound for missing energy.").flag();
     cli->add_argument("--emiss-soft-upper-bound").help("Soft upper bound for missing energy in --emiss-bias.").default_value(0_MeV).required().nargs(1).scan<'g', double>();
