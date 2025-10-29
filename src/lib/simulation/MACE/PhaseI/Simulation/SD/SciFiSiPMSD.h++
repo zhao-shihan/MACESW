@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MACE/PhaseI/Simulation/Hit/SciFiSiPMRawHit.h++"
+#include "MACE/PhaseI/Simulation/Hit/SciFiSiPMHit.h++"
 
 #include "G4VSensitiveDetector.hh"
 
@@ -20,8 +20,8 @@ public:
     auto NOpticalPhotonHit() const -> muc::flat_hash_map<int, int>;
 
 protected:
-    muc::flat_hash_map<int, muc::unique_ptrvec<SciFiSiPMRawHit>> fHit;
-    SciFiSiPMRawHitCollection* fHitsCollection;
+    muc::flat_hash_map<int, muc::unique_ptrvec<SciFiSiPMHit>> fHit;
+    SciFiSiPMHitCollection* fHitsCollection;
 };
 
 } // namespace MACE::PhaseI::inline Simulation::inline SD

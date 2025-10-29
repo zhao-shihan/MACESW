@@ -6,8 +6,7 @@
 namespace MACE::PhaseI::Data {
 
 using SciFiSiPMRawHit = Mustard::Data::TupleModel<
-    Mustard::Data::Value<int, "EvtID", "Event ID">,
-    Mustard::Data::Value<int, "HitID", "Hit ID">,
+    Mustard::Data::Value<short, "FiberID", "Hit Fiber ID">,
     Mustard::Data::Value<short, "SiPMID", "Hit SiPM ID">,
     Mustard::Data::Value<double, "t", "Optical photon hit time">>;
 

@@ -16,7 +16,6 @@
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
-#include "Algorithm.h++"
 #include "ReconSciFi.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -68,11 +67,10 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     std::string fileName{argv[1]};
     TFile file{Mustard::Parallel::ProcessSpecificPath("output.root").generic_string().c_str(), "RECREATE"};
-    Mustard::Data::Output<PhaseI::Data::ReconTrack> reconTrack{"G4Run0/ReconTrack"};
-
+    Mustard::Data::Output<PhaseI::Data::Track> trackOutput{"G4Run0/Track"};
     Mustard::Data::Processor processor;
 
-    processor.Process<PhaseI::Data::SciFiSiPMRawHit>(
+    processor.Process<PhaseI::Data::SciFiSiPMHit>(
         ROOT::RDataFrame{"G4Run0/SciFiSiPMHit", fileName}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
             if (byPass) {
@@ -83,7 +81,7 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                              return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));
                          });
 
-            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>> siPMHitData;
+            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> siPMHitData;
             for (std::ranges::subrange siPMHitRange{event.begin(), event.begin()};
                  siPMHitRange.begin() != event.end();
                  siPMHitRange = {siPMHitRange.end(), siPMHitRange.end()}) {
@@ -96,10 +94,9 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                     if (*Get<"t">(*siPMHitRange[j]) >= initialTime && *Get<"t">(*siPMHitRange[j]) < endTime) {
                         initialTime = *Get<"t">(*siPMHitRange[j]);
                         count++;
-                        if (count == sciFiTracker.Threshold()) {
+                        if (count == sciFiTracker.SiPMOpticalPhotonCountThreshold()) {
                             endTime = initialTime + sciFiTracker.TimeWindow();
-
-                            siPMHitData.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>());
+                            siPMHitData.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>());
                             *Get<"t">(*siPMHitData.back()) = *Get<"t">(*siPMHitRange[j]);
                             *Get<"EvtID">(*siPMHitData.back()) = *Get<"EvtID">(*siPMHitRange[j]);
                             *Get<"SiPMID">(*siPMHitData.back()) = *Get<"SiPMID">(*siPMHitRange[j]);
@@ -117,7 +114,7 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                             *Get<"nOptPho">(*siPMHitData.back()) = count;
                             count = 0;
                             if (j < std::ssize(siPMHitRange)) {
-                                initialTime = endTime + sciFiTracker.DeadTime();
+                                initialTime = endTime + sciFiTracker.SiPMDeadTime();
                                 endTime = initialTime + sciFiTracker.ThresholdTime();
                             }
                         }
@@ -145,12 +142,8 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                     }
                 }
             }
-            auto cluster{HitNumber(siPMHitData, sciFiTracker.ThresholdTime())};
-            auto divHit{DividedHit(cluster, sciFiTracker.ThresholdTime())};
-            auto positionData{PositionTransform(divHit)};
-            reconTrack.Fill(std::move(positionData));
         });
-    reconTrack.Write();
+    trackOutput.Write();
     return EXIT_SUCCESS;
 }
 } // namespace MACE::PhaseI::ReconSciFi

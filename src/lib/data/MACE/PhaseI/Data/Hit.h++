@@ -17,7 +17,8 @@ using HitEventIDHitID = Mustard::Data::TupleModel<
 
 using SciFiHit = Mustard::Data::TupleModel<
     internal::HitEventIDHitID,
-    SciFiRawHit>;
+    SciFiRawHit,
+    Mustard::Data::Value<int, "SiPMID", "SiPM ID">>;
 
 using MRPCHit = Mustard::Data::TupleModel<
     internal::HitEventIDHitID,

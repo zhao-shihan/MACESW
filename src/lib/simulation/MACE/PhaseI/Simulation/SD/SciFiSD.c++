@@ -82,7 +82,7 @@ auto SciFiSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto vertexMomentum{track.GetVertexMomentumDirection() * std::sqrt(vertexEk * (vertexEk + 2 * particle.GetPDGMass()))};
 
     // new a hit
-    const auto& hit{fSplitHit[fiberID].emplace_back(std::make_unique_for_overwrite<SciFiHit>())};
+    const auto& hit{fSplitHit[fiberID].emplace_back(std::make_unique_for_overwrite<SciFiSimHit>())};
     Get<"EvtID">(*hit) = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
     Get<"HitID">(*hit) = -1; // to be determined
     Get<"TrkID">(*hit) = track.GetTrackID();

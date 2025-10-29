@@ -87,10 +87,6 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
 
     //============================================ Optical Window =====================================
 
-    const auto windowPropertiesTable = new G4MaterialPropertiesTable();
-    windowPropertiesTable->AddProperty("RINDEX", fEnergyPair, {1.55, 1.55});
-    epoxy->SetMaterialPropertiesTable(windowPropertiesTable);
-
     const auto siliconeOilPropertiesTable{new G4MaterialPropertiesTable()};
     siliconeOilPropertiesTable->AddProperty("RINDEX", fEnergyPair, {1.465, 1.465});
     siliconeOilPropertiesTable->AddProperty("ABSLENGTH", fEnergyPair, {40_cm, 40_cm});
@@ -125,8 +121,8 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     sipmSurfacePropertiesTable->AddProperty("REFLECTIVITY", fEnergyPair, {0., 0.});
     sipmSurfacePropertiesTable->AddProperty("EFFICIENCY", sciFiTracker.SiPMEnergyBin(), sciFiTracker.SiPMQuantumEfficiency());
 
-    const auto rfSurfacePropertiesTable{new G4MaterialPropertiesTable};
-    rfSurfacePropertiesTable->AddProperty("REFLECTIVITY", fEnergyPair, {0, 0});
+    const auto absorbSurfacePropertiesTable{new G4MaterialPropertiesTable};
+    absorbSurfacePropertiesTable->AddProperty("REFLECTIVITY", fEnergyPair, {0, 0});
 
     /////////////////////////////////////////////
     // Construct Volumes
@@ -135,24 +131,23 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     /////////////////////////////////////////
     ///////////solid and logical/////////////
     /////////////////////////////////////////
-    for (int i{}; i < sciFiTracker.NLayer(); i += 2) {
-        const auto solidBracket1{Make<G4Tubs>(scifiName + "Bracket",
-                                              sciFiTracker.RLayer()->at(i) - sciFiTracker.FiberCladdingWidth() - 2,
-                                              sciFiTracker.RLayer()->at(i) - sciFiTracker.FiberCladdingWidth(),
-                                              sciFiTracker.FiberLength() / 2, 0,
-                                              2_pi)};
-        const auto logicalBracket1{
-            Make<G4LogicalVolume>(solidBracket1,
-                                  G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"),
-                                  scifiName + "Bracket")};
-        Make<G4PVPlacement>(G4Transform3D{},
-                            logicalBracket1,
-                            scifiName + "Bracket",
-                            Mother().LogicalVolume(),
-                            false,
-                            0,
-                            checkOverlaps);
-    }
+
+    const auto solidBracket{Make<G4Tubs>(scifiName + "Bracket",
+                                         sciFiTracker.BracketInnerRadius(),
+                                         sciFiTracker.BracketOuterRadius(),
+                                         sciFiTracker.FiberLength() / 2, 0,
+                                         2_pi)};
+    const auto logicalBracket{
+        Make<G4LogicalVolume>(solidBracket,
+                              G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), // G4_PLASTIC_SC_VINYLTOLUENE
+                              scifiName + "Bracket")};
+    Make<G4PVPlacement>(G4Transform3D{},
+                        logicalBracket,
+                        scifiName + "Bracket",
+                        Mother().LogicalVolume(),
+                        false,
+                        0,
+                        checkOverlaps);
 
     const auto solidSiPM{
         Make<G4Box>(scifiName + "SiPM", sciFiTracker.SiPMLength() / 2,
@@ -163,21 +158,21 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     const auto solidEpoxy{
         Make<G4Box>(scifiName + "Epoxy",
                     sciFiTracker.SiPMLength() / 2,
-                    sciFiTracker.SiPMLength() / 2,
+                    sciFiTracker.SiPMWidth() / 2,
                     sciFiTracker.EpoxyThickness() / 2)};
     const auto logicalEpoxy{Make<G4LogicalVolume>(solidEpoxy, epoxy, scifiName + "Epoxy")};
 
     const auto solidSiliconeOil{
         Make<G4Box>(scifiName + "SiliconeOil",
                     sciFiTracker.SiPMLength() / 2,
-                    sciFiTracker.SiPMLength() / 2,
+                    sciFiTracker.SiPMWidth() / 2,
                     sciFiTracker.SiliconeOilThickness() / 2)};
     const auto logicalSiliconeOil{Make<G4LogicalVolume>(solidSiliconeOil, siliconeOil, scifiName + "SiliconeOil")};
 
     const auto solidAbsorbLayer{
         Make<G4Box>(scifiName + "AbsorbLayer",
                     sciFiTracker.SiPMLength() / 2,
-                    sciFiTracker.SiPMLength() / 2,
+                    sciFiTracker.SiPMWidth() / 2,
                     (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2)};
     const auto logicalAbsorbLayer{Make<G4LogicalVolume>(solidAbsorbLayer, silicon, "SciFiAbsorbLayer")};
 
@@ -199,15 +194,6 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         0,
         checkOverlaps);
 
-    auto rotationVector{
-        [&](double i, double pitch, double x0, double y0, double pm_z) {
-            return CLHEP::Hep3Vector(
-                std::cos(i) * x0 - std::sin(i) * y0,
-                std::cos(i) * y0 + std::sin(i) * x0,
-                pm_z * ((sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2 +
-                        sciFiTracker.FiberLength() / 2 + sciFiTracker.LightGuideCurvature() * std::cos(pitch)));
-        }};
-
     auto logicalHelicalFiber{
         [&](auto helicalRadius, auto fiberCladdingWidth, auto fiberCoreWidth, auto pitch) {
             const auto solidHelicalFiberCladding{Make<Mustard::Geant4X::HelicalBox>(
@@ -217,6 +203,8 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 pitch,
                 0,
                 2_pi,
+                true,
+                true,
                 0.001)};
             const auto logicalHelicalFiberCladding{Make<G4LogicalVolume>(
                 solidHelicalFiberCladding,
@@ -229,6 +217,8 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 pitch,
                 0,
                 2_pi,
+                true,
+                true,
                 0.001)};
             const auto logicalHelicalFiberCore{
                 Make<G4LogicalVolume>(solidHelicalFiberCore,
@@ -246,22 +236,28 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         }};
 
     auto logicalHelicalLightGuide{
-        [&](auto curvature, auto fiberCladdingWidth, auto fiberCoreWidth, auto pitch) {
-            const auto solidHelicalLightGuideCladding{Make<G4Tubs>(
+        [&](auto helicalRadius, auto fiberCladdingWidth, auto fiberCoreWidth, auto pitch) {
+            const auto solidHelicalLightGuideCladding{Make<Mustard::Geant4X::HelicalBox>(
                 scifiName + "HelicalLightGuide",
-                curvature - fiberCladdingWidth / 2,
-                curvature + fiberCladdingWidth / 2,
-                fiberCladdingWidth / 2,
+                helicalRadius,
+                fiberCladdingWidth,
+                pitch,
                 0,
-                0.5_pi - std::abs(pitch))};
+                1_pi / 2,
+                true,
+                false,
+                0.001)};
 
-            const auto solidHelicalLightGuideCore{Make<G4Tubs>(
+            const auto solidHelicalLightGuideCore{Make<Mustard::Geant4X::HelicalBox>(
                 scifiName + "HelicalLightGuideCore",
-                curvature - fiberCoreWidth / 2,
-                curvature + fiberCoreWidth / 2,
-                fiberCoreWidth / 2,
+                helicalRadius,
+                fiberCoreWidth,
+                pitch,
                 0,
-                0.5_pi - std::abs(pitch))};
+                1_pi / 2,
+                true,
+                false,
+                0.001)};
 
             const auto logicalHelicalLightGuideCladding{Make<G4LogicalVolume>(
                 solidHelicalLightGuideCladding,
@@ -353,51 +349,49 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     /////////////////////////////////
     int fiberNumber{};
     int sipmNumber{};
+    const auto layerConfig{sciFiTracker.DetectorLayerConfiguration()};
+    const auto fiberInformation{sciFiTracker.DetectorFiberInformation()};
     auto HelicalPlacement{
-        [&](auto helicalRadius, auto logicalFiber, auto logicalLightGuide, auto nFiber, auto pitch, auto curvature, int second) {
+        [&](auto helicalRadius, auto logicalFiber, auto logicalLightGuide, auto nFiber, auto pitch) {
             for (int i{}; i < nFiber; i++) {
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber},
+                    G4RotateZ3D{fiberInformation[fiberNumber].rotationAngle},
                     logicalFiber,
                     scifiName + "HelicalFiber_" + std::to_string(fiberNumber),
+                    logicalBracket,
+                    false,
+                    fiberNumber,
+                    checkOverlaps);
+
+                Make<G4PVPlacement>(
+                    G4RotateZ3D{fiberInformation[fiberNumber].rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
+                        G4Translate3D{0, 0, -sciFiTracker.FiberLength() / 2 - (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch))) / 2} *
+                        G4RotateY3D{1.5 * 1_pi - std::copysign(1, pitch) * 0.5 * 1_pi},
+                    logicalLightGuide,
+                    scifiName + "HelicalLightGuide",
                     Mother().LogicalVolume(),
                     false,
                     fiberNumber,
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
-                        G4RotateY3D{0.5_pi} *
-                        G4Translate3D{-sciFiTracker.FiberLength() / 2, 0, std::copysign(helicalRadius, pitch)} *
-                        G4RotateZ3D{std::abs(pitch)} *
-                        G4TranslateX3D{-curvature},
+                    G4RotateZ3D{fiberInformation[fiberNumber].rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
+                        G4Translate3D{0, 0, sciFiTracker.FiberLength() / 2 + (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch))) / 2} *
+                        G4RotateY3D{1.5 * 1_pi + std::copysign(1, pitch) * 0.5 * 1_pi},
                     logicalLightGuide,
                     scifiName + "HelicalLightGuide",
                     Mother().LogicalVolume(),
                     false,
-                    0,
-                    checkOverlaps);
-
-                Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
-                        G4RotateY3D{0.5_pi} *
-                        G4Translate3D{sciFiTracker.FiberLength() / 2, 0, std::copysign(helicalRadius, pitch)} *
-                        G4RotateZ3D{std::abs(pitch) + 1_pi} *
-                        G4TranslateX3D{-curvature},
-                    logicalLightGuide,
-                    scifiName + "HelicalLightGuide",
-                    Mother().LogicalVolume(),
-                    false,
-                    0,
+                    fiberNumber,
                     checkOverlaps);
                 fiberNumber++;
                 Make<G4PVPlacement>(
-                    G4Transform3D{
-                        CLHEP::HepRotationZ{(i + second * 0.5) * 2_pi / nFiber},
-                        rotationVector((i + second * 0.5) * 2_pi / nFiber,
-                                       pitch,
-                                       std::copysign(helicalRadius, pitch),
-                                       curvature * (1 - std::abs(std::sin(pitch))), 1)},
+                    G4RotateZ3D{fiberInformation[sipmNumber].rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
+                        G4Translate3D{0,
+                                      helicalRadius,
+                                      sciFiTracker.FiberLength() / 2 + (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch)))} *
+                        G4RotateY3D{(3 * 1_pi / 2 + std::abs(pitch)) * std::copysign(1, pitch)} *
+                        G4Translate3D{0, 0, (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2},
                     logicalSiPM,
                     scifiName + "SiPM",
                     Mother().LogicalVolume(),
@@ -406,12 +400,12 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4Transform3D{
-                        CLHEP::HepRotationZ{(i + second * 0.5) * 2_pi / nFiber},
-                        rotationVector((i + second * 0.5) * 2_pi / nFiber,
-                                       pitch,
-                                       -std::copysign(helicalRadius, pitch),
-                                       curvature * (1 - std::abs(std::sin(pitch))), -1)},
+                    G4RotateZ3D{fiberInformation[sipmNumber].rotationAngle} *
+                        G4Translate3D{0,
+                                      helicalRadius,
+                                      -sciFiTracker.FiberLength() / 2 - (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch)))} *
+                        G4RotateY3D{-1_pi / 2 + pitch} *
+                        G4Translate3D{0, 0, -std::copysign(1, pitch) * (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2},
                     logicalAbsorbLayer,
                     scifiName + "AbsorbLayer",
                     Mother().LogicalVolume(),
@@ -423,22 +417,22 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         }};
 
     auto TransversePlacement{
-        [&](auto radius, auto logicalFiber, auto logicalLightGuide, auto nFiber, int second) {
+        [&](auto radius, auto logicalFiber, auto logicalLightGuide, auto nFiber) {
             for (int i{}; i < nFiber; i++) {
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{fiberInformation[fiberNumber].rotationAngle} *
                         G4Transform3D{{}, G4ThreeVector(radius, 0, 0)},
                     logicalFiber,
                     scifiName + "TransverseFiber_" + std::to_string(fiberNumber),
-                    Mother().LogicalVolume(),
+                    logicalBracket,
                     false,
                     fiberNumber,
                     checkOverlaps);
-                fiberNumber++;
+
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{fiberInformation[fiberNumber].rotationAngle} *
                         G4Transform3D{{},
-                                      G4ThreeVector(radius, 0, sciFiTracker.FiberLength() / 2 + sciFiTracker.TLightGuideLength() / 2)},
+                                      G4ThreeVector(radius, 0, sciFiTracker.FiberLength() / 2 + sciFiTracker.TransverseLightGuideLength() / 2)},
                     logicalLightGuide,
                     scifiName + "TransverseLightGuide",
                     Mother().LogicalVolume(),
@@ -447,24 +441,25 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
-                        G4Transform3D({}, G4ThreeVector(radius, 0, -(sciFiTracker.FiberLength() / 2 + sciFiTracker.TLightGuideLength() / 2))),
+                    G4RotateZ3D{fiberInformation[fiberNumber].rotationAngle} *
+                        G4Transform3D({}, G4ThreeVector(radius, 0, -(sciFiTracker.FiberLength() / 2 + sciFiTracker.TransverseLightGuideLength() / 2))),
                     logicalLightGuide,
                     scifiName + "TransverseLightGuide",
                     Mother().LogicalVolume(),
                     false,
                     0,
                     checkOverlaps);
+                fiberNumber++;
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{fiberInformation[sipmNumber].rotationAngle} *
                         G4Transform3D{{},
                                       G4ThreeVector(radius,
                                                     0,
                                                     (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() +
                                                      sciFiTracker.EpoxyThickness() + // clang-format off
                                                      sciFiTracker.FiberLength()) / 2 + 
-                                                     sciFiTracker.TLightGuideLength())}, // clang-format on
+                                                     sciFiTracker.TransverseLightGuideLength())}, // clang-format on
                     logicalSiPM,
                     scifiName + "SiPM",
                     Mother().LogicalVolume(),
@@ -473,7 +468,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{(i + second * 0.5) * 2_pi / nFiber} *
+                    G4RotateZ3D{fiberInformation[sipmNumber].rotationAngle} *
                         G4Transform3D{
                             {},
                             G4ThreeVector(radius,
@@ -482,7 +477,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                                             sciFiTracker.SiliconeOilThickness() +
                                             sciFiTracker.EpoxyThickness() + // clang-format off
                                             sciFiTracker.FiberLength()) / 2 - 
-                                            sciFiTracker.TLightGuideLength())}, // clang-format on
+                                            sciFiTracker.TransverseLightGuideLength())}, // clang-format on
                     logicalAbsorbLayer,
                     scifiName + "AbsorbLayer",
                     Mother().LogicalVolume(),
@@ -493,7 +488,6 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             }
         }};
 
-    const auto layerConfig{sciFiTracker.DetectorLayerConfiguration()};
     for (int i{}; i < sciFiTracker.NLayer(); i++) {
         if (layerConfig[i].fiber.layerType == "LHelical") {
             auto logicalLHelicalFiber{logicalHelicalFiber(
@@ -503,7 +497,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 layerConfig[i].fiber.pitch)};
 
             auto logicalLHelicalLightGuide{logicalHelicalLightGuide(
-                sciFiTracker.LightGuideCurvature(),
+                layerConfig[i].fiber.radius,
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
                 layerConfig[i].fiber.pitch)};
@@ -511,10 +505,8 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             HelicalPlacement(layerConfig[i].fiber.radius,
                              logicalLHelicalFiber,
                              logicalLHelicalLightGuide,
-                             layerConfig[i].lastID - layerConfig[i].firstID + 1, // number of fiber is (end-begin+1)
-                             layerConfig[i].fiber.pitch,
-                             sciFiTracker.LightGuideCurvature(),
-                             layerConfig[i].isSecond);
+                             layerConfig[i].fiberNumber,
+                             layerConfig[i].fiber.pitch);
         } else if (layerConfig[i].fiber.layerType == "RHelical") {
             auto logicalRHelicalFiber{logicalHelicalFiber(
                 layerConfig[i].fiber.radius,
@@ -523,7 +515,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 layerConfig[i].fiber.pitch)};
 
             auto logicalRHelicalLightGuide{logicalHelicalLightGuide(
-                sciFiTracker.LightGuideCurvature(),
+                layerConfig[i].fiber.radius,
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
                 layerConfig[i].fiber.pitch)};
@@ -531,10 +523,8 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             HelicalPlacement(layerConfig[i].fiber.radius,
                              logicalRHelicalFiber,
                              logicalRHelicalLightGuide,
-                             layerConfig[i].lastID - layerConfig[i].firstID + 1, // number of fiber is (end-begin+1)
-                             layerConfig[i].fiber.pitch,
-                             sciFiTracker.LightGuideCurvature(),
-                             layerConfig[i].isSecond);
+                             layerConfig[i].fiberNumber,
+                             layerConfig[i].fiber.pitch);
         } else if (layerConfig[i].fiber.layerType == "Transverse") {
             auto logicalTFiber{logicalTransverseFiber(
                 sciFiTracker.FiberCladdingWidth(),
@@ -544,13 +534,12 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             auto logicalTLightGuide{logicalTransverseLightGuide(
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
-                sciFiTracker.TLightGuideLength())};
+                sciFiTracker.TransverseLightGuideLength())};
 
             TransversePlacement(layerConfig[i].fiber.radius,
                                 logicalTFiber,
                                 logicalTLightGuide,
-                                layerConfig[i].lastID - layerConfig[i].firstID + 1, // number of fiber is (end-begin+1)
-                                layerConfig[i].isSecond);
+                                layerConfig[i].fiberNumber);
         }
     }
 
@@ -563,7 +552,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     new G4LogicalSkinSurface{"SiPMSurface", logicalSiPM, sipmSurface};
 
     const auto absorbSurface{new G4OpticalSurface("AbsorbSurface", unified, polished, dielectric_metal)};
-    absorbSurface->SetMaterialPropertiesTable(rfSurfacePropertiesTable);
+    absorbSurface->SetMaterialPropertiesTable(absorbSurfacePropertiesTable);
     new G4LogicalSkinSurface{"AbsorbSurface", logicalAbsorbLayer, absorbSurface};
 }
 
