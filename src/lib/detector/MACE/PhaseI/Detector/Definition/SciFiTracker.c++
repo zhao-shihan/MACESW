@@ -173,7 +173,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     sciFiTracker.SiPMLength() / 2,
                     sciFiTracker.SiPMWidth() / 2,
                     (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2)};
-    const auto logicalAbsorbLayer{Make<G4LogicalVolume>(solidAbsorbLayer, silicon, "SciFiAbsorbLayer")};
+    const auto logicalAbsorbLayer{Make<G4LogicalVolume>(solidAbsorbLayer, silicon, scifiName + "AbsorbLayer")};
 
     Make<G4PVPlacement>(
         G4TranslateZ3D{(sciFiTracker.SiliconeOilThickness() - sciFiTracker.SiPMThickness()) / 2},
@@ -266,7 +266,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             const auto logicalHelicalLightGuideCore{Make<G4LogicalVolume>(
                 solidHelicalLightGuideCore,
                 pmma,
-                scifiName + "HelicalLightGuide")};
+                scifiName + "HelicalLightGuideCore")};
 
             Make<G4PVPlacement>(G4Transform3D{},
                                 logicalHelicalLightGuideCore,
@@ -331,7 +331,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         const auto logicalTransverseLightGuideCore{
             Make<G4LogicalVolume>(solidTransverseLightGuideCore,
                                   pmma,
-                                  scifiName + "TransverseLightGuide")};
+                                  scifiName + "TransverseLightGuideCore")};
         Make<G4PVPlacement>(G4Transform3D{},
                             logicalTransverseLightGuideCore,
                             scifiName + "TransverseLightGuide",
