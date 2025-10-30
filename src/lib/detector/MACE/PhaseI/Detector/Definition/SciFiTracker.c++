@@ -89,7 +89,6 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
 
     const auto siliconeOilPropertiesTable{new G4MaterialPropertiesTable()};
     siliconeOilPropertiesTable->AddProperty("RINDEX", fEnergyPair, {1.465, 1.465});
-    siliconeOilPropertiesTable->AddProperty("ABSLENGTH", fEnergyPair, {40_cm, 40_cm});
     siliconeOil->SetMaterialPropertiesTable(siliconeOilPropertiesTable);
 
     const auto epoxyPropertiesTable{new G4MaterialPropertiesTable()};
@@ -122,7 +121,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     sipmSurfacePropertiesTable->AddProperty("EFFICIENCY", sciFiTracker.SiPMEnergyBin(), sciFiTracker.SiPMQuantumEfficiency());
 
     const auto absorbSurfacePropertiesTable{new G4MaterialPropertiesTable};
-    absorbSurfacePropertiesTable->AddProperty("REFLECTIVITY", fEnergyPair, {0, 0});
+    absorbSurfacePropertiesTable->AddProperty("REFLECTIVITY", fEnergyPair, {1, 1});
 
     /////////////////////////////////////////////
     // Construct Volumes
