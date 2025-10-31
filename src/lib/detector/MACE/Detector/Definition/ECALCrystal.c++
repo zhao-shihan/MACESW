@@ -106,14 +106,14 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
         // loop over all ECAL face
         // centroid here refer to the face 'center' of normalized ball
 
-        if ((not moduleSelection.empty()) and std::find(moduleSelection.begin(), moduleSelection.end(), moduleID) == moduleSelection.end()) {
+        if ((not moduleSelection.empty()) and std::ranges::find(moduleSelection, moduleID) == moduleSelection.end()) {
             moduleID++;
             continue;
         }
 
-        const auto SolidCrystal{
+        const auto solidCrystal{
             [&, &centroid = centroid, &vertexIndex = vertexIndex](const auto& name) {
-                const auto ComputeIntersection{[](G4ThreeVector vertexPlane, G4ThreeVector normPlane, G4ThreeVector vertexLine, G4ThreeVector direcLine) {
+                const auto computeIntersection{[](G4ThreeVector vertexPlane, G4ThreeVector normPlane, G4ThreeVector vertexLine, G4ThreeVector direcLine) {
                     double lambda{normPlane.dot(vertexPlane - vertexLine) / normPlane.dot(direcLine)};
                     return vertexLine + direcLine * lambda;
                 }};
@@ -123,7 +123,7 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
                 std::vector<G4ThreeVector> outerVertexes(vertexIndex.size());
                 // outer face cut vertex lines
                 std::ranges::transform(vertexIndex, outerVertexes.begin(),
-                                       [&](const auto& i) { return ComputeIntersection(outerCentroid, normal, vertex[i], vertex[i]); });
+                                       [&](const auto& i) { return computeIntersection(outerCentroid, normal, vertex[i], vertex[i]); });
                 // consider package thickness
                 std::ranges::transform(outerVertexes, outerVertexes.begin(),
                                        [&](const auto& aVertex) { return outerCentroid + (aVertex - outerCentroid).unit() * ((aVertex - outerCentroid).mag() - ecal.CrystalPackageThickness()); });
@@ -198,14 +198,14 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
 
         const auto logicCrystal{
             Make<G4LogicalVolume>(
-                SolidCrystal(fmt::format("ECALCrystal_{}", moduleID)),
+                solidCrystal(fmt::format("{}Crystal_{}", name, moduleID)),
                 lyso,
-                "ECALCrystal")};
+                name + "Crystal")};
         const auto physicalCrystal{
             Make<G4PVPlacement>(
                 G4Transform3D{},
                 logicCrystal,
-                fmt::format("ECALCrystal_{}", moduleID),
+                fmt::format("{}Crystal_{}", name, moduleID),
                 Mother().LogicalVolume(),
                 true,
                 moduleID,
@@ -228,7 +228,7 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
             const auto couplerSurface{new G4OpticalSurface("coupler", unified, polished, dielectric_dielectric)};
             new G4LogicalBorderSurface{"couplerSurface",
                                        physicalCrystal,
-                                       ecalPMCoupler->PhysicalVolume("ECALPMCoupler", moduleID),
+                                       ecalPMCoupler->PhysicalVolume(name + "PMCoupler", moduleID),
                                        couplerSurface};
             couplerSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
         }

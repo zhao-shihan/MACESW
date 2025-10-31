@@ -60,7 +60,7 @@ auto Analysis::EventEndUserAction() -> void {
     const auto mmsTrack{fCDCHit and fTTCHit ?
                             std::optional{fMMSTruthTracker(*fCDCHit, *fTTCHit)} :
                             std::nullopt};
-    const auto mmsPassed{mmsTrack == std::nullopt or mmsTrack->size() > 0};
+    const auto mmsPassed{mmsTrack == std::nullopt or not mmsTrack->empty()};
     if (mmsPassed) {
         if (fPrimaryVertex and fPrimaryVertexOutput) {
             fPrimaryVertexOutput->Fill(*fPrimaryVertex);

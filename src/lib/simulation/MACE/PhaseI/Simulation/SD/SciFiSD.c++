@@ -1,6 +1,4 @@
-#include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
 #include "MACE/PhaseI/Simulation/SD/SciFiSD.h++"
-#include "MACE/PhaseI/Simulation/SD/SciFiSiPMSD.h++"
 
 #include "Mustard/Utility/LiteralUnit.h++"
 
@@ -9,16 +7,11 @@
 #include "G4HCofThisEvent.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4ParticleDefinition.hh"
-#include "G4ProcessType.hh"
-#include "G4RotationMatrix.hh"
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SteppingManager.hh"
-#include "G4ThreeVector.hh"
 #include "G4Track.hh"
-#include "G4TrackingManager.hh"
-#include "G4TwoVector.hh"
 #include "G4VProcess.hh"
 #include "G4VTouchable.hh"
 
@@ -26,12 +19,10 @@
 #include "muc/numeric"
 #include "muc/utility"
 
+#include "gsl/gsl"
+
 #include <algorithm>
-#include <cassert>
 #include <cmath>
-#include <functional>
-#include <iterator>
-#include <numeric>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -75,7 +66,7 @@ auto SciFiSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     }
     const auto preStepPoint{*step.GetPreStepPoint()};
 
-    const auto x{preStepPoint.GetPosition()};
+    const auto& x{preStepPoint.GetPosition()};
     const auto fiberID{preStepPoint.GetTouchable()->GetReplicaNumber(1)};
     const auto creatorProcess{track.GetCreatorProcess()};
     const auto vertexEk{track.GetVertexKineticEnergy()};
@@ -107,7 +98,7 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                 [](auto&& count, auto&& cellHit) {
                                     return count + cellHit.second.size();
                                 }));
-    constexpr auto ByTrackID{
+    constexpr auto byTrackID{
         [](const auto& hit1, const auto& hit2) {
             return Get<"EvtID">(*hit1) < Get<"EvtID">(*hit2);
         }};
@@ -123,7 +114,7 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
         } break;
         default: {
             const auto scintillationTimeConstant1{3_ns};
-            assert(scintillationTimeConstant1 >= 0);
+            Expects(scintillationTimeConstant1 >= 0);
             // sort hit by time
             muc::timsort(splitHit,
                          [](const auto& hit1, const auto& hit2) {
@@ -142,7 +133,7 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                                                        return Get<"t">(*hit) <= windowClosingTime;
                                                                    })};
                 // find top hit
-                auto& topHit{*std::ranges::min_element(cluster, ByTrackID)};
+                auto& topHit{*std::ranges::min_element(cluster, byTrackID)};
 
                 // construct real hit
                 Get<"HitID">(*topHit) = hitID++;

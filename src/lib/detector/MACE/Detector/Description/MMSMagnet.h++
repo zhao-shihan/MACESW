@@ -12,7 +12,7 @@ class MMSMagnet final : public Mustard::Detector::Description::DescriptionBase<M
 
 private:
     MMSMagnet();
-    ~MMSMagnet() = default;
+    ~MMSMagnet() override = default;
 
 public:
     // Geometry

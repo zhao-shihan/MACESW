@@ -120,7 +120,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                 return;
             }
 
-            const auto Clustering = [&](std::unordered_set<short>& set,
+            const auto clustering = [&](std::unordered_set<short>& set,
                                         CLHEP::Hep3Vector& c,
                                         std::vector<short>::iterator seedIt) {
                 const auto addClusterLayers = [&](short module) {
@@ -151,8 +151,8 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                 // return totalEnergy;
             };
 
-            auto firstClusterEnergy = Clustering(firstCluster, firstCenter, firstSeedModule);
-            auto secondClusterEnergy = Clustering(secondCluster, secondCenter, secondSeedModule);
+            auto firstClusterEnergy = clustering(firstCluster, firstCenter, firstSeedModule);
+            auto secondClusterEnergy = clustering(secondCluster, secondCenter, secondSeedModule);
 
             if (firstClusterEnergy + secondClusterEnergy > muonium_mass_c2) {
                 return;

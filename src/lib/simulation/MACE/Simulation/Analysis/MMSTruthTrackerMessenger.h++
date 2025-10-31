@@ -16,7 +16,7 @@ class MMSTruthTrackerMessenger final : public Mustard::Geant4X::SingletonMesseng
 
 private:
     MMSTruthTrackerMessenger();
-    ~MMSTruthTrackerMessenger();
+    ~MMSTruthTrackerMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

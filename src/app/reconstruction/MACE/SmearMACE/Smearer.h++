@@ -27,7 +27,7 @@ public:
 private:
     std::vector<std::string> fInputFile;
 
-    Mustard::Data::Processor<>& fProcessor;
+    Mustard::Data::Processor<>* fProcessor;
 };
 
 } // namespace MACE::SmearMACE

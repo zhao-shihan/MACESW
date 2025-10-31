@@ -66,9 +66,9 @@ auto Analysis::EventEndUserAction() -> void {
     const auto mmsTrack{fCDCHit and fTTCHit ?
                             std::optional{fMMSTruthTracker(*fCDCHit, *fTTCHit)} :
                             std::nullopt};
-    const auto mmsPassed{not fCoincidenceWithMMS or mmsTrack == std::nullopt or mmsTrack->size() > 0};
+    const auto mmsPassed{not fCoincidenceWithMMS or mmsTrack == std::nullopt or not mmsTrack->empty()};
     const auto mcpPassed{not fCoincidenceWithMCP or fMCPHit == nullptr or std::ranges::any_of(*fMCPHit, [](auto&& hit) { return Get<"Trig">(*hit); })};
-    const auto ecalPassed{not fCoincidenceWithECAL or fECALHit == nullptr or fECALHit->size() > 0};
+    const auto ecalPassed{not fCoincidenceWithECAL or fECALHit == nullptr or not fECALHit->empty()};
     if (mmsPassed and mcpPassed and ecalPassed) {
         if (fPrimaryVertex and fPrimaryVertexOutput) {
             fPrimaryVertexOutput->Fill(*fPrimaryVertex);

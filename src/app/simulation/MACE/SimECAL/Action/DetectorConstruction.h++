@@ -18,9 +18,7 @@ namespace Mustard::Detector::Definition {
 class DefinitionBase;
 } // namespace Mustard::Detector::Definition
 
-namespace MACE {
-
-namespace SimECAL::inline Action {
+namespace MACE::SimECAL::inline Action {
 
 class DetectorConstruction final : public Mustard::Env::Memory::PassiveSingleton<DetectorConstruction>,
                                    public G4VUserDetectorConstruction {
@@ -42,6 +40,4 @@ private:
     std::unique_ptr<Mustard::Detector::Definition::DefinitionBase> fWorld;
 };
 
-} // namespace SimECAL::inline Action
-
-} // namespace MACE
+} // namespace MACE::SimECAL::inline Action

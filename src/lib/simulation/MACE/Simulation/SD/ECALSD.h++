@@ -13,14 +13,14 @@ class ECALPMSD;
 
 class ECALSD : public G4VSensitiveDetector {
 public:
-    ECALSD(const G4String& sdName, const ECALPMSD* ecalPMSD = {});
+    explicit ECALSD(const G4String& sdName, const ECALPMSD* ecalPMSD = {});
 
-    virtual auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
-    virtual auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
-    virtual auto EndOfEvent(G4HCofThisEvent*) -> void override;
+    auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
+    auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
+    auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
 protected:
-    const ECALPMSD* const fECALPMSD;
+    const ECALPMSD* fECALPMSD;
 
     double fEnergyDepositionThreshold;
 

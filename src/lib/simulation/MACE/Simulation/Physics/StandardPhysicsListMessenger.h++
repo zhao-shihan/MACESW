@@ -16,7 +16,7 @@ class StandardPhysicsListMessenger final : public Mustard::Geant4X::SingletonMes
 
 private:
     StandardPhysicsListMessenger();
-    ~StandardPhysicsListMessenger();
+    ~StandardPhysicsListMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

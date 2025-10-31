@@ -13,7 +13,7 @@ class DetectorMessenger final : public Mustard::Geant4X::DetectorMessenger<Detec
 
 private:
     DetectorMessenger() = default;
-    ~DetectorMessenger() = default;
+    ~DetectorMessenger() override = default;
 };
 
 } // namespace MACE::SimPTS::inline Messenger

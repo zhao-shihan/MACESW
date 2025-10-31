@@ -10,7 +10,7 @@ namespace MACE::inline Utility {
 
 class EventGeneratorCLIModule : public Mustard::CLI::ModuleBase {
 public:
-    EventGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+    explicit EventGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 
     auto DefaultOutput(std::string path) -> void;
     auto DefaultOutputTree(std::string name) -> void;

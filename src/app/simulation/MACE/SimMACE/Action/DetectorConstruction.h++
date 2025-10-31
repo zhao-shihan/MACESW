@@ -50,9 +50,9 @@ public:
     auto MinDriverStep(double val) -> void { fMinDriverStep = val; }
     auto DeltaChord(double val) -> void { fDeltaChord = val; }
 
-    auto ApplyProductionCutNearTarget(bool apply) const -> void;
-
     auto Construct() -> G4VPhysicalVolume* override;
+
+    static auto ApplyProductionCutNearTarget(bool apply) -> void;
 
 public:
     using ProminentDescription = muc::tuple_unique_t<muc::tuple_concat_t<

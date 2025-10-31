@@ -1,0 +1,9 @@
+# ===========================================================================
+# This file complements clang-tidy-fix-unity-build.yml
+# ===========================================================================
+
+Checks:
+  - -*
+  - readability-redundant-declaration
+FormatStyle: none
+InheritParentConfig: true

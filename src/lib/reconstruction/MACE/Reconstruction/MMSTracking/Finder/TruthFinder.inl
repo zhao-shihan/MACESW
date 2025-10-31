@@ -27,7 +27,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     r.garbage.reserve(hitData.size());
 
     std::ranges::subrange track{hitData.cbegin(), hitData.cbegin()};
-    const auto CollectGarbage{
+    const auto collectGarbage{
         [&] { r.garbage.insert(r.garbage.end(), track.begin(), track.end()); }};
 
     muc::flat_hash_set<short> cellHit;
@@ -40,7 +40,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
                                                        })};
 
         if (std::ranges::ssize(track) < this->MinNHit()) {
-            CollectGarbage();
+            collectGarbage();
             continue;
         }
 
@@ -49,7 +49,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
             cellHit.emplace(Get<"CellID">(*hit));
         }
         if (ssize(cellHit) < this->MinNHit()) {
-            CollectGarbage();
+            collectGarbage();
             continue;
         }
 

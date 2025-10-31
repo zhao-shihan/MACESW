@@ -18,7 +18,8 @@ auto PrimaryGeneratorAction::NVertex() const -> int {
     const auto& [gpsx, dataReaderPrimaryGenerator]{fAvailableGenerator};
     if (fGenerator == &gpsx) {
         return gpsx.NVertex();
-    } else if (fGenerator == &dataReaderPrimaryGenerator) {
+    }
+    if (fGenerator == &dataReaderPrimaryGenerator) {
         return dataReaderPrimaryGenerator.NVertex();
     }
     muc::unreachable();

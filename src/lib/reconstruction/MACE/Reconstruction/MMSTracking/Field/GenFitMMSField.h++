@@ -10,8 +10,8 @@ namespace MACE::inline Reconstruction::MMSTracking::inline Field {
 
 class GenFitMMSField : public genfit::AbsBField {
 public:
-    virtual auto get(const TVector3& x) const -> TVector3 override;
-    virtual auto get(const double& x, const double& y, const double& z, double& Bx, double& By, double& Bz) const -> void override;
+    auto get(const TVector3& x) const -> TVector3 override;
+    auto get(const double& x, const double& y, const double& z, double& bx, double& by, double& bz) const -> void override;
 
 private:
     Detector::Field::MMSField fMMSField;

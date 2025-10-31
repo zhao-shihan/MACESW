@@ -28,7 +28,7 @@ private:
 
 public:
     TruthFinder();
-    virtual ~TruthFinder() override = default;
+    ~TruthFinder() override = default;
 
     auto MaxVertexRxy() const -> auto { return fMaxVertexRxy; }
     auto MaxVertexRxy(double r) -> void { fMaxVertexRxy = std::max(0., r); }

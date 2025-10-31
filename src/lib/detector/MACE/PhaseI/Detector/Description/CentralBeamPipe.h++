@@ -12,7 +12,7 @@ class CentralBeamPipe final : public Mustard::Detector::Description::Description
 
 private:
     CentralBeamPipe();
-    ~CentralBeamPipe() = default;
+    ~CentralBeamPipe() override = default;
 
 public:
     // Geometry

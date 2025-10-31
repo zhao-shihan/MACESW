@@ -14,7 +14,7 @@ class FieldOption final : public Mustard::Detector::Description::DescriptionBase
 
 private:
     FieldOption();
-    ~FieldOption() = default;
+    ~FieldOption() override = default;
 
 public:
     auto UseFast() const -> auto { return fUseFast; }

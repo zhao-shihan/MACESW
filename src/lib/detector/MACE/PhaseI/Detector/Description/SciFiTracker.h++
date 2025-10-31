@@ -14,7 +14,7 @@ class SciFiTracker final : public Mustard::Detector::Description::DescriptionWit
 
 private:
     SciFiTracker();
-    ~SciFiTracker() = default;
+    ~SciFiTracker() override = default;
 
 public:
     // Geometry
@@ -84,15 +84,15 @@ public:
 public:
     struct LayerConfiguration {
         struct FiberConfiguration {
-            std::string layerType;
-            double radius;
-            double pitch;
+            std::string layerType{};
+            double radius{};
+            double pitch{};
         };
-        int firstID;
-        int lastID;
-        bool isSecond;
-        std::string name;
-        FiberConfiguration fiber;
+        int firstID{};
+        int lastID{};
+        bool isSecond{};
+        std::string name{};
+        FiberConfiguration fiber{};
     };
 
 private:

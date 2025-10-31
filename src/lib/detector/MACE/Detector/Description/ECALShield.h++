@@ -14,7 +14,7 @@ class ECALShield final : public Mustard::Detector::Description::DescriptionBase<
 
 private:
     ECALShield();
-    ~ECALShield() = default;
+    ~ECALShield() override = default;
 
 public:
     // Geometry

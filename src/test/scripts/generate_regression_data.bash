@@ -9,7 +9,7 @@ echo "Working directory: $(pwd)"
 
 start_time=$(date +%s)
 
-source $build_dir/data/mace_offline_data.sh
+source $build_dir/data/macesw_offline_data.sh
 
 final_exit_code=0
 
@@ -43,20 +43,20 @@ run_command hadd -ff SimTTC_em_flat_sample.root SimTTC_em_flat_test/*
 run_command hadd -ff SimMACE_signal_sample.root SimMACE_signal_test/*
 
 echo "Generating regression histograms..."
-if [ -f "$script_dir/mace_regression_data.root" ]; then
+if [ -f "$script_dir/macesw_regression_data.root" ]; then
     mkdir -p "$script_dir/old-regression-data/"
-    mv "$script_dir/mace_regression_data.root" "$script_dir/old-regression-data/mace_regression_data_$(date "+%Y%m%d-%H%M").root"
-    echo "==> NOTICE: old version of mace_regression_data.root moved to $script_dir/old-regression-data/"
+    mv "$script_dir/macesw_regression_data.root" "$script_dir/old-regression-data/macesw_regression_data_$(date "+%Y%m%d-%H%M").root"
+    echo "==> NOTICE: old version of macesw_regression_data.root moved to $script_dir/old-regression-data/"
 fi
 
 echo "Draw & save regression histograms..."
-run_command root -l -q "$script_dir/ReadCDCSimHit.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_sample.root\",\"$script_dir/mace_regression_data.root\")"
-run_command root -l -q "$script_dir/ReadMMSSimTrack.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_sample.root\",\"$script_dir/mace_regression_data.root\")"
-run_command root -l -q "$script_dir/ReadTTCSimHit.cxx(\"SimTTC_em_flat\",\"SimTTC_em_flat_sample.root\",\"$script_dir/mace_regression_data.root\")"
-run_command root -l -q "$script_dir/ReadMCPSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/mace_regression_data.root\")"
-run_command root -l -q "$script_dir/ReadTTCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/mace_regression_data.root\")"
-run_command root -l -q "$script_dir/ReadCDCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/mace_regression_data.root\")"
-run_command root -l -q "$script_dir/ReadMMSSimTrack.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/mace_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadCDCSimHit.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_sample.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadMMSSimTrack.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_sample.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadTTCSimHit.cxx(\"SimTTC_em_flat\",\"SimTTC_em_flat_sample.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadMCPSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadTTCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadCDCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$script_dir/ReadMMSSimTrack.cxx(\"SimMACE_signal\",\"SimMACE_signal_sample.root\",\"$script_dir/macesw_regression_data.root\")"
 
 end_time=$(date +%s)
 total_time=$((end_time - start_time))

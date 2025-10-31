@@ -29,7 +29,7 @@ SciFiTracker::SciFiTracker() : // clang-format off
     fNLayer{this, 6},
     fTypeOfLayer{this, {"LHelical", "LHelical", "RHelical", "RHelical", "Transverse", "Transverse" /*, "LHelical", "LHelical", "RHelical", "RHelical"*/}},
     fRLayer{this, {55_mm, 56.2_mm, 50_mm, 51.2_mm, 45_mm, 46.2_mm /*, 80_mm, 81.2_mm, 90_mm, 91.2_mm*/}},
-    fIsSecond{this, {0, 1, 0, 1, 0, 1 /*, 0, 1, 0, 1*/}},
+    fIsSecond{this, {false, true, false, true, false, true /*, 0, 1, 0, 1*/}},
     fFirstIDOfLayer{this, {0, 120, 240, 360, 480, 600 /*, 720, 840, 960, 1080*/}},
     fLastIDOfLayer{this, {119, 239, 359, 479, 599, 719 /*, 839, 959, 1079, 1199*/}},
     fCombinationOfLayer{this, {{0, 1, 2, 3, 4, 5}}},
@@ -137,17 +137,17 @@ SciFiTracker::SciFiTracker() : // clang-format off
     fTimeWindow{5},
     fDeadtime{10} {}
 auto SciFiTracker::CalculateLayerPitch() const -> std::vector<double> {
-    std::vector<double> Pitch;
+    std::vector<double> pitch;
     for (int i{}; i < fNLayer; i++) {
         if (fTypeOfLayer->at(i) == "LHelical") {
-            Pitch.push_back(std::atan(fFiberLength / (2_pi * fRLayer->at(i))));
+            pitch.push_back(std::atan(fFiberLength / (2_pi * fRLayer->at(i))));
         } else if (fTypeOfLayer->at(i) == "RHelical") {
-            Pitch.push_back(-std::atan(fFiberLength / (2_pi * fRLayer->at(i))));
+            pitch.push_back(-std::atan(fFiberLength / (2_pi * fRLayer->at(i))));
         } else if (fTypeOfLayer->at(i) == "Transverse") {
-            Pitch.push_back(0);
+            pitch.push_back(0);
         }
     }
-    return Pitch;
+    return pitch;
 }
 
 auto SciFiTracker::CalculateLayerConfiguration() const -> std::vector<LayerConfiguration> {

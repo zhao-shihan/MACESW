@@ -19,14 +19,14 @@ public:
     };
 
 public:
-    TTCSD(const G4String& sdName, const Type type, const TTCSiPMSD* ttcSiPMSD = {});
+    TTCSD(const G4String& sdName, Type type, const TTCSiPMSD* ttcSiPMSD = {});
 
-    virtual auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
-    virtual auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
-    virtual auto EndOfEvent(G4HCofThisEvent*) -> void override;
+    auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
+    auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
+    auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
 protected:
-    const TTCSiPMSD* const fTTCSiPMSD;
+    const TTCSiPMSD* fTTCSiPMSD;
 
     Type fType;
 

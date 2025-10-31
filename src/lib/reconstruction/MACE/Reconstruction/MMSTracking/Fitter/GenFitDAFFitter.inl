@@ -10,7 +10,7 @@ template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
 template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
     requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-auto GenFitDAFFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitData, ASeedPointer seed) -> Base::template Result<AHitPointer> {
+auto GenFitDAFFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed) -> Base::template Result<AHitPointer> {
     const auto [genfitTrack, measurementHitMap]{this->Initialize(hitData, seed)};
     if (genfitTrack == nullptr) {
         return {};

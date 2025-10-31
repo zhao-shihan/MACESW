@@ -10,8 +10,6 @@
 #include "G4Track.hh"
 #include "G4VTouchable.hh"
 
-#include <cassert>
-
 namespace MACE::PhaseI::inline Simulation::inline SD {
 
 SciFiSiPMSD::SciFiSiPMSD(const G4String& sdName) :
@@ -68,7 +66,7 @@ auto SciFiSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
 auto SciFiSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, int> {
     muc::flat_hash_map<int, int> nHit;
     for (auto&& [siPMID, hit] : fHit) {
-        if (hit.size() > 0) {
+        if (not hit.empty()) {
             nHit[siPMID] = hit.size();
         }
     }

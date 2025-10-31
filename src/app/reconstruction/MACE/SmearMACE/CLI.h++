@@ -17,7 +17,7 @@ namespace MACE::SmearMACE {
 
 class CLIModule : public Mustard::CLI::ModuleBase {
 public:
-    CLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+    explicit CLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 
     auto InputFilePath() const -> auto { return TheCLI()->get<std::vector<std::string>>("input"); }
     auto OutputFileMode() const -> auto { return TheCLI()->present("-m").value_or("NEW"); }

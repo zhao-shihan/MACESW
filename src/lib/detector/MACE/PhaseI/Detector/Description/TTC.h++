@@ -14,7 +14,7 @@ class TTC final : public Mustard::Detector::Description::DescriptionWithCacheBas
 
 private:
     TTC();
-    ~TTC() = default;
+    ~TTC() override = default;
 
 public:
     // Geometry
@@ -187,4 +187,4 @@ private:
     Simple<std::vector<double>> fCathodeSurface;
 };
 
-} // namespace MACE::Detector::Description
+} // namespace MACE::PhaseI::Detector::Description

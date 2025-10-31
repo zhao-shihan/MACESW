@@ -12,7 +12,7 @@ class Vacuum final : public Mustard::Detector::Description::DescriptionBase<Vacu
 
 private:
     Vacuum();
-    ~Vacuum() = default;
+    ~Vacuum() override = default;
 
 public:
     auto Name() const -> auto { return fName; }

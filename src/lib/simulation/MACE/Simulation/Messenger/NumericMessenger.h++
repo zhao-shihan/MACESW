@@ -16,7 +16,7 @@ class NumericMessenger final : public Mustard::Geant4X::SingletonMessenger<Numer
 
 private:
     NumericMessenger();
-    ~NumericMessenger() = default;
+    ~NumericMessenger() override = default;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

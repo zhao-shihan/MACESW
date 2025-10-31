@@ -118,7 +118,7 @@ auto Analysis::FillMap(const G4Step& step) const -> void {
     const auto x0{pre.GetPosition()};
     const auto x{post.GetPosition()};
     for (auto&& [eDepMap, doseMap, deltaV, minDelta] : std::as_const(fMap)) {
-        const auto Fill{
+        const auto fill{
             [&](G4ThreeVector x, double eDep, double dose) {
                 eDepMap->Fill(x.x(), x.y(), x.z(), eDep / joule);
                 doseMap->Fill(x.x(), x.y(), x.z(), dose / gray);
@@ -126,7 +126,7 @@ auto Analysis::FillMap(const G4Step& step) const -> void {
         if (status != fAlongStepDoItProc) {
             const auto deltaM{post.GetMaterial()->GetDensity() * deltaV};
             const auto dose{eDep / deltaM};
-            Fill(x, eDep, dose);
+            fill(x, eDep, dose);
         } else {
             const auto deltaM{pre.GetMaterial()->GetDensity() * deltaV};
             const auto dose{eDep / deltaM};
@@ -140,7 +140,7 @@ auto Analysis::FillMap(const G4Step& step) const -> void {
 
             auto xFill{x0 + deltaFill / 2};
             for (int i{}; i < nFill; ++i) {
-                Fill(xFill, eDepFill, doseFill);
+                fill(xFill, eDepFill, doseFill);
                 xFill += deltaFill;
             }
         }
@@ -197,7 +197,7 @@ auto Analysis::RunBeginUserAction(int) -> void {
 
 auto Analysis::RunEndUserAction(int runID) -> void {
     gDirectory->mkdir(fmt::format("G4Run{}", runID).c_str(), "", true)->cd();
-    for (auto&& [eDepMap, doseMap, _, __] : std::as_const(fMap)) {
+    for (auto&& [eDepMap, doseMap, _1, _2] : std::as_const(fMap)) {
         eDepMap->Write();
         doseMap->Write();
     }

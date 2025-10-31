@@ -29,11 +29,11 @@ template<typename ADerived = void>
 class NeutrinoKillerSteppingAction : public Mustard::Env::Memory::PassiveSingleton<ADerived>,
                                      public G4UserSteppingAction {
 public:
-    NeutrinoKillerSteppingAction(ADerived* derived);
+    explicit NeutrinoKillerSteppingAction(ADerived* derived);
 
     auto EnableNeutrinoKiller(bool val) -> void;
 
-    auto UserSteppingAction(const G4Step* step) -> void override final;
+    auto UserSteppingAction(const G4Step* step) -> void final;
 
 private:
     virtual auto SteppingActionForNeutrino(const G4Step&) -> void {}

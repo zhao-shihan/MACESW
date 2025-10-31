@@ -9,9 +9,10 @@
 #include "muc/array"
 #include "muc/hash_map"
 
-#include <vector>
-#include <unordered_set>
 #include "gsl/gsl"
+
+#include <unordered_set>
+#include <vector>
 
 namespace MACE::Detector::Description {
 
@@ -20,7 +21,7 @@ class ECAL final : public Mustard::Detector::Description::DescriptionWithCacheBa
 
 private:
     ECAL();
-    ~ECAL() = default;
+    ~ECAL() override = default;
 
 public:
     auto NSubdivision() const -> auto { return *fNSubdivision; }
@@ -55,7 +56,7 @@ public:
 
     auto Mesh() const -> const auto& { return *fMesh; }
     auto NUnit() const -> auto { return Mesh().faceList.size(); }
-    auto ComputeTransformToOuterSurfaceWithOffset(int cellID, double offsetInNormalDirection) const -> HepGeom::Transform3D;
+    auto ComputeTransformToOuterSurfaceWithOffset(int moduleID, double offsetInNormalDirection) const -> HepGeom::Transform3D;
 
     auto ModuleSelection() const -> const auto& { return *fModuleSelection; }
     auto WaveformIntegralTime() const -> auto { return *fWaveformIntegralTime; }
@@ -97,14 +98,14 @@ public:
 
     struct MeshInformation {
         struct Module {
-            CLHEP::Hep3Vector centroid;
-            CLHEP::Hep3Vector normal;
-            std::vector<gsl::index> vertexIndex;
-            int typeID;
-            std::unordered_set<int> neighborModuleID;            
+            CLHEP::Hep3Vector centroid{};
+            CLHEP::Hep3Vector normal{};
+            std::vector<gsl::index> vertexIndex{};
+            int typeID{};
+            std::unordered_set<int> neighborModuleID{};
         };
-        std::vector<HepGeom::Point3D<double>> vertexList;
-        std::vector<Module> faceList;
+        std::vector<HepGeom::Point3D<double>> vertexList{};
+        std::vector<Module> faceList{};
     };
 
 private:
@@ -143,11 +144,10 @@ private:
     Simple<double> fMPPCWindowThickness;
     Simple<std::vector<double>> fMPPCEnergyBin;
     Simple<std::vector<double>> fMPPCEfficiency;
-    
+
     Cached<MeshInformation> fMesh;
     Simple<std::vector<int>> fModuleSelection;
     Simple<double> fWaveformIntegralTime;
 };
 
 } // namespace MACE::Detector::Description
-

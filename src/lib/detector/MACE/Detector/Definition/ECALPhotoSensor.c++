@@ -106,16 +106,17 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
     const auto& faceList{ecal.Mesh().faceList};
     const auto& moduleSelection{ecal.ModuleSelection()};
     std::map<int, std::vector<int>> idListOfType;
-    for (int moduleID{};moduleID<std::ssize(faceList);++moduleID) {
+    for (int moduleID{}; moduleID < std::ssize(faceList); ++moduleID) {
         idListOfType[faceList.at(moduleID).typeID].emplace_back(moduleID);
     }
 
     std::vector<int> chosenType;
+    chosenType.reserve(moduleSelection.size());
     for (auto&& chosen : moduleSelection) {
         chosenType.emplace_back(faceList.at(chosen).typeID);
     }
     for (auto&& [type, moduleIDList] : idListOfType) { // loop over type(10 total)
-        if ((not chosenType.empty()) and (std::find(chosenType.begin(), chosenType.end(), type) == chosenType.end())) {
+        if (not chosenType.empty() and std::ranges::find(chosenType, type) == chosenType.end()) {
             continue;
         }
 
@@ -148,7 +149,7 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
         }
 
         for (auto moduleID : moduleIDList) { // loop over ID.s of a type
-            if ((not moduleSelection.empty()) and (std::find(moduleSelection.begin(), moduleSelection.end(), moduleID) == moduleSelection.end())) {
+            if ((not moduleSelection.empty()) and (std::ranges::find(moduleSelection, moduleID) == moduleSelection.end())) {
                 continue;
             }
             const auto couplerTransform{ecal.ComputeTransformToOuterSurfaceWithOffset(moduleID,
@@ -242,8 +243,8 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
     epoxyPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.49, 1.49}); // ET 9269B 9956B
     glass->SetMaterialPropertiesTable(epoxyPropertiesTable);
 
-    std::vector<G4double> cathodeSurfacePropertiesEnergy{pmtEnergyBin};
-    std::vector<G4double> cathodeSurfacePropertiesEfficiency{pmtQuantumEfficiency};
+    const std::vector<G4double>& cathodeSurfacePropertiesEnergy{pmtEnergyBin};
+    const std::vector<G4double>& cathodeSurfacePropertiesEfficiency{pmtQuantumEfficiency};
     const auto couplerSurfacePropertiesTable{new G4MaterialPropertiesTable};
     couplerSurfacePropertiesTable->AddProperty("TRANSMITTANCE", {minPhotonEnergy, maxPhotonEnergy}, {1., 1.});
 
@@ -262,17 +263,18 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
     const auto& faceList{ecal.Mesh().faceList};
     const auto& moduleSelection{ecal.ModuleSelection()};
     std::map<int, std::vector<int>> idListOfType;
-    for (auto moduleID{0};moduleID<std::ssize(faceList);++moduleID) {
+    for (auto moduleID{0}; moduleID < std::ssize(faceList); ++moduleID) {
         idListOfType[faceList.at(moduleID).typeID].emplace_back(moduleID);
     }
 
     std::vector<int> chosenType;
+    chosenType.reserve(moduleSelection.size());
     for (auto&& chosen : moduleSelection) {
         chosenType.emplace_back(faceList.at(chosen).typeID);
     }
     const auto& pmtDimensions{ecal.PMTDimensions()};
     for (auto&& [typeID, moduleIDList] : std::as_const(idListOfType)) {
-        if ((not chosenType.empty()) and (std::find(chosenType.begin(), chosenType.end(), typeID) == chosenType.end())) {
+        if ((not chosenType.empty()) and (std::ranges::find(chosenType, typeID) == chosenType.end())) {
             continue;
         }
 
@@ -291,7 +293,7 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
         const auto logicCathode{Make<G4LogicalVolume>(solidCathode, bialkali, name + "PMCathode")};
 
         for (auto&& moduleID : moduleIDList) {
-            if ((not moduleSelection.empty()) and (std::find(moduleSelection.begin(), moduleSelection.end(), moduleID) == moduleSelection.end())) {
+            if ((not moduleSelection.empty()) and (std::ranges::find(moduleSelection, moduleID) == moduleSelection.end())) {
                 continue;
             }
 

@@ -39,23 +39,23 @@ private:
 
 private:
     struct MapModel {
-        std::string name;
-        int nBinX;
-        double xMin;
-        double xMax;
-        int nBinY;
-        double yMin;
-        double yMax;
-        int nBinZ;
-        double zMin;
-        double zMax;
+        std::string name{};
+        int nBinX{};
+        double xMin{};
+        double xMax{};
+        int nBinY{};
+        double yMin{};
+        double yMax{};
+        int nBinZ{};
+        double zMin{};
+        double zMax{};
     };
 
     struct MapData {
-        TH3F* eDepMap;
-        TH3F* doseMap;
-        double deltaV;
-        double minDelta;
+        TH3F* eDepMap{};
+        TH3F* doseMap{};
+        double deltaV{};
+        double minDelta{};
     };
 
 private:

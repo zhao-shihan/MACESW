@@ -37,13 +37,13 @@ public:
     using Track = ATrack;
 
 public:
-    GenFitDAFFitter(double driftErrorRMS);
-    virtual ~GenFitDAFFitter() = default;
+    explicit GenFitDAFFitter(double driftErrorRMS);
+    ~GenFitDAFFitter() override = default;
 
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
                  Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-    auto operator()(const std::vector<AHitPointer>& hitData, ASeedPointer seed) -> Base::template Result<AHitPointer>;
+    auto operator()(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed) -> Base::template Result<AHitPointer>;
 };
 
 } // namespace MACE::inline Reconstruction::MMSTracking::inline Fitter

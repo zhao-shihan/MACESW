@@ -11,7 +11,7 @@ namespace MACE::inline Simulation::inline Physics {
 class StandardPhysicsListBase : public QBBC {
 public:
     StandardPhysicsListBase();
-    virtual ~StandardPhysicsListBase() override = default;
+    ~StandardPhysicsListBase() override = default;
 
     auto UseRadioactiveDecayPhysics() -> void;
     auto UseOpticalPhysics() -> void;

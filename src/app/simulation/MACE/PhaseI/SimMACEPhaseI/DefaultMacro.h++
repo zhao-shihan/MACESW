@@ -34,9 +34,9 @@ constexpr auto defaultMacro = {
     "/GPSX/NVertex             1",
     "/GPSX/PulseWidth          0 ns",
     "",
-    "/Mustard/Physics/MuonDecay/RadiativeDecay/BR 0"
-    "/Mustard/Physics/MuonDecay/NeutrinolessDoubleRadiativeDecay/BR 1"
-    "/Mustard/Physics/MuonDecay/UpdateDecayBR"
+    "/Mustard/Physics/MuonDecay/RadiativeDecay/BR 0",
+    "/Mustard/Physics/MuonDecay/NeutrinolessDoubleRadiativeDecay/BR 1",
+    "/Mustard/Physics/MuonDecay/UpdateDecayBR",
     "",
     "/MACE/Analysis/FilePath SimMACEPhaseI_vis.root",
     "/MACE/Analysis/FileMode RECREATE",

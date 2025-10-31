@@ -9,7 +9,7 @@ class MRPC final : public Mustard::Detector::Description::DescriptionBase<MRPC> 
 
 private:
     MRPC();
-    ~MRPC() = default;
+    ~MRPC() override = default;
 
 public:
     auto HoneyCombThickness() const -> auto { return fHoneyCombThickness; }

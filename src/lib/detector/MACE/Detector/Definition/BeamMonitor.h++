@@ -6,7 +6,7 @@ namespace MACE::Detector::Definition {
 
 class BeamMonitor final : public Mustard::Detector::Definition::DefinitionBase {
 public:
-    bool Enabled() const override;
+    auto Enabled() const -> bool override;
 
 private:
     auto Construct(bool checkOverlaps) -> void override;

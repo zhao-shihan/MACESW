@@ -3,6 +3,7 @@
 
 #include "muc/algorithm"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iomanip>
@@ -33,16 +34,16 @@ auto FindCrossCoordinates(double lID, double rID, double tID, int lNumber, int r
         double x2 = (x0 * std::cos((tID) / (tNumber) * 2 * std::numbers::pi) - y0 * std::sin((tID) / (tNumber) * 2 * std::numbers::pi));
         double y2 = (x0 * std::sin((tID) / (tNumber) * 2 * std::numbers::pi) + y0 * std::cos((tID) / (tNumber) * 2 * std::numbers::pi));
         double z2 =
-            ((tID / tNumber) > ((rID + rNumber / 2) / (rNumber))) ?
-                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2 + rNumber)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength() :
-                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength();
+            ((tID / tNumber) > ((rID + rNumber / 2.) / (rNumber))) ?
+                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2. + rNumber)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength() :
+                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2.)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength();
         double trueTID{
             [&] {
-                if (std::abs(std::fmod((lID / lNumber) + (rID + rNumber / 2) / rNumber, 2) / 2 - (tID / tNumber)) <
-                    std::abs(std::fmod((lID / lNumber) + (rID - rNumber / 2) / rNumber, 2) / 2 - (tID / tNumber)))
-                    return std::fmod((lID / lNumber) + (rID + rNumber / 2) / rNumber, 2) / 2 * tNumber;
-                else
-                    return std::fmod((lID / lNumber) + (rID - rNumber / 2) / rNumber, 2) / 2 * tNumber;
+                if (std::abs(std::fmod((lID / lNumber) + (rID + rNumber / 2.) / rNumber, 2) / 2 - (tID / tNumber)) <
+                    std::abs(std::fmod((lID / lNumber) + (rID - rNumber / 2.) / rNumber, 2) / 2 - (tID / tNumber))) {
+                    return std::fmod((lID / lNumber) + (rID + rNumber / 2.) / rNumber, 2) / 2 * tNumber;
+                }
+                return std::fmod((lID / lNumber) + (rID - rNumber / 2.) / rNumber, 2) / 2 * tNumber;
             }()};
         double x3 = ((x0 * std::cos((trueTID) / (tNumber) * 2 * std::numbers::pi) - y0 * std::sin((trueTID) / (tNumber) * 2 * std::numbers::pi)));
         double y3 = ((x0 * std::sin((trueTID) / (tNumber) * 2 * std::numbers::pi) + y0 * std::cos((trueTID) / (tNumber) * 2 * std::numbers::pi)));
@@ -52,8 +53,6 @@ auto FindCrossCoordinates(double lID, double rID, double tID, int lNumber, int r
         coordinates.push_back(muc::array3d{x1, y1, z1});
         coordinates.push_back(muc::array3d{x2, y2, z2});
         coordinates.push_back(muc::array3d{x3, y3, z3});
-
-        return coordinates;
     } else if (rID == -1) {
         double x = (x0 * std::cos((tID / tNumber) * 2 * std::numbers::pi) - y0 * std::sin((tID / tNumber) * 2 * std::numbers::pi));
         double y = (x0 * std::sin((tID / tNumber) * 2 * std::numbers::pi) + y0 * std::cos((tID / tNumber) * 2 * std::numbers::pi));
@@ -62,21 +61,18 @@ auto FindCrossCoordinates(double lID, double rID, double tID, int lNumber, int r
                 (sciFiTracker.FiberLength() / 2) - ((lID + lNumber) / (lNumber) - (tID) / (tNumber)) * sciFiTracker.FiberLength() :
                 (sciFiTracker.FiberLength() / 2) - ((lID / lNumber) - (tID) / (tNumber)) * sciFiTracker.FiberLength();
         coordinates.push_back(muc::array3d{x, y, z});
-
-        return coordinates;
     } else if (lID == -1) {
         double x = (x0 * std::cos((tID / tNumber) * 2 * std::numbers::pi) - y0 * std::sin((tID / tNumber) * 2 * std::numbers::pi));
         double y = (x0 * std::sin((tID / tNumber) * 2 * std::numbers::pi) + y0 * std::cos((tID / tNumber) * 2 * std::numbers::pi));
         double z =
-            ((tID / tNumber) > ((rID + rNumber / 2) / rNumber)) ?
-                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2 + rNumber)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength() :
-                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength();
+            ((tID / tNumber) > ((rID + rNumber / 2.) / rNumber)) ?
+                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2. + rNumber)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength() :
+                -(sciFiTracker.FiberLength() / 2) + fmod(((rID + rNumber / 2.)) / (rNumber) - (tID) / (tNumber), 1) * sciFiTracker.FiberLength();
         coordinates.push_back(muc::array3d{x, y, z});
 
-        return coordinates;
     } else if (tID == -1) {
-        double trueTID1 = std::fmod((lID / lNumber) + (rID - rNumber / 2) / rNumber, 2) / 2 * tNumber;
-        double trueTID2 = std::fmod((lID / lNumber) + (rID + rNumber / 2) / rNumber, 2) / 2 * tNumber;
+        double trueTID1 = std::fmod((lID / lNumber) + (rID - rNumber / 2.) / rNumber, 2) / 2 * tNumber;
+        double trueTID2 = std::fmod((lID / lNumber) + (rID + rNumber / 2.) / rNumber, 2) / 2 * tNumber;
         double x1 = ((x0 * std::cos((trueTID1) / (tNumber) * 2 * std::numbers::pi) - y0 * std::sin((trueTID1) / (tNumber) * 2 * std::numbers::pi)));
         double y1 = ((x0 * std::sin((trueTID1) / (tNumber) * 2 * std::numbers::pi) + y0 * std::cos((trueTID1) / (tNumber) * 2 * std::numbers::pi)));
         double z1 = ((trueTID1 / tNumber) > (lID / lNumber)) ?
@@ -91,11 +87,10 @@ auto FindCrossCoordinates(double lID, double rID, double tID, int lNumber, int r
         coordinates.push_back(muc::array3d{x1, y1, z1});
         coordinates.push_back(muc::array3d{x2, y2, z2});
 
-        return coordinates;
     } else {
         Mustard::Throw<std::runtime_error>(fmt::format("Too much ID are negitive!"));
-        return coordinates;
     }
+    return coordinates;
 }
 
 auto FindLayerID(int id) -> int {
@@ -111,22 +106,23 @@ auto FindLayerID(int id) -> int {
 template<typename... Args>
 auto InSameSubarray(Args... args) -> bool {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    std::unordered_set<int> target_ids = {args...};
-    if (target_ids.empty()) {
+    std::unordered_set<int> targetIds = {args...};
+    if (targetIds.empty()) {
         return false;
     }
 
     for (const auto& sub : *sciFiTracker.CombinationOfLayer()) {
-        std::unordered_set<int> sub_set(sub.begin(), sub.end());
-        bool all_found = true;
-        for (int id : target_ids) {
-            if (!sub_set.count(id)) {
-                all_found = false;
+        std::unordered_set<int> subSet(sub.begin(), sub.end());
+        bool allFound = true;
+        for (int id : targetIds) {
+            if (not subSet.contains(id)) {
+                allFound = false;
                 break;
             }
         }
-        if (all_found)
+        if (allFound) {
             return true;
+        }
     }
     return false;
 }
@@ -189,9 +185,15 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
         for (auto it1{lData.begin()}; it1 != lData.end();) {
             for (auto it2{rData.begin()}; it2 != rData.end();) {
                 for (auto it3{tData.begin()}; it3 != tData.end();) {
-                    double avarageLNumber{}, avarageRNumber{}, avarageTNumber{};
-                    int lNOptPho{}, rNOptPho{}, tNOptPho{};
-                    double lTime{}, rTime{}, tTime{};
+                    double avarageLNumber{};
+                    double avarageRNumber{};
+                    double avarageTNumber{};
+                    int lNOptPho{};
+                    int rNOptPho{};
+                    int tNOptPho{};
+                    double lTime{};
+                    double rTime{};
+                    double tTime{};
                     if (not InSameSubarray(FindLayerID(Get<"SiPMID">(*it1->front())),
                                            FindLayerID(Get<"SiPMID">(*it3->front())),
                                            FindLayerID(Get<"SiPMID">(*it3->front())))) {
@@ -243,8 +245,8 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
                                   sciFiTracker.FirstIDOfLayer()->at(FindLayerID(Get<"SiPMID">(*it3->front())));
                     if (std::abs(avarageTTime - avarageLTime) < deltaTime and
                         std::abs(avarageTTime - avarageRTime) < deltaTime and
-                        (((std::fmod((avarageLNumber / lNumber) + (avarageRNumber - rNumber / 2) / rNumber, 2) / 2 * tNumber) - avarageTNumber <= 5) or
-                         ((std::fmod((avarageLNumber / lNumber) + (avarageRNumber + rNumber / 2) / rNumber, 2) / 2 * tNumber) - avarageTNumber <= 5))) {
+                        (((std::fmod((avarageLNumber / lNumber) + (avarageRNumber - rNumber / 2.) / rNumber, 2) / 2 * tNumber) - avarageTNumber <= 5) or
+                         ((std::fmod((avarageLNumber / lNumber) + (avarageRNumber + rNumber / 2.) / rNumber, 2) / 2 * tNumber) - avarageTNumber <= 5))) {
 
                         usedLdata.push_back(*it1);
                         usedRdata.push_back(*it2);
@@ -261,11 +263,10 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
         }
     }
 
-    std::set_difference(lData.begin(), lData.end(), usedLdata.begin(), usedLdata.end(), std::back_inserter(newLData));
-    std::set_difference(rData.begin(), rData.end(), usedRdata.begin(), usedRdata.end(), std::back_inserter(newRData));
-    std::set_difference(tData.begin(), tData.end(), usedTdata.begin(), usedTdata.end(), std::back_inserter(newTData));
+    std::ranges::set_difference(lData, usedLdata, std::back_inserter(newLData));
+    std::ranges::set_difference(rData, usedRdata, std::back_inserter(newRData));
+    std::ranges::set_difference(tData, usedTdata, std::back_inserter(newTData));
     if (std::ssize(newLData) != 0 and std::ssize(newRData) != 0) {
-
         for (auto&& cluster1 : newLData) {
             for (auto&& cluster2 : newRData) {
                 if (not InSameSubarray(FindLayerID(Get<"SiPMID">(*cluster1.front())),
@@ -313,20 +314,28 @@ auto DividedHit(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tup
     return data0;
 }
 
-auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>> data)
+auto PositionTransform(const std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SiPMHit>>>>& data)
     -> std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::ReconTrack>>> data0;
     for (auto&& cluster : data) {
-        double lID{}, rID{}, tID{};
-        double lTime{}, rTime{}, tTime{};
-        int lNOptPho{}, rNOptPho{}, tNOptPho{};
-        int nLLayer{}, nRLayer{}, nTLayer{};
+        double lID{};
+        double rID{};
+        double tID{};
+        double lTime{};
+        double rTime{};
+        double tTime{};
+        int lNOptPho{};
+        int rNOptPho{};
+        int tNOptPho{};
+        int nLLayer{};
+        int nRLayer{};
+        int nTLayer{};
         double x0 = [&]() {
             double avaRadius{};
             for (size_t i{}; i < sciFiTracker.CombinationOfLayer()->size(); ++i) {
                 const auto& sub = sciFiTracker.CombinationOfLayer()->at(i);
-                if (std::find(sub.begin(), sub.end(), FindLayerID(Get<"SiPMID">(*cluster.front()))) != sub.end()) {
+                if (std::ranges::find(sub, FindLayerID(Get<"SiPMID">(*cluster.front()))) != sub.end()) {
                     for (auto&& id : sciFiTracker.CombinationOfLayer()->at(i)) {
                         avaRadius += sciFiTracker.RLayer()->at(id);
                     }

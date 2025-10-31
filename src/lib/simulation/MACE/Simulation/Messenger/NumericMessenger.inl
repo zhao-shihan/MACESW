@@ -6,7 +6,7 @@ NumericMessenger<AReceiver>::NumericMessenger() :
     fDirectory{},
     fMinDriverStep{},
     fDeltaChord{} {
-
+    // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
     fDirectory = std::make_unique<G4UIdirectory>("/MACE/Numeric/");
     fDirectory->SetGuidance("MACE numeric controller.");
 
@@ -21,6 +21,7 @@ NumericMessenger<AReceiver>::NumericMessenger() :
     fDeltaChord->SetParameterName("delta", false);
     fDeltaChord->SetUnitCategory("Length");
     fDeltaChord->AvailableForStates(G4State_PreInit);
+    // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
 }
 
 template<typename AReceiver>

@@ -19,7 +19,7 @@ class Solenoid final : public Mustard::Detector::Description::DescriptionBase<So
 
 private:
     Solenoid();
-    ~Solenoid() = default;
+    ~Solenoid() override = default;
 
 public:
     // Geometry

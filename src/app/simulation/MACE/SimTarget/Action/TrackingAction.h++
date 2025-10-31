@@ -11,9 +11,7 @@
 
 class G4ParticleDefinition;
 
-namespace MACE::SimTarget {
-
-inline namespace Action {
+namespace MACE::SimTarget::inline Action {
 
 class TrackingAction final : public Mustard::Env::Memory::PassiveSingleton<TrackingAction>,
                              public G4UserTrackingAction {
@@ -27,6 +25,4 @@ private:
     Mustard::Data::Tuple<MuoniumTrack>* fMuoniumTrack;
 };
 
-} // namespace Action
-
-} // namespace MACE::SimTarget
+} // namespace MACE::SimTarget::inline Action

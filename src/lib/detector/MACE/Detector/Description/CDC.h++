@@ -23,7 +23,7 @@ class CDC final : public Mustard::Detector::Description::DescriptionWithCacheBas
 
 private:
     CDC();
-    ~CDC() = default;
+    ~CDC() override = default;
 
 public:
     ///////////////////////////////////////////////////////////
@@ -101,43 +101,43 @@ public:
     struct SuperLayerConfiguration {
         struct SenseLayerConfiguration {
             struct CellConfiguration {
-                int cellID;
-                double centerAzimuth;
+                int cellID{};
+                double centerAzimuth{};
             };
-            int senseLayerID;
-            double innerRadius;
-            double outerRadius;
-            double cellWidth;
-            double halfLength;
-            double stereoAzimuthAngle;
+            int senseLayerID{};
+            double innerRadius{};
+            double outerRadius{};
+            double cellWidth{};
+            double halfLength{};
+            double stereoAzimuthAngle{};
             auto TanStereoZenithAngle(double r) const -> auto { return r * std::tan(stereoAzimuthAngle / 2) / halfLength; }
             auto SecStereoZenithAngle(double r) const -> auto { return std::sqrt(1 + muc::pow(TanStereoZenithAngle(r), 2)); }
             auto CosStereoZenithAngle(double r) const -> auto { return 1 / SecStereoZenithAngle(r); }
             auto SinStereoZenithAngle(double r) const -> auto { return TanStereoZenithAngle(r) / SecStereoZenithAngle(r); }
             auto StereoZenithAngle(double r) const -> auto { return std::atan(TanStereoZenithAngle(r)); }
-            std::vector<CellConfiguration> cell;
+            std::vector<CellConfiguration> cell{};
         };
-        bool isAxial;
-        int superLayerID;
-        int nCellPerSenseLayer;
-        double cellAzimuthWidth;
-        double innerRadius;
-        double innerHalfLength;
-        double outerRadius;
-        double outerHalfLength;
-        std::vector<SenseLayerConfiguration> sense;
+        bool isAxial{};
+        int superLayerID{};
+        int nCellPerSenseLayer{};
+        double cellAzimuthWidth{};
+        double innerRadius{};
+        double innerHalfLength{};
+        double outerRadius{};
+        double outerHalfLength{};
+        std::vector<SenseLayerConfiguration> sense{};
     };
 
     struct CellInformation {
-        int cellID;
-        int cellLocalID;
-        int senseLayerID;
-        int senseLayerLocalID;
-        int superLayerID;
-        Eigen::Vector2d position;
-        Eigen::Vector3d direction;
-        double senseWireHalfLength;
-        double centerAzimuth;
+        int cellID{};
+        int cellLocalID{};
+        int senseLayerID{};
+        int senseLayerLocalID{};
+        int superLayerID{};
+        Eigen::Vector2d position{};
+        Eigen::Vector3d direction{};
+        double senseWireHalfLength{};
+        double centerAzimuth{};
     };
 
 private:

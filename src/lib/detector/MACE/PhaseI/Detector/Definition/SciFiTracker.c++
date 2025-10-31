@@ -71,10 +71,10 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     // Construct Material Optical Properties Tables
     //////////////////////////////////////////////////
 
-    constexpr auto fLambda_min = 200_nm;
-    constexpr auto fLambda_max = 700_nm;
-    std::vector<G4double> fEnergyPair{h_Planck * c_light / fLambda_max,
-                                      h_Planck * c_light / fLambda_min};
+    constexpr auto fLambdaMin = 200_nm;
+    constexpr auto fLambdaMax = 700_nm;
+    std::vector<G4double> fEnergyPair{h_Planck * c_light / fLambdaMax,
+                                      h_Planck * c_light / fLambdaMin};
 
     std::vector<G4double> scintillationEnergyBin(sciFiTracker.ScintillationWaveLengthBin().size());
     std::ranges::transform(sciFiTracker.ScintillationWaveLengthBin(),
@@ -200,12 +200,12 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         checkOverlaps);
 
     auto rotationVector{
-        [&](double i, double pitch, double x0, double y0, double pm_z) {
+        [&](double i, double pitch, double x0, double y0, double pmZ) {
             return CLHEP::Hep3Vector(
                 std::cos(i) * x0 - std::sin(i) * y0,
                 std::cos(i) * y0 + std::sin(i) * x0,
-                pm_z * ((sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2 +
-                        sciFiTracker.FiberLength() / 2 + sciFiTracker.LightGuideCurvature() * std::cos(pitch)));
+                pmZ * ((sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2 +
+                       sciFiTracker.FiberLength() / 2 + sciFiTracker.LightGuideCurvature() * std::cos(pitch)));
         }};
 
     auto logicalHelicalFiber{
@@ -353,7 +353,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     /////////////////////////////////
     int fiberNumber{};
     int sipmNumber{};
-    auto HelicalPlacement{
+    auto helicalPlacement{
         [&](auto helicalRadius, auto logicalFiber, auto logicalLightGuide, auto nFiber, auto pitch, auto curvature, int second) {
             for (int i{}; i < nFiber; i++) {
                 Make<G4PVPlacement>(
@@ -422,7 +422,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             }
         }};
 
-    auto TransversePlacement{
+    auto transversePlacement{
         [&](auto radius, auto logicalFiber, auto logicalLightGuide, auto nFiber, int second) {
             for (int i{}; i < nFiber; i++) {
                 Make<G4PVPlacement>(
@@ -508,7 +508,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 sciFiTracker.FiberCoreWidth(),
                 layerConfig[i].fiber.pitch)};
 
-            HelicalPlacement(layerConfig[i].fiber.radius,
+            helicalPlacement(layerConfig[i].fiber.radius,
                              logicalLHelicalFiber,
                              logicalLHelicalLightGuide,
                              layerConfig[i].lastID - layerConfig[i].firstID + 1, // number of fiber is (end-begin+1)
@@ -528,7 +528,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 sciFiTracker.FiberCoreWidth(),
                 layerConfig[i].fiber.pitch)};
 
-            HelicalPlacement(layerConfig[i].fiber.radius,
+            helicalPlacement(layerConfig[i].fiber.radius,
                              logicalRHelicalFiber,
                              logicalRHelicalLightGuide,
                              layerConfig[i].lastID - layerConfig[i].firstID + 1, // number of fiber is (end-begin+1)
@@ -546,7 +546,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 sciFiTracker.FiberCoreWidth(),
                 sciFiTracker.TLightGuideLength())};
 
-            TransversePlacement(layerConfig[i].fiber.radius,
+            transversePlacement(layerConfig[i].fiber.radius,
                                 logicalTFiber,
                                 logicalTLightGuide,
                                 layerConfig[i].lastID - layerConfig[i].firstID + 1, // number of fiber is (end-begin+1)

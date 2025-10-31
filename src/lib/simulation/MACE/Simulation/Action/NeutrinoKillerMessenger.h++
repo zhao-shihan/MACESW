@@ -15,7 +15,7 @@ class NeutrinoKillerMessenger final : public Mustard::Geant4X::SingletonMessenge
 
 private:
     NeutrinoKillerMessenger();
-    ~NeutrinoKillerMessenger() = default;
+    ~NeutrinoKillerMessenger() override = default;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

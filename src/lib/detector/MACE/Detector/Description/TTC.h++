@@ -14,7 +14,7 @@ class TTC final : public Mustard::Detector::Description::DescriptionWithCacheBas
 
 private:
     TTC();
-    ~TTC() = default;
+    ~TTC() override = default;
 
 public:
     // Geometry

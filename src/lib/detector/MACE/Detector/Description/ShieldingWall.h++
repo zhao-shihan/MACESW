@@ -9,7 +9,7 @@ class ShieldingWall final : public Mustard::Detector::Description::DescriptionBa
 
 private:
     ShieldingWall();
-    ~ShieldingWall() = default;
+    ~ShieldingWall() override = default;
 
 public:
     auto Enabled() const -> auto { return fEnabled; }

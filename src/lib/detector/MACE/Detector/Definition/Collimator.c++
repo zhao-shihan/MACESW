@@ -20,7 +20,7 @@ using namespace Mustard::LiteralUnit::Angle;
 using namespace Mustard::LiteralUnit::Length;
 using namespace Mustard::LiteralUnit::MathConstantSuffix;
 
-bool Collimator::Enabled() const {
+auto Collimator::Enabled() const -> bool {
     return Description::Collimator::Instance().Enabled();
 }
 

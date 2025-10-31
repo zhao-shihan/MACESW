@@ -14,7 +14,7 @@
 #include "G4Track.hh"
 #include "G4VTouchable.hh"
 
-#include <cassert>
+#include "gsl/gsl"
 
 namespace MACE::inline Simulation::inline SD {
 
@@ -72,7 +72,7 @@ auto TTCSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
          auto&& [tileID, hitOfDetector] : fHit) {
         for (auto&& hit : hitOfDetector) {
             Get<"HitID">(*hit) = hitID++;
-            assert(Get<"TileID">(*hit) == tileID);
+            Ensures(Get<"TileID">(*hit) == tileID);
             fHitsCollection->insert(hit.release());
         }
     }
@@ -80,10 +80,10 @@ auto TTCSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
 
 auto TTCSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, std::vector<int>> {
     muc::flat_hash_map<int, std::vector<int>> nHit;
-    for (auto&& [tileID, hitofDetector] : fHit) {
-        if (hitofDetector.size() > 0) {
-            auto upSiPMNOpticalPhotonHit = std::ranges::count_if(hitofDetector, [](const auto& hit) { return Get<"SiPMID">(*hit) % 2 != 0; });
-            auto downSiPMNOpticalPhotonHit = hitofDetector.size() - upSiPMNOpticalPhotonHit;
+    for (auto&& [tileID, hit] : fHit) {
+        if (not hit.empty()) {
+            auto upSiPMNOpticalPhotonHit = std::ranges::count_if(hit, [](const auto& hit) { return Get<"SiPMID">(*hit) % 2 != 0; });
+            auto downSiPMNOpticalPhotonHit = hit.size() - upSiPMNOpticalPhotonHit;
             nHit[tileID].emplace_back(upSiPMNOpticalPhotonHit);
             nHit[tileID].emplace_back(downSiPMNOpticalPhotonHit);
         }

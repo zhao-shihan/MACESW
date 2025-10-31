@@ -2,9 +2,21 @@ name: Build (AMD64 GNU/Linux Clang, unity build)
 
 on:
   push:
-    branches: ["*"]
+    branches: ["**"]
+    paths:
+      - ".github/workflows/build-with-clang.yml"
+      - "src/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
   pull_request:
-    branches: ["*"]
+    branches: ["**"]
+    paths:
+      - ".github/workflows/build-with-clang.yml"
+      - "src/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
 
 jobs:
   build-with-clang:
@@ -16,6 +28,9 @@ jobs:
         image:
           - url: ghcr.io/zhao-shihan/rgb-docker:mpich
           - url: ghcr.io/zhao-shihan/rgb-docker:openmpi
+        build-type:
+          - string: Debug
+          - string: Release
     container: ${{ matrix.image.url }}
     defaults:
       run:
@@ -29,10 +44,12 @@ jobs:
           . /environment
           mkdir build && cd build
           cmake -G Ninja .. \
-            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_C_FLAGS='-march=native' \
             -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_C_FLAGS='-Werror -march=native' \
-            -DCMAKE_CXX_FLAGS='-Werror -march=native' \
-            -DMACE_FULL_UNITY_BUILD=ON
+            -DCMAKE_CXX_FLAGS='-march=native' \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type.string }} \
+            -DMACESW_WERROR=ON \
+            -DMACESW_UNITY_BUILD=ON \
+            -DMACESW_FULL_UNITY_BUILD=ON
           ninja

@@ -17,7 +17,7 @@ class MRPCSDMessenger final : public Mustard::Geant4X::SingletonMessenger<MRPCSD
 
 private:
     MRPCSDMessenger();
-    ~MRPCSDMessenger();
+    ~MRPCSDMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

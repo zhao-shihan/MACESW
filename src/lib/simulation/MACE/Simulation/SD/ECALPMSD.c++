@@ -13,6 +13,8 @@
 
 #include "muc/algorithm"
 
+#include "gsl/gsl"
+
 #include <cassert>
 
 namespace MACE::inline Simulation::inline SD {
@@ -57,7 +59,7 @@ auto ECALPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
 
 auto ECALPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
     const auto integralTime{Detector::Description::ECAL::Instance().WaveformIntegralTime()};
-    assert(integralTime >= 0);
+    Expects(integralTime >= 0);
 
     for (int hitID{};
          auto&& [modID, hitOfUnit] : fHit) {
@@ -73,7 +75,7 @@ auto ECALPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
                 break;
             }
             Get<"HitID">(*hit) = hitID++;
-            assert(Get<"ModID">(*hit) == modID);
+            Ensures(Get<"ModID">(*hit) == modID);
             fHitsCollection->insert(hit.release());
         }
     }
@@ -82,7 +84,7 @@ auto ECALPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
 auto ECALPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, int> {
     muc::flat_hash_map<int, int> nHit;
     for (auto&& [modID, hit] : fHit) {
-        if (hit.size() > 0) {
+        if (not hit.empty()) {
             nHit[modID] = hit.size();
         }
     }

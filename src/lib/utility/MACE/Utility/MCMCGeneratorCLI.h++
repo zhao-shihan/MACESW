@@ -8,7 +8,7 @@ namespace MACE::inline Utility {
 
 class MCMCGeneratorCLIModule : public Mustard::CLI::ModuleBase {
 public:
-    MCMCGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+    explicit MCMCGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 };
 
 template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>

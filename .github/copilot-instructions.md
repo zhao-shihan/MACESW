@@ -1,0 +1,23 @@
+# MACESW Copilot Instructions
+- **Core binary** `MACE.c++` registers all subprograms via `Mustard::Application::SubprogramLauncher`; implement new tools as `Mustard::Application::Subprogram` subclasses so they plug straight into the launcher.
+- **App layout** Domain CLIs live under `src/app/<domain>/MACE/<Tool>/<Tool>.c++`; they mirror libraries in `src/lib/...` and link through `AppMACE*` targets declared in `src/app/CMakeLists.txt`.
+- **Inline namespaces** Shared code uses inline namespaces (for example `namespace MACE::inline Simulation::inline Physics`) and `Mustard::PassiveSingleton`; keep that pattern when adding detector descriptions or physics singletons.
+- **Run managers** All Geant4 apps extend `Mustard::Geant4X::MPIRunManager` (`RunManager.c++` in each simulation module); adjust physics content via `src/lib/simulation/MACE/Simulation/Physics/StandardPhysicsList.c++` and friends.
+- **Macros & scripts** Default beam-on sequences live in headers like `src/app/simulation/MACE/SimMACE/DefaultMacro.h++`; installable `.mac` files reside in each module's `scripts/` folder and are copied into the build/install tree.
+- **Utility CLIs** Generators such as `src/app/utility/MACE/GenM2ENNE/GenM2ENNE.c++` combine `MCMCGeneratorCLI` and `Mustard::Executor`; extend CLI options with the Mustard argument DSL instead of hand-parsing `argv`.
+- **Phase-I hub** `src/app/phaseI/MACE/PhaseI/PhaseI.c++` nests phase-I subprograms; register new phase-I tools in `PhaseI::Main` so `MACE PhaseI ...` exposes them.
+- **Data layer** Reuse tuple models from `src/lib/data` with `Mustard::Data::Processor`, as shown in `src/app/reconstruction/MACE/SmearMACE/SmearMACE.c++`, instead of ad-hoc ROOT handling.
+- **External helpers** Favor existing utilities from `Mustard`, `muc`, and `mplr` (e.g. `Mustard::Env::MPIEnv`, `Mustard::UseXoshiro`, `mplr::comm_world()`) over bespoke MPI, RNG, or math code.
+- **Build setup** Typical local build: `cmake -S . -B build -G Ninja -DMACESW_BUILTIN_MUSTARD=ON -DMACESW_INSTALL_OFFLINE_DATA=ON` then `cmake --build build --target MACE`.
+- **Tooling targets** `MACESW_CLANG_FORMAT=ON` creates the `macesw-clang-format-check` target; enable clang-tidy with `-DMACESW_CLANG_TIDY=ON` and switch configs via `MACESW_CLANG_TIDY_AMEND_UNITY_BUILD`.
+- **Performance flags** Unity build toggles (`MACESW_UNITY_BUILD`, `MACESW_FULL_UNITY_BUILD`) and sanitizer switches (`MACESW_ENABLE_ASAN_IN_DEBUG_BUILD`, `MACESW_ENABLE_UBSAN_IN_DEBUG_BUILD`) are wired in `cmake/MACESWCompileConfig.cmake`.
+- **RGB container** `README.md` documents the Apptainer image (`apptainer pull oras://ghcr.io/zhao-shihan/rgb`); use it when host machines lack Geant4/ROOT/Mustard dependencies.
+- **Dependency fallbacks** `cmake/LookFor*.cmake` can fetch pinned sources in `thirdparty/` for Mustard, GenFit, PMP, and data sets by enabling the respective `MACESW_BUILTIN_*` options.
+- **Install layout** Module `CMakeLists.txt` files copy macros/scripts into `${CMAKE_BINARY_DIR}/<tool>` and install them beneath `${MACESW_DATAROOTDIR}`; follow this pattern for new resources so they ship with `make install`.
+- **Runtime usage** `MACE --help` lists subprograms; launch directly (`MACE SimMACE run.mac`) or through nested hubs (`MACE PhaseI SimMACEPhaseI --help`).
+- **MPI execution** Simulation binaries are MPI-aware; batch jobs use commands like `mpirun -n 8 MACE SimTarget scan_degrader_thickness.mac` (see `src/app/simulation/MACE/SimECAL/README.md` for merge guidance).
+- **Regression tests** `src/test/scripts/regression_test.bash` drives `mpiexec` runs of `SimMMS`, `SimTTC`, and `SimMACE`, merges with `hadd`, and compares against `macesw_regression_data.root`; execute it from `build/test/` after building.
+- **Offline data** Regression harnesses source `build/data/macesw_offline_data.sh`; keep `MACESW_INSTALL_OFFLINE_DATA=ON` or provide the data package manually.
+- **Output conventions** Generators write ROOT trees via `Mustard::Data::Output` and produce per-process shards that are merged with `hadd`; align filenames with the CLI format strings.
+- **Coding style** Use `.c++`/`.h++`, prefer the pragma once include guard, PascalCase functions, `f`/`fg` prefixes for members, and adjective-style booleans per `STYLE_GUIDE.md` and `.clang-tidy`.
+- **Error handling** Prefer `Mustard::Throw` and `Mustard::IO::PrettyLog` for diagnostics so messages stay consistent with existing tooling.

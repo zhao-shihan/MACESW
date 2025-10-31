@@ -4,9 +4,10 @@
 
 #include "muc/math"
 
+#include "gsl/gsl"
+
 #include "fmt/core.h"
 
-#include <cstdio>
 #include <cstdlib>
 
 namespace MACE::SmearMACE {
@@ -103,13 +104,12 @@ CLIModule::CLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli) :
 }
 
 auto CLIModule::DatasetIndexRange() const -> std::pair<gsl::index, gsl::index> {
-    auto var{TheCLI()->get<std::vector<gsl::index>>("-i")};
-    assert(var.size() == 1 or var.size() == 2);
+    const auto var{TheCLI()->get<std::vector<gsl::index>>("-i")};
+    Expects(var.size() == 1 or var.size() == 2);
     if (var.size() == 1) {
         return {0, var.front()};
-    } else {
-        return {var.front(), var.back()};
     }
+    return {var.front(), var.back()};
 }
 
 auto CLIModule::OutputFilePath() const -> std::filesystem::path {

@@ -13,60 +13,64 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-project(MACE VERSION 0.0.0
-             LANGUAGES C CXX)
+project(MACESW VERSION 0.0.0
+               LANGUAGES C CXX)
 
 # =============================================================================
 # Variables
 # =============================================================================
 
 # Dirs
-set(MACE_PROJECT_ROOT_DIR ${PROJECT_SOURCE_DIR})
-set(MACE_PROJECT_CMAKE_DIR ${MACE_PROJECT_ROOT_DIR}/cmake)
-set(PROJECT_SOURCE_DIR ${MACE_PROJECT_ROOT_DIR}/src)
-set(MACE_PROJECT_3RDPARTY_DIR ${MACE_PROJECT_ROOT_DIR}/thirdparty)
+set(MACESW_PROJECT_ROOT_DIR ${PROJECT_SOURCE_DIR})
+set(MACESW_PROJECT_CMAKE_DIR ${MACESW_PROJECT_ROOT_DIR}/cmake)
+set(MACESW_PROJECT_DOCS_DIR ${MACESW_PROJECT_ROOT_DIR}/docs)
+set(MACESW_PROJECT_SOURCE_DIR ${MACESW_PROJECT_ROOT_DIR}/src)
+set(MACESW_PROJECT_3RDPARTY_DIR ${MACESW_PROJECT_ROOT_DIR}/thirdparty)
+set(MACESW_PROJECT_TOOL_DIR ${MACESW_PROJECT_ROOT_DIR}/tooling)
 
 # Install dirs
 include(GNUInstallDirs)
-set(MACE_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR}/MACE)
+set(MACESW_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR}/MACE)
 
 # =============================================================================
 # Options
 # =============================================================================
 
-include(CMakeDependentOption)
-
-# Basic
-# Options (ON/OFF)
-option(MACE_BUILTIN_GENFIT "Use built-in GenFit (network or pre-downloaded source is required)." ON)
-option(MACE_BUILTIN_GENFIT_EVENT_DISPLAY "Build GenFit event display module if GenFit is built-in." ON)
-option(MACE_BUILTIN_MACE_OFFLINE_DATA "Use built-in offline data (network or pre-downloaded data are required)." OFF)
-option(MACE_BUILTIN_MUSTARD "Use built-in Mustard (network or pre-downloaded source is required)." OFF)
-option(MACE_BUILTIN_PMP "Use built-in pmp (network or pre-downloaded source is required)." OFF)
-option(MACE_INSTALL_OFFLINE_DATA "Install offline data. If disabled, offline data need to be installed manually." ON)
-
-# Advance
-# Options (ON/OFF)
-option(MACE_ENABLE_ASAN_IN_DEBUG_BUILD "Enable AddressSanitizer in debug build" OFF)
-option(MACE_ENABLE_IPO "Build MACE with interprocedural optimization" ON)
-option(MACE_ENABLE_UBSAN_IN_DEBUG_BUILD "Enable UndefinedBehaviorSanitizer in debug build" ON)
-option(MACE_FULL_UNITY_BUILD "Building MACE use unity build technique COMPLETELY." OFF)
-option(MACE_SHOW_EVEN_MORE_COMPILER_WARNINGS "Add compiler flag to show even more compiler warnings (GCC: -Weffc++, Clang: -Weverything, MSVC: /Wall)." OFF)
-option(MACE_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
-option(MACE_WITH_DEBUG_INFO "Always add debugging information" OFF)
-cmake_dependent_option(MACE_ENABLE_UNITY_BUILD "Build MACE with unity build technique." OFF "NOT MACE_FULL_UNITY_BUILD" ON)
-cmake_dependent_option(MACE_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnings raise from external dependencies." OFF "NOT MACE_SHOW_EVEN_MORE_COMPILER_WARNINGS" ON)
+# Options (in alphabetical order) (ON/OFF)
+option(MACESW_BUILTIN_GENFIT "Use built-in GenFit (network or pre-downloaded source is required)." ON)
+option(MACESW_BUILTIN_GENFIT_EVENT_DISPLAY "Build GenFit event display module if GenFit is built-in." ON)
+option(MACESW_BUILTIN_MACESW_OFFLINE_DATA "Use built-in offline data (network or pre-downloaded data are required)." OFF)
+option(MACESW_BUILTIN_MACESW_TEST_DATA "Use built-in test data (network or pre-downloaded data are required)." OFF)
+option(MACESW_BUILTIN_MUSTARD "Use built-in Mustard (network or pre-downloaded source is required)." OFF)
+option(MACESW_BUILTIN_PMP "Use built-in pmp (network or pre-downloaded source is required)." OFF)
+option(MACESW_CLANG_FORMAT "Requires source code format to be checked by clang-format (requires clang-format)" ON)
+option(MACESW_CLANG_FORMAT_WERROR "Let clang-format treat warnings as errors (only takes effect when MACESW_CLANG_FORMAT=ON)" OFF)
+option(MACESW_CLANG_TIDY "Requires source code to be analysed by clang-tidy (requires clang-tidy)" OFF)
+option(MACESW_CLANG_TIDY_AMEND_UNITY_BUILD "Amend unity-build-missed clang-tidy checks in normal build (only takes effect when both MACESW_CLANG_TIDY=ON and MACESW_UNITY_BUILD=OFF)" OFF)
+option(MACESW_CLANG_TIDY_WERROR "Let clang-tidy treat warnings as errors (only takes effect when MACESW_CLANG_TIDY=ON)" OFF)
+option(MACESW_ENABLE_ASAN_IN_DEBUG_BUILD "Enable AddressSanitizer in debug build" OFF)
+option(MACESW_ENABLE_IPO "Build MACESW with interprocedural optimization" ON)
+option(MACESW_ENABLE_UBSAN_IN_DEBUG_BUILD "Enable UndefinedBehaviorSanitizer in debug build" ON)
+option(MACESW_FULL_UNITY_BUILD "Building MACESW use unity build technique COMPLETELY." OFF)
+option(MACESW_INSTALL_OFFLINE_DATA "Install offline data. If disabled, offline data need to be installed manually." ON)
+option(MACESW_SHOW_EVEN_MORE_COMPILER_WARNINGS "Add compiler flag to show even more compiler warnings (GCC: -Weffc++, Clang: -Weverything, MSVC: /Wall)." OFF)
+option(MACESW_SHOW_MORE_COMPILER_WARNINGS "Show compiler warnings raise from external dependencies." OFF)
+option(MACESW_UNITY_BUILD "Build MACESW with unity build technique." OFF)
+option(MACESW_USE_SHARED_MSVC_RT "Select the MSVC runtime library for use (MSVC only). ON for shared (.dll), OFF for static (.lib). If you run into link error related to MSVC runtime, you can try flip this." ON)
+option(MACESW_WERROR "Treat MACESW compilation warnings as errors." OFF)
+option(MACESW_WITH_DEBUG_INFO "Always add debugging information" OFF)
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build using shared libraries")
-set(MACE_BUILTIN_MACE_OFFLINE_DATA_VERSION 0.0.1 CACHE STRING "Set built-in offline data version (if required).")
-set(MACE_BUILTIN_MUSTARD_VERSION 0.25.1015 CACHE STRING "Set built-in Mustard version (if required).")
-set(MACE_BUILTIN_PMP_VERSION 3.0.0 CACHE STRING "Set built-in pmp version (if required).")
+set(MACESW_BUILTIN_MACESW_OFFLINE_DATA_VERSION 0.25.103013 CACHE STRING "Set built-in offline data version (if required).")
+set(MACESW_BUILTIN_MACESW_TEST_DATA_VERSION 0.25.10301318 CACHE STRING "Set built-in test data version (if required).")
+set(MACESW_BUILTIN_MUSTARD_VERSION 0.25.1030 CACHE STRING "Set built-in Mustard version (if required).")
+set(MACESW_BUILTIN_PMP_VERSION 3.0.0 CACHE STRING "Set built-in pmp version (if required).")
 
 # =============================================================================
 # Installation path
 # =============================================================================
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE ${MACE_PROJECT_ROOT_DIR}/install)
+    set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE ${MACESW_PROJECT_ROOT_DIR}/install)
 endif()
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX} (add -DCMAKE_INSTALL_PREFIX=<install_path> into CMake command if you wish to change it)")
 
@@ -74,7 +78,7 @@ message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX} (add -DCMAKE_INSTALL_PREFI
 # Global compile options
 # =============================================================================
 
-include(${MACE_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
+include(${MACESW_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
 
 # =============================================================================
 # Dependencies
@@ -83,33 +87,44 @@ include(${MACE_PROJECT_CMAKE_DIR}/GlobalCompileConfig.cmake)
 # Required:
 
 # Mustard
-include(${MACE_PROJECT_CMAKE_DIR}/LookForMustard.cmake)
+include(${MACESW_PROJECT_CMAKE_DIR}/LookForMustard.cmake)
 
 # Required, built-in if not found:
 
 # GenFit
-include(${MACE_PROJECT_CMAKE_DIR}/LookForGenFit.cmake)
+include(${MACESW_PROJECT_CMAKE_DIR}/LookForGenFit.cmake)
 # PMP
-include(${MACE_PROJECT_CMAKE_DIR}/LookForPMP.cmake)
+include(${MACESW_PROJECT_CMAKE_DIR}/LookForPMP.cmake)
 
 # data
-if(MACE_INSTALL_OFFLINE_DATA)
-    include(${MACE_PROJECT_CMAKE_DIR}/LookForMACEOfflineData.cmake)
+if(MACESW_INSTALL_OFFLINE_DATA)
+    include(${MACESW_PROJECT_CMAKE_DIR}/LookForMACEOfflineData.cmake)
 else()
     message(NOTICE "***Notice: Offline data installation disabled, offline data need to be installed manually")
 endif()
 
 # test data
-include(${MACE_PROJECT_CMAKE_DIR}/LookForMACETestData.cmake)
+include(${MACESW_PROJECT_CMAKE_DIR}/LookForMACETestData.cmake)
+
+# =============================================================================
+# MACESW configs
+# =============================================================================
+
+# Config for MACESW
+include(${MACESW_PROJECT_CMAKE_DIR}/MACESWCompileConfig.cmake)
+
+# Format MACESW source code
+include(${MACESW_PROJECT_CMAKE_DIR}/MACESWClangFormat.cmake)
+
+# Lint MACESW source code
+include(${MACESW_PROJECT_CMAKE_DIR}/MACESWClangTidy.cmake)
 
 # =============================================================================
 # Let's go!
 # =============================================================================
 
-# Config for MACE
-include(${MACE_PROJECT_CMAKE_DIR}/MACECompileConfig.cmake)
 # libraries
-add_subdirectory(${PROJECT_SOURCE_DIR})
+add_subdirectory(${MACESW_PROJECT_SOURCE_DIR})
 # main program
 add_executable(MACE MACE.c++)
 target_link_libraries(MACE AppMACEPhaseI

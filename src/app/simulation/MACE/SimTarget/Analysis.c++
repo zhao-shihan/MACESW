@@ -120,7 +120,7 @@ auto Analysis::OpenYieldFile() -> void {
 }
 
 auto Analysis::AnalysisAndWriteYield() -> void {
-    std::array<unsigned long long, 5> yieldData;
+    std::array<unsigned long long, 5> yieldData{};
     auto& [nMuon, nFormed, nTargetDecay, nVacuumDecay, nDetectableDecay]{yieldData};
     nMuon = static_cast<unsigned long long>(PrimaryGeneratorAction::Instance().NVertex()) *
             static_cast<unsigned long long>(fThisRun->GetNumberOfEvent());
@@ -145,7 +145,7 @@ auto Analysis::AnalysisAndWriteYield() -> void {
     const auto& worldComm{mplr::comm_world()};
     worldComm.reduce(
         [](const std::array<unsigned long long, 5>& a, const std::array<unsigned long long, 5>& b) {
-            std::array<unsigned long long, 5> c;
+            std::array<unsigned long long, 5> c{};
             std::ranges::transform(a, b, c.begin(), std::plus{});
             return c;
         },
@@ -160,7 +160,7 @@ auto Analysis::CloseYieldFile() -> void {
     if (fYieldFile == nullptr) {
         return;
     }
-    std::fclose(fYieldFile);
+    static_cast<void>(std::fclose(fYieldFile));
 }
 
 } // namespace MACE::SimTarget

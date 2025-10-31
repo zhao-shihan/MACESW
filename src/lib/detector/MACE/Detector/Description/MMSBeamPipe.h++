@@ -12,7 +12,7 @@ class MMSBeamPipe final : public Mustard::Detector::Description::DescriptionBase
 
 private:
     MMSBeamPipe();
-    ~MMSBeamPipe() = default;
+    ~MMSBeamPipe() override = default;
 
 public:
     auto InnerRadius() const -> auto { return fInnerRadius; }

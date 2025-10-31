@@ -22,10 +22,10 @@ TTC::TTC() : // clang-format off
     fLength{this, 5.5_cm},
     fWidth{this, 5_cm},
     fThickness{this, 0.5_cm},
-    fRadius{this, {8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm}},
+    fRadius{this, {8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm}},
     fSlantAngle{this, 17_deg},
-    fNAlongPhi{this, {12,12,12,12,12,12,12,12,12}},
-    fZPosition{this, {-20.6_cm,-15.45_cm,-10.3_cm,-5.15_cm,0_cm,5.15_cm,10.3_cm,15.45_cm,20.6_cm}},
+    fNAlongPhi{this, {12, 12, 12, 12, 12, 12, 12, 12, 12}},
+    fZPosition{this, {-20.6_cm, -15.45_cm, -10.3_cm, -5.15_cm, 0_cm, 5.15_cm, 10.3_cm, 15.45_cm, 20.6_cm}},
     fBarrelLength{this, 30_cm},
 
     fPCBLength{this, 3_cm},
@@ -198,4 +198,4 @@ auto TTC::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fCathodeSurface, "CathodeSurface");
 }
 
-} // namespace MACE::Detector::Description
+} // namespace MACE::PhaseI::Detector::Description

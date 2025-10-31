@@ -2,22 +2,36 @@ name: Regression test (AMD64 GNU/Linux Clang)
 
 on:
   push:
-    branches: [main, rc]
+    branches: ["main", "rc"]
+    paths:
+      - ".github/workflows/regression-test-with-clang.yml"
+      - "src/**"
+      - "test/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
   pull_request:
-    branches: [main, rc]
+    branches: ["main", "rc"]
+    paths:
+      - ".github/workflows/regression-test-with-clang.yml"
+      - "src/**"
+      - "test/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
 
 jobs:
   test-with-clang:
     name: Test with Clang
-    runs-on: ubuntu-latest
     timeout-minutes: 180
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         image:
           - url: ghcr.io/zhao-shihan/rgb-docker:mpich
-            artifact-name: Regression test report (AMD64 GNU-Linux Clang, MPICH) 
+            artifact-name: Regression test report (AMD64 GNU-Linux Clang, MPICH)
           - url: ghcr.io/zhao-shihan/rgb-docker:openmpi
-            artifact-name: Regression test report (AMD64 GNU-Linux Clang, OpenMPI) 
+            artifact-name: Regression test report (AMD64 GNU-Linux Clang, OpenMPI)
     container: ${{ matrix.image.url }}
     defaults:
       run:
@@ -31,12 +45,12 @@ jobs:
           . /environment
           mkdir build && cd build
           cmake -G Ninja .. \
-            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_C_FLAGS='-march=native' \
+            -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_CXX_FLAGS='-march=native' \
-            -DMACE_FULL_UNITY_BUILD=ON
+            -DMACESW_UNITY_BUILD=ON \
+            -DMACESW_FULL_UNITY_BUILD=ON
           ninja
 
       - name: Run regression test

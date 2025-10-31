@@ -10,7 +10,7 @@ auto Smearer::Smear(std::string_view treeName, const muc::flat_hash_map<std::str
         smearAction.emplace_back(var, TF1{fmt::format("{}Smearer", var).c_str(), smearFormula.c_str()});
     }
 
-    fProcessor.Process<Ts...>(
+    fProcessor->Process<Ts...>(
         ROOT::RDataFrame{treeName, fInputFile}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
             if (byPass) {

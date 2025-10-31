@@ -9,7 +9,7 @@ class MMSField final : public Mustard::Detector::Description::DescriptionBase<MM
 
 private:
     MMSField();
-    ~MMSField() = default;
+    ~MMSField() override = default;
 
 public:
     ///////////////////////////////////////////////////////////

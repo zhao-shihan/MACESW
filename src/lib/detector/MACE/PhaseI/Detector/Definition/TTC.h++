@@ -9,4 +9,4 @@ private:
     auto Construct(bool checkOverlaps) -> void override;
 };
 
-} // namespace MACE::Detector::Definition
+} // namespace MACE::PhaseI::Detector::Definition

@@ -12,7 +12,7 @@ class SolenoidShield final : public Mustard::Detector::Description::DescriptionB
 
 private:
     SolenoidShield();
-    ~SolenoidShield() = default;
+    ~SolenoidShield() override = default;
 
 public:
     // Geometry

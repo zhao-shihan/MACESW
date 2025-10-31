@@ -42,7 +42,7 @@ class DetectorConstruction final : public Mustard::Env::Memory::PassiveSingleton
                                    public G4VUserDetectorConstruction {
 public:
     DetectorConstruction();
-    ~DetectorConstruction();
+    ~DetectorConstruction() override;
 
     auto SetCheckOverlaps(G4bool checkOverlaps) -> void { fCheckOverlap = checkOverlaps; }
 

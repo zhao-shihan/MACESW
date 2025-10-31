@@ -36,7 +36,7 @@ using namespace Mustard::MathConstant;
 
 class ECALMesh {
 public:
-    ECALMesh(int n);
+    explicit ECALMesh(int n);
     auto Generate() && -> auto;
 
 private:
@@ -46,7 +46,7 @@ private:
 
 private:
     pmp::SurfaceMesh fPMPMesh;
-    const int fNSubdivision;
+    int fNSubdivision;
 };
 
 ECALMesh::ECALMesh(int n) :
@@ -143,7 +143,7 @@ auto ECALMesh::GenerateDualMesh() -> void {
         for (auto&& f : fPMPMesh.faces(v)) {
             vertices.emplace_back(faceVertex[f]);
         }
-        dualMesh.add_face(std::move(vertices));
+        dualMesh.add_face(vertices);
     }
 
     // swap old and new meshes, don't copy properties
@@ -296,9 +296,8 @@ auto ECAL::CalculateMeshInformation() const -> MeshInformation {
                                     const auto rXY{fInnerRadius * muc::hypot(point[v][0], point[v][1])};
                                     if (point[v][2] < 0) {
                                         return rXY < fUpstreamWindowRadius;
-                                    } else {
-                                        return rXY < fDownstreamWindowRadius;
                                     }
+                                    return rXY < fDownstreamWindowRadius;
                                 })) {
             continue;
         }
@@ -318,7 +317,7 @@ auto ECAL::CalculateMeshInformation() const -> MeshInformation {
             face.vertexIndex.emplace_back(v.idx());
         }
         // vertex ordering of a face
-        const auto LocalPhi{
+        const auto localPhi{
             [uHat = (vertexList[face.vertexIndex.front()] - face.centroid).unit(),
              vHat = face.normal.cross(vertexList[face.vertexIndex.front()] - face.centroid).unit(),
              &localOrigin = face.centroid,
@@ -327,8 +326,8 @@ auto ECAL::CalculateMeshInformation() const -> MeshInformation {
                 return std::atan2(localPoint.dot(vHat), localPoint.dot(uHat));
             }};
         std::ranges::sort(face.vertexIndex,
-                          [&LocalPhi](const auto& i, const auto& j) {
-                              return LocalPhi(i) < LocalPhi(j);
+                          [&localPhi](const auto& i, const auto& j) {
+                              return localPhi(i) < localPhi(j);
                           });
     }
 

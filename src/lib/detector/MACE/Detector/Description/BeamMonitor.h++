@@ -9,7 +9,7 @@ class BeamMonitor final : public Mustard::Detector::Description::DescriptionBase
 
 private:
     BeamMonitor();
-    ~BeamMonitor() = default;
+    ~BeamMonitor() override = default;
 
 public:
     auto Enabled() const -> auto { return fEnabled; }

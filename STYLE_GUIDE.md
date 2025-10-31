@@ -9,6 +9,9 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
   - [Table of Contents](#table-of-contents)
   - [Important Notice](#important-notice)
   - [Common Principles](#common-principles)
+  - [Tooling](#tooling)
+    - [Code Formatter](#code-formatter)
+    - [Code Linter](#code-linter)
   - [File Organization and Structure](#file-organization-and-structure)
     - [File Extensions](#file-extensions)
     - [File Headers and Copyright](#file-headers-and-copyright)
@@ -104,7 +107,7 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
   - [Forward Declarations](#forward-declarations)
   - [Friend Declarations](#friend-declarations)
   - [Summary Checklist](#summary-checklist)
-    - [Tooling](#tooling)
+    - [Tooling](#tooling-1)
     - [File Organization](#file-organization)
     - [Formatting](#formatting)
     - [Naming Conventions](#naming-conventions-1)
@@ -132,7 +135,27 @@ This guide focuses on aspects that `.clang-format` doesn't or cannot handle, inc
 - Follow the principle of least surprise.
 - When in doubt, match the surrounding style.
 - Run `clang-format` every time before saving or committing code.
+- Run `clang-tidy` every time before submitting code.
 - Code reviews are the final arbiter of style disputes.
+
+## Tooling
+Consistent tooling is essential for maintaining code quality. While automated tools cannot enforce every aspect of our guidelines, they capture the majority of style and best practice rules. Always run these tools before committing or submitting code.
+
+### Code Formatter
+We use [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) to automatically format C++ code. For optimal workflow, we recommend integrating `clang-format` with your editor or IDE. Alternatively, you can install it manually:
+```bash
+# Debian-based systems
+sudo apt install clang-format
+```
+The CMake option `MACESW_CLANG_FORMAT` controls whether to validate code formatting during build. This option is enabled (`ON`) by default.
+
+### Code Linter
+We use [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) for static code analysis and linting. Install it using your system package manager:
+```bash
+# Debian-based systems
+sudo apt install clang-tidy
+```
+The CMake option `MACESW_CLANG_TIDY` controls static analysis during build. This option is disabled (`OFF`) by default. Enable it by setting the option to `ON`, and clean the build tree then rebuild the entire project to perform static code analysis.
 
 ## File Organization and Structure
 
@@ -675,8 +698,8 @@ auto Name() const -> const auto& { return fName; }
 ### Virtual Functions and Override
 - **Always use `override` keyword for overridden virtual functions**
 - **Mark destructors `virtual` in base classes if its derived classes might be polymorphically destructed**
-- Mark `virtual` if a function can be further overridden, otherwise
-- Mark `final` when it should never be further overridden
+- Mark `final` when a function should never be further overridden
+- To avoid redundancy, a virtual function is exclusively marked by one in `virtual`, `override`, or `final`.
 
 ## Enumeration
 
@@ -1300,7 +1323,8 @@ public:
 ## Summary Checklist
 
 ### Tooling
-- [ ] Run `clang-format`
+- [ ] Format code with `clang-format`
+- [ ] Run static code analysis with `clang-tidy`
 
 ### File Organization
 - [ ] Use `.h++` for headers and `.c++` for implementation files

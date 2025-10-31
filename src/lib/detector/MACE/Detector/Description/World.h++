@@ -9,7 +9,7 @@ class World final : public Mustard::Detector::Description::DescriptionBase<World
 
 private:
     World();
-    ~World() = default;
+    ~World() override = default;
 
 public:
     auto HalfXExtent() const -> auto { return fHalfXExtent; }

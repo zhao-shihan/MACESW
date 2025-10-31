@@ -13,7 +13,7 @@ class ECALField final : public Mustard::Detector::Description::DescriptionBase<E
 
 private:
     ECALField();
-    ~ECALField() = default;
+    ~ECALField() override = default;
 
 public:
     ///////////////////////////////////////////////////////////

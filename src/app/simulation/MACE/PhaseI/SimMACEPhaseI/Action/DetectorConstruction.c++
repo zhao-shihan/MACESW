@@ -6,8 +6,8 @@
 #include "MACE/PhaseI/Detector/Definition/MRPC.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
 #include "MACE/PhaseI/Detector/Definition/TTC.h++"
-#include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/PhaseI/Detector/Definition/World.h++"
+#include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Action/DetectorConstruction.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Messenger/DetectorMessenger.h++"
@@ -74,7 +74,7 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     sciFiTracker.RegisterSD(scifiName + "SiPM", sciFiSiPMSD);
 
     const auto ttcSiPM(new SD::TTCSiPMSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name() + "SiPM", TTCSiPMSD::Type::MACEPhaseI});
-    ttc.RegisterSD("TTCScintillator", new SD::TTCSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name(),TTCSD::Type::MACEPhaseI});
+    ttc.RegisterSD("TTCScintillator", new SD::TTCSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name(), TTCSD::Type::MACEPhaseI});
     ttc.RegisterSD("TTCSilicone", ttcSiPM);
 
     return fWorld->PhysicalVolume();

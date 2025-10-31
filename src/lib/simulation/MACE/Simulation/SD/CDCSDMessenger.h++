@@ -17,7 +17,7 @@ class CDCSDMessenger final : public Mustard::Geant4X::SingletonMessenger<CDCSDMe
 
 private:
     CDCSDMessenger();
-    ~CDCSDMessenger();
+    ~CDCSDMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

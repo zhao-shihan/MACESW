@@ -9,7 +9,7 @@ class VirtualDetectorB final : public Mustard::Detector::Description::Descriptio
 
 private:
     VirtualDetectorB();
-    ~VirtualDetectorB() = default;
+    ~VirtualDetectorB() override = default;
 
 public:
     auto Thickness() const -> auto { return fThickness; }

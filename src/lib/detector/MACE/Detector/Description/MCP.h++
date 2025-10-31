@@ -12,7 +12,7 @@ class MCP final : public Mustard::Detector::Description::DescriptionBase<MCP> {
 
 private:
     MCP();
-    ~MCP() = default;
+    ~MCP() override = default;
 
 public:
     // Geometry

@@ -9,7 +9,7 @@ using namespace Mustard::LiteralUnit::Length;
 FieldOption::FieldOption() :
     DescriptionBase{"FieldOption"},
     fUseFast{false},
-    fFieldDataFilePath{"${MACE_DATA_DIR}/mace_field_data.root"} {}
+    fFieldDataFilePath{"${MACESW_DATA_DIR}/em_field_data.root"} {}
 
 auto FieldOption::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fUseFast, "UseFast");

@@ -108,7 +108,7 @@ auto TTC::CalculateWidth() -> std::vector<double> {
         dequeWidth.push_front(fWidthUp);
         dequeWidth.push_back(fWidthUp);
     }
-    return std::vector<double>(dequeWidth.begin(), dequeWidth.end());
+    return {dequeWidth.begin(), dequeWidth.end()};
 }
 
 auto TTC::CalculatePosition() -> std::vector<muc::array3d> {
@@ -128,7 +128,7 @@ auto TTC::CalculatePosition() -> std::vector<muc::array3d> {
         dequePosition.push_front(muc::array3d{fRadius, 0, -1 * (fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp)});
         dequePosition.push_back(muc::array3d{fRadius, 0, fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp});
     }
-    return std::vector<muc::array3d>(dequePosition.begin(), dequePosition.end());
+    return {dequePosition.begin(), dequePosition.end()};
 }
 
 auto TTC::ImportAllValue(const YAML::Node& node) -> void {

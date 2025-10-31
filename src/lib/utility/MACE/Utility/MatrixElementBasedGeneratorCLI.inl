@@ -13,7 +13,7 @@ auto MatrixElementBasedGeneratorCLIModule::PhaseSpaceIntegral(Mustard::Executor<
         Mustard::MasterPrintLn("Using pre-computed phase-space integral {}.", integralFromConsole);
     } else {
         const auto precisionGoal{TheCLI()->get<double>("--integral-precision-goal")};
-        Mustard::Math::MCIntegrationState _;
+        Mustard::Math::MCIntegrationState _{};
         if (const auto integrationState{ContinueIntegration()}) {
             result = generator.PhaseSpaceIntegral(executor, precisionGoal, *integrationState);
         } else {

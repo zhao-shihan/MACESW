@@ -23,7 +23,7 @@ class ActionMessenger final : public Mustard::Geant4X::SingletonMessenger<Action
 
 private:
     ActionMessenger();
-    ~ActionMessenger();
+    ~ActionMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

@@ -11,11 +11,11 @@ namespace MACE::PhaseI::inline Simulation::inline SD {
 
 class SciFiSD : public G4VSensitiveDetector {
 public:
-    SciFiSD(const G4String& sdName);
+    explicit SciFiSD(const G4String& sdName);
 
-    virtual auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
-    virtual auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
-    virtual auto EndOfEvent(G4HCofThisEvent*) -> void override;
+    auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
+    auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
+    auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
 protected:
     muc::flat_hash_map<int, muc::unique_ptrvec<SciFiHit>> fSplitHit;

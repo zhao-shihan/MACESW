@@ -10,7 +10,7 @@ NeutrinoKillerSteppingAction<ADerived>::NeutrinoKillerSteppingAction(ADerived* d
 template<typename ADerived>
 auto NeutrinoKillerSteppingAction<ADerived>::EnableNeutrinoKiller(bool val) -> void {
     fEnableNeutrinoKiller = val;
-    auto SetPhysicalProcessActivation{
+    auto setPhysicalProcessActivation{
         [&, processTable = G4ProcessTable::GetProcessTable()](auto&& particle) {
             processTable->SetProcessActivation(fElectromagnetic, particle, not val);
             processTable->SetProcessActivation(fOptical, particle, not val);
@@ -22,29 +22,31 @@ auto NeutrinoKillerSteppingAction<ADerived>::EnableNeutrinoKiller(bool val) -> v
             processTable->SetProcessActivation(fPhonon, particle, not val);
             processTable->SetProcessActivation(fUCN, particle, not val);
         }};
-    SetPhysicalProcessActivation(G4NeutrinoE::Definition());
-    SetPhysicalProcessActivation(G4AntiNeutrinoE::Definition());
-    SetPhysicalProcessActivation(G4NeutrinoMu::Definition());
-    SetPhysicalProcessActivation(G4AntiNeutrinoMu::Definition());
-    SetPhysicalProcessActivation(G4NeutrinoTau::Definition());
-    SetPhysicalProcessActivation(G4AntiNeutrinoTau::Definition());
+    setPhysicalProcessActivation(G4NeutrinoE::Definition());
+    setPhysicalProcessActivation(G4AntiNeutrinoE::Definition());
+    setPhysicalProcessActivation(G4NeutrinoMu::Definition());
+    setPhysicalProcessActivation(G4AntiNeutrinoMu::Definition());
+    setPhysicalProcessActivation(G4NeutrinoTau::Definition());
+    setPhysicalProcessActivation(G4AntiNeutrinoTau::Definition());
     G4RunManager::GetRunManager()->PhysicsHasBeenModified();
 }
 
 template<typename ADerived>
 auto NeutrinoKillerSteppingAction<ADerived>::UserSteppingAction(const G4Step* step) -> void {
-    if (fEnableNeutrinoKiller) {
-        switch (auto& track{*step->GetTrack()};
-                muc::abs(track.GetParticleDefinition()->GetPDGEncoding())) {
-        case 12:
-        case 14:
-        case 16:
+    switch (auto& track{*step->GetTrack()};
+            muc::abs(track.GetParticleDefinition()->GetPDGEncoding())) {
+    case 12:
+    case 14:
+    case 16:
+        if (fEnableNeutrinoKiller) {
             track.SetTrackStatus(fKillTrackAndSecondaries);
-            SteppingActionForNeutrino(*step);
-            return;
         }
+        SteppingActionForNeutrino(*step);
+        break;
+    default:
+        SteppingActionWithoutNeutrino(*step);
+        break;
     }
-    SteppingActionWithoutNeutrino(*step);
 }
 
 } // namespace MACE::inline Simulation::inline Action

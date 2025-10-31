@@ -19,11 +19,11 @@ public:
     };
 
 public:
-    TTCSiPMSD(const G4String& sdName, const Type type);
+    TTCSiPMSD(const G4String& sdName, Type type);
 
-    virtual auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
-    virtual auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
-    virtual auto EndOfEvent(G4HCofThisEvent*) -> void override;
+    auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
+    auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
+    auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
     auto NOpticalPhotonHit() const -> muc::flat_hash_map<int, std::vector<int>>;
 

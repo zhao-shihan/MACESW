@@ -20,7 +20,7 @@ class AnalysisMessenger final : public Mustard::Geant4X::SingletonMessenger<Anal
 
 private:
     AnalysisMessenger();
-    ~AnalysisMessenger();
+    ~AnalysisMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

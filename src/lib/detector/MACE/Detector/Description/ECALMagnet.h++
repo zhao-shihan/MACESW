@@ -12,7 +12,7 @@ class ECALMagnet final : public Mustard::Detector::Description::DescriptionBase<
 
 private:
     ECALMagnet();
-    ~ECALMagnet() = default;
+    ~ECALMagnet() override = default;
 
 public:
     // Geometry

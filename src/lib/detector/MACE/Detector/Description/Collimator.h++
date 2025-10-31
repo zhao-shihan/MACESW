@@ -14,7 +14,7 @@ class Collimator final : public Mustard::Detector::Description::DescriptionBase<
 
 private:
     Collimator();
-    ~Collimator() = default;
+    ~Collimator() override = default;
 
 public:
     // Geometry

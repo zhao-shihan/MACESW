@@ -11,8 +11,8 @@ class Analysis;
 
 class RunManager final : public Mustard::Geant4X::MPIRunManager {
 public:
-    RunManager(Mustard::CLI::Geant4ReferencePhysicsListModule<"QBBC_EMZ">& cli);
-    ~RunManager();
+    explicit RunManager(Mustard::CLI::Geant4ReferencePhysicsListModule<"QBBC_EMZ">& cli);
+    ~RunManager() override;
 
     static auto Instance() -> auto& { return static_cast<RunManager&>(*GetRunManager()); }
 

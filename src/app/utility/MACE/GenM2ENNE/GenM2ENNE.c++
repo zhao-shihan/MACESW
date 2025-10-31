@@ -114,10 +114,10 @@ auto GenM2ENNE::Main(int argc, char* argv[]) const -> int {
         Mustard::Data::Tuple<Mustard::Data::GeneratedKinematics> event;
         // 0: e+, 3: e-
         Get<"pdgID">(event) = {pdgID[0], pdgID[3]};
-        Get<"E">(event) = {float(p[0].e()), float(p[3].e())};
-        Get<"px">(event) = {float(p[0].x()), float(p[3].x())};
-        Get<"py">(event) = {float(p[0].y()), float(p[3].y())};
-        Get<"pz">(event) = {float(p[0].z()), float(p[3].z())};
+        Get<"E">(event) = {static_cast<float>(p[0].e()), static_cast<float>(p[3].e())};
+        Get<"px">(event) = {static_cast<float>(p[0].x()), static_cast<float>(p[3].x())};
+        Get<"py">(event) = {static_cast<float>(p[0].y()), static_cast<float>(p[3].y())};
+        Get<"pz">(event) = {static_cast<float>(p[0].z()), static_cast<float>(p[3].z())};
         Get<"w">(event) = branchingRatio.value * weight;
         writer.Fill(event);
     });

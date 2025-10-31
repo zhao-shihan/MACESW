@@ -12,7 +12,7 @@ class MMSShield final : public Mustard::Detector::Description::DescriptionBase<M
 
 private:
     MMSShield();
-    ~MMSShield() = default;
+    ~MMSShield() override = default;
 
 public:
     // Geometry

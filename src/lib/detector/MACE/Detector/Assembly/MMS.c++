@@ -10,6 +10,9 @@
 #include "MACE/Detector/Definition/MMSShield.h++"
 #include "MACE/Detector/Definition/TTC.h++"
 
+#include "Mustard/Detector/Assembly/AssemblyBase.h++"
+#include "Mustard/Detector/Definition/DefinitionBase.h++"
+
 namespace MACE::Detector::Assembly {
 
 MMS::MMS(Mustard::Detector::Definition::DefinitionBase& mother, bool checkOverlap) :

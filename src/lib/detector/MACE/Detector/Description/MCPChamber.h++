@@ -9,7 +9,7 @@ class MCPChamber final : public Mustard::Detector::Description::DescriptionBase<
 
 private:
     MCPChamber();
-    ~MCPChamber() = default;
+    ~MCPChamber() override = default;
 
 public:
     auto InnerRadius() const -> auto { return fInnerRadius; }

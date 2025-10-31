@@ -1,4 +1,3 @@
-#include "MACE/Detector/Description/MMSField.h++"
 #include "MACE/Simulation/SD/CDCSD.h++"
 
 #include "Mustard/IO/PrettyLog.h++"
@@ -16,13 +15,13 @@
 #include "G4ThreeVector.hh"
 #include "G4TwoVector.hh"
 #include "G4VProcess.hh"
-#include "G4VTouchable.hh"
 
 #include "muc/algorithm"
 #include "muc/numeric"
 #include "muc/utility"
 
-#include <cassert>
+#include "gsl/gsl"
+
 #include <cmath>
 #include <ranges>
 #include <string_view>
@@ -61,8 +60,8 @@ auto CDCSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
     const auto eDep{step.GetTotalEnergyDeposit()};
 
-    assert(0 <= step.GetNonIonizingEnergyDeposit());
-    assert(step.GetNonIonizingEnergyDeposit() <= eDep);
+    Expects(0 <= step.GetNonIonizingEnergyDeposit());
+    Expects(step.GetNonIonizingEnergyDeposit() <= eDep);
     if (eDep - step.GetNonIonizingEnergyDeposit() < fIonizingEnergyDepositionThreshold) {
         return false;
     }
@@ -76,11 +75,11 @@ auto CDCSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     // retrieve wire position
     const auto cellID{touchable.GetReplicaNumber(1)};
     const auto& cellInfo{fCellMap->at(cellID)};
-    assert(cellID == cellInfo.cellID);
+    Ensures(cellID == cellInfo.cellID);
     const auto xWire{Mustard::VectorCast<G4TwoVector>(cellInfo.position)};
     const auto tWire{Mustard::VectorCast<G4ThreeVector>(cellInfo.direction)};
     // calculate drift distance
-    double driftDistance;
+    double driftDistance{};
     if (const auto pHat{muc::midpoint(preStepPoint.GetMomentumDirection(), postStepPoint.GetMomentumDirection())};
         not pHat.isParallel(tWire)) {
         const auto n{tWire.cross(pHat)};
@@ -136,12 +135,12 @@ auto CDCSD::EndOfEvent(G4HCofThisEvent*) -> void {
             muc::unreachable();
         case 1: {
             auto& hit{splitHit.front()};
-            assert(Get<"CellID">(*hit) == cellID);
+            Ensures(Get<"CellID">(*hit) == cellID);
             fHitsCollection->insert(hit.release());
         } break;
         default: {
             const auto timeResolutionFWHM{Detector::Description::CDC::Instance().TimeResolutionFWHM()};
-            assert(timeResolutionFWHM >= 0);
+            Expects(timeResolutionFWHM >= 0);
             // sort hit by signal time
             muc::timsort(splitHit,
                          [](const auto& hit1, const auto& hit2) {
@@ -166,7 +165,7 @@ auto CDCSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                                            return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
                                                        })};
                 // construct real hit
-                assert(Get<"CellID">(*topHit) == cellID);
+                Ensures(Get<"CellID">(*topHit) == cellID);
                 auto nTopHit{1};
                 for (const auto& hit : cluster) {
                     if (hit == topHit) {

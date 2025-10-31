@@ -20,7 +20,7 @@ class PhysicsMessenger final : public Mustard::Geant4X::SingletonMessenger<Physi
 
 private:
     PhysicsMessenger();
-    ~PhysicsMessenger();
+    ~PhysicsMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

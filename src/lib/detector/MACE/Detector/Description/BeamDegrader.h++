@@ -12,7 +12,7 @@ class BeamDegrader final : public Mustard::Detector::Description::DescriptionBas
 
 private:
     BeamDegrader();
-    ~BeamDegrader() = default;
+    ~BeamDegrader() override = default;
 
 public:
     auto Enabled() const -> auto { return fEnabled; }

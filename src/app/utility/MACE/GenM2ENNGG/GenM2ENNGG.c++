@@ -93,10 +93,10 @@ auto GenM2ENNGG::Main(int argc, char* argv[]) const -> int {
         Mustard::Data::Tuple<Mustard::Data::GeneratedKinematics> event;
         // 0: e+, 3: g, 4: g
         Get<"pdgID">(event) = {pdgID[0], pdgID[3], pdgID[4]};
-        Get<"E">(event) = {float(p[0].e()), float(p[3].e()), float(p[4].e())};
-        Get<"px">(event) = {float(p[0].x()), float(p[3].x()), float(p[4].x())};
-        Get<"py">(event) = {float(p[0].y()), float(p[3].y()), float(p[4].y())};
-        Get<"pz">(event) = {float(p[0].z()), float(p[3].z()), float(p[4].z())};
+        Get<"E">(event) = {static_cast<float>(p[0].e()), static_cast<float>(p[3].e()), static_cast<float>(p[4].e())};
+        Get<"px">(event) = {static_cast<float>(p[0].x()), static_cast<float>(p[3].x()), static_cast<float>(p[4].x())};
+        Get<"py">(event) = {static_cast<float>(p[0].y()), static_cast<float>(p[3].y()), static_cast<float>(p[4].y())};
+        Get<"pz">(event) = {static_cast<float>(p[0].z()), static_cast<float>(p[3].z()), static_cast<float>(p[4].z())};
         Get<"w">(event) = branchingRatio.value * weight;
         writer.Fill(event);
     });

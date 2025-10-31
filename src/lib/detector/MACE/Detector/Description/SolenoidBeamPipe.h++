@@ -12,7 +12,7 @@ class SolenoidBeamPipe final : public Mustard::Detector::Description::Descriptio
 
 private:
     SolenoidBeamPipe();
-    ~SolenoidBeamPipe() = default;
+    ~SolenoidBeamPipe() override = default;
 
 public:
     // Geometry

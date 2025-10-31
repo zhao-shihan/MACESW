@@ -19,7 +19,7 @@ template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
 class InitialStateCLIModule : public Mustard::CLI::ModuleBase {
 public:
-    InitialStateCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+    explicit InitialStateCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 
     auto Momentum() const -> CLHEP::Hep3Vector
         requires(sizeof...(Ms) == 1);

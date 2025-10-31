@@ -126,9 +126,8 @@ auto CDC::CalculateLayerConfiguration() const -> std::vector<SuperLayerConfigura
                 }
                 if ((fEvenSuperLayerIsAxial ? superLayerID + 3 : superLayerID) % 4 == 0) {
                     return +fMinStereoAngle;
-                } else {
-                    return -fMinStereoAngle;
                 }
+                return -fMinStereoAngle;
             }()};
         const auto firstSenseLayerID{static_cast<int>(superLayerID * fNSenseLayerPerSuper)};
         super.sense.reserve(fNSenseLayerPerSuper);
@@ -173,10 +172,10 @@ auto CDC::CalculateLayerConfiguration() const -> std::vector<SuperLayerConfigura
                 }();
             sense.stereoAzimuthAngle = 2 * std::atan(sense.halfLength / sense.innerRadius * tanInnerStereoZenithAngle);
 
-            const auto firstCellID{static_cast<int>((notFirstSuperLayer ?
-                                                         lastSuper.sense.back().cell.back().cellID + 1 :
-                                                         0) +
-                                                    senseLayerLocalID * super.nCellPerSenseLayer)};
+            const auto firstCellID{((notFirstSuperLayer ?
+                                         lastSuper.sense.back().cell.back().cellID + 1 :
+                                         0) +
+                                    senseLayerLocalID * super.nCellPerSenseLayer)};
             const auto firstCellAzimuth{muc::even(sense.senseLayerID) ?
                                             0 :
                                             halfPhiCell};
@@ -208,7 +207,7 @@ auto CDC::CalculateCellMap() const -> std::vector<CellInformation> {
     const auto rFieldWire{fFieldWireDiameter / 2};
 
     const auto& layerConfig{LayerConfiguration()};
-    cellMap.reserve(muc::ranges::transform_reduce(layerConfig, 0ull, std::plus{},
+    cellMap.reserve(muc::ranges::transform_reduce(layerConfig, 0ULL, std::plus{},
                                                   [this](const auto& super) {
                                                       return super.nCellPerSenseLayer * fNSenseLayerPerSuper;
                                                   }));

@@ -37,7 +37,7 @@ public:
     using Track = ATrack;
 
 public:
-    GenFitReferenceKalmanFitter(double driftErrorRMS);
+    explicit GenFitReferenceKalmanFitter(double driftErrorRMS);
     virtual ~GenFitReferenceKalmanFitter() = default;
 
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>

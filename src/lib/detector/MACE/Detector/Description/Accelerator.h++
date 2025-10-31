@@ -14,7 +14,7 @@ class Accelerator final : public Mustard::Detector::Description::DescriptionBase
 
 private:
     Accelerator();
-    ~Accelerator() = default;
+    ~Accelerator() override = default;
 
 public:
     // Geometry

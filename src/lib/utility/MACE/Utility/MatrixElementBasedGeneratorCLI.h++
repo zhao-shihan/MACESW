@@ -24,7 +24,7 @@ namespace MACE::inline Utility {
 
 class MatrixElementBasedGeneratorCLIModule : public Mustard::CLI::ModuleBase {
 public:
-    MatrixElementBasedGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+    explicit MatrixElementBasedGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 
     template<int M, int N, typename A>
     auto PhaseSpaceIntegral(Mustard::Executor<unsigned long long>& executor,

@@ -25,7 +25,7 @@ public:
     auto SaveDecayVertexData() const -> auto { return fSaveDecayVertexData; }
     auto SaveDecayVertexData(bool val) -> void { fSaveDecayVertexData = val; }
 
-    auto ClearDecayVertexData() -> void { return fDecayVertexData.clear(); }
+    auto ClearDecayVertexData() -> void { fDecayVertexData.clear(); }
     auto DecayVertexData() const -> const auto& { return fDecayVertexData; }
 
 private:

@@ -20,7 +20,7 @@ class PrimaryGeneratorActionMessenger final : public Mustard::Geant4X::Singleton
 
 private:
     PrimaryGeneratorActionMessenger();
-    ~PrimaryGeneratorActionMessenger();
+    ~PrimaryGeneratorActionMessenger() override;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

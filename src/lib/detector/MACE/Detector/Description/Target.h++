@@ -31,7 +31,7 @@ public:
 
 private:
     Target();
-    ~Target() = default;
+    ~Target() override = default;
 
 public:
     auto ShapeType() const -> auto { return fShapeType; }
@@ -43,14 +43,14 @@ public:
     template<typename ADerivedShape>
     class ShapeBase : public Mustard::Env::Memory::WeakSingleton<ADerivedShape> {
     protected:
-        ShapeBase(ADerivedShape* derived);
+        explicit ShapeBase(ADerivedShape* derived);
         ~ShapeBase() = default;
 
     protected:
         template<typename ADerivedDetail>
         class DetailBase : public Mustard::Env::Memory::WeakSingleton<ADerivedDetail> {
         protected:
-            DetailBase(ADerivedDetail* derived);
+            explicit DetailBase(ADerivedDetail* derived);
             ~DetailBase() = default;
         };
     };
@@ -96,7 +96,7 @@ public:
     private:
         class PerforatedCuboid final : public DetailBase<PerforatedCuboid> {
         public:
-            PerforatedCuboid(gsl::not_null<const CuboidTarget*> cuboid);
+            explicit PerforatedCuboid(gsl::not_null<const CuboidTarget*> cuboid);
 
             auto WidthExtent() const -> auto { return fWidthExtent; }
             auto HeightExtent() const -> auto { return fHeightExtent; }

@@ -30,7 +30,7 @@ ECALShield:
   MaterialName: G4_Fe
 FieldOption:
   UseFast: false
-  FieldDataFilePath: ${MACE_DATA_DIR}/mace_field_data.root
+  FieldDataFilePath: ${MACESW_DATA_DIR}/em_field_data.root
 Collimator:
   Enabled: true
   Length: 500
