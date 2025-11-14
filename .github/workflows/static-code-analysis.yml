@@ -1,0 +1,71 @@
+name: Static code analysis
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - rc
+    paths:
+      - ".github/workflows/static-code-analysis.yml"
+      - "src/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+      - ".clang-format"
+      - ".clang-tidy"
+
+  pull_request:
+    branches:
+      - main
+      - rc
+    paths:
+      - ".github/workflows/static-code-analysis.yml"
+      - "src/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+      - ".clang-format"
+      - ".clang-tidy"
+
+permissions:
+  contents: read
+
+jobs:
+  clang-format-tidy:
+    name: Clang, ClangFormat, ClangTidy
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - url: ghcr.io/zhao-shihan/rgb-docker
+    container: ${{ matrix.image.url }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Static code analysis
+        run: |
+          . /environment
+          mkdir build && cd build
+          cmake -G Ninja .. \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_C_FLAGS='-march=native' \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_CXX_FLAGS='-march=native' \
+            -DMACESW_WERROR=ON \
+            -DMACESW_CLANG_FORMAT=ON \
+            -DMACESW_CLANG_FORMAT_WERROR=ON \
+            -DMACESW_CLANG_TIDY=ON \
+            -DMACESW_CLANG_TIDY_WERROR=ON \
+            -DMACESW_UNITY_BUILD=ON \
+            -DMACESW_FULL_UNITY_BUILD=ON
+          ninja
+          ninja clean
+          cmake -G Ninja .. \
+            -DMACESW_CLANG_TIDY_AMEND_UNITY_BUILD=ON \
+            -DMACESW_UNITY_BUILD=OFF
+          ninja

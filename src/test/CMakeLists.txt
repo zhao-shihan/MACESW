@@ -1,0 +1,7 @@
+file(GLOB Test_SCRIPTS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*)
+foreach(_scripts ${Test_SCRIPTS})
+    set(Test_SCRIPTS_COPY_DIR test)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${Test_SCRIPTS_COPY_DIR})
+    configure_file(${_scripts} ${CMAKE_BINARY_DIR}/${Test_SCRIPTS_COPY_DIR} COPYONLY)
+    install(FILES ${_scripts} DESTINATION ${MACESW_DATAROOTDIR}/${Test_SCRIPTS_COPY_DIR})
+endforeach()

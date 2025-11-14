@@ -1,0 +1,61 @@
+name: Build (AMD64 GNU/Linux GCC)
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - rc
+    paths:
+      - ".github/workflows/build-with-gcc.yml"
+      - "src/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+
+  pull_request:
+    branches:
+      - main
+      - rc
+    paths:
+      - ".github/workflows/build-with-gcc.yml"
+      - "src/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+
+permissions:
+  contents: read
+
+jobs:
+  build-with-gcc:
+    name: Build (GCC)
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - url: ghcr.io/zhao-shihan/rgb-docker:mpich
+          - url: ghcr.io/zhao-shihan/rgb-docker:openmpi
+        build-type:
+          - string: Debug
+          - string: Release
+    container: ${{ matrix.image.url }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          . /environment
+          mkdir build && cd build
+          cmake -G Ninja .. \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_C_FLAGS='-march=x86-64-v2' \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DCMAKE_CXX_FLAGS='-march=x86-64-v2'\
+            -DCMAKE_BUILD_TYPE=${{ matrix.build-type.string }} \
+            -DMACESW_WERROR=ON
+          ninja

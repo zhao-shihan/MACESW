@@ -1,0 +1,63 @@
+name: Regression test (AMD64 GNU/Linux Clang)
+
+on:
+  pull_request:
+    branches:
+      - main
+      - rc
+    paths:
+      - ".github/workflows/regression-test-with-clang.yml"
+      - "src/**"
+      - "test/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+
+permissions:
+  contents: read
+
+jobs:
+  regression-test-with-clang:
+    name: Regression test (Clang)
+    timeout-minutes: 180
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - url: ghcr.io/zhao-shihan/rgb-docker:mpich
+            artifact-name: Regression test report (AMD64 GNU-Linux Clang, MPICH)
+          - url: ghcr.io/zhao-shihan/rgb-docker:openmpi
+            artifact-name: Regression test report (AMD64 GNU-Linux Clang, OpenMPI)
+    container: ${{ matrix.image.url }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          . /environment
+          mkdir build && cd build
+          cmake -G Ninja .. \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_C_FLAGS='-march=native' \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_CXX_FLAGS='-march=native' \
+            -DMACESW_UNITY_BUILD=ON \
+            -DMACESW_FULL_UNITY_BUILD=ON
+          ninja
+
+      - name: Run regression test
+        run: |
+          . /environment
+          bash build/test/regression_test.bash
+
+      - name: Restore regression report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.image.artifact-name }}
+          path: |
+            build/test/test_*/regression_report.root
+          retention-days: 90
