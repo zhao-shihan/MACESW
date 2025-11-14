@@ -64,6 +64,13 @@
 /vis/geometry/set/visibility ECALPMCathode              0 no
 /vis/geometry/set/visibility ECALPMTCoupler             0 no
 /vis/geometry/set/visibility MRPCGas                    0 no
+/vis/geometry/set/visibility SciFiTrackerHelicalFiberCore 0 no
+/vis/geometry/set/visibility SciFiTrackerHelicalLightGuideCore 0 no
+/vis/geometry/set/visibility SciFiTrackerTransverseFiberCore 0 no
+/vis/geometry/set/visibility SciFiTrackerTransverseLightGuideCore 0 no
+/vis/geometry/set/visibility SciFiTrackerAbsorbLayer 0 no
+/vis/geometry/set/visibility SciFiTrackerEpoxy 0 no
+/vis/geometry/set/visibility SciFiTrackerSiliconeOil  0 no
 /vis/geometry/set/visibility TTCVirtualBox              -1 no
 /vis/geometry/set/visibility TTCScintillator            0 yes
 
@@ -93,9 +100,8 @@
 /vis/geometry/set/colour SciFiTrackerTransverseFiberCore        0     1     1     1     0.05
 /vis/geometry/set/colour SciFiTrackerHelicalLightGuide          0     1     1     1     0.1
 /vis/geometry/set/colour SciFiTrackerHelicalLightGuideCore      0     1     1     1     0.05
-/vis/geometry/set/colour SciFiTrackerTransverseLightGuide       0     1     1     1     0.1
-/vis/geometry/set/colour SciFiTrackerTransverseLightGuideCore   0     1     1     1     0.05
-/vis/geometry/set/colour SciFiTrackerBraket                     0     1     1     1     0.05
+/vis/geometry/set/colour SciFiTrackerTransverseLightGuide       0     1     1     1     0.5
+/vis/geometry/set/colour SciFiTrackerBracket                     0     1     1     1     0.5
 
 /vis/geometry/set/colour TTCVirtualBox                          0     1     1     1     0.05
 /vis/geometry/set/colour TTCPCB                                 0     1     1     1     0.05
