@@ -1,0 +1,143 @@
+name: Daily Pre-release
+
+on:
+  schedule:
+    # Run daily at 04:00 UTC+8 (20:00 UTC)
+    - cron: '0 20 * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  check-and-release:
+    name: Check, Sync and Pre-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if all required checks passed on main
+        id: check_status
+        run: |
+          # Get the latest commit SHA on main branch
+          COMMIT_SHA=$(git rev-parse origin/main)
+          echo "Latest main commit: $COMMIT_SHA"
+
+          # Get check runs for this commit
+          CHECK_RUNS=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/commits/${COMMIT_SHA}/check-runs")
+
+          # Check if all required checks passed
+          TOTAL_COUNT=$(echo "$CHECK_RUNS" | jq '.total_count')
+          echo "Total check runs: $TOTAL_COUNT"
+
+          if [ "$TOTAL_COUNT" -eq 0 ]; then
+            echo "No check runs found for commit $COMMIT_SHA"
+            echo "all_passed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Get the conclusion of all check runs
+          FAILED_COUNT=$(echo "$CHECK_RUNS" | jq \
+            '[.check_runs[] |
+              select(.conclusion != "success" and
+                     .conclusion != "skipped" and
+                     .conclusion != null)] | length')
+          PENDING_COUNT=$(echo "$CHECK_RUNS" | jq \
+            '[.check_runs[] | select(.status != "completed")] | length')
+
+          echo "Failed check runs: $FAILED_COUNT"
+          echo "Pending check runs: $PENDING_COUNT"
+
+          if [ "$FAILED_COUNT" -gt 0 ] || [ "$PENDING_COUNT" -gt 0 ]; then
+            echo "Not all checks passed or some checks are still pending"
+            echo "all_passed=false" >> $GITHUB_OUTPUT
+          else
+            echo "All checks passed!"
+            echo "all_passed=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync main to rc branch
+        if: steps.check_status.outputs.all_passed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch latest changes
+          git fetch origin main:main
+          git fetch origin rc:rc || git branch rc main
+
+          # Checkout rc and merge main
+          git checkout rc
+          git merge main --ff-only || {
+            echo "Fast-forward merge failed. RC branch has diverged."
+            exit 1
+          }
+
+          # Push rc branch
+          git push origin rc
+
+      - name: Get next version number
+        if: steps.check_status.outputs.all_passed == 'true'
+        id: version
+        run: |
+          # Get all tags starting with v0.
+          LATEST_TAG=$(git tag -l "v0.*" | sort -V | tail -n 1)
+
+          if [ -z "$LATEST_TAG" ]; then
+            # No previous v0.x tags, start with v0.1
+            NEW_TAG="v0.1"
+          else
+            # Extract the minor version number and increment it
+            MINOR_VERSION=$(echo "$LATEST_TAG" | sed 's/v0\.//')
+            NEW_MINOR=$((MINOR_VERSION + 1))
+            NEW_TAG="v0.$NEW_MINOR"
+          fi
+
+          echo "New tag: $NEW_TAG"
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        if: steps.check_status.outputs.all_passed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag -a "$TAG" -m "Daily pre-release $TAG"
+          git push origin "$TAG"
+
+      - name: Create pre-release
+        if: steps.check_status.outputs.all_passed == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: Pre-release ${{ steps.version.outputs.tag }}
+          body: |
+            Automated daily pre-release ${{ steps.version.outputs.tag }}
+
+            This is a pre-release version built from the main branch.
+
+            **Build date:** ${{ github.event.repository.updated_at }}
+          draft: false
+          prerelease: true
+
+      - name: Report status
+        if: always()
+        run: |
+          if [ "${{ steps.check_status.outputs.all_passed }}" == "true" ]; then
+            echo "✅ All checks passed. Pre-release created successfully."
+          else
+            echo "⚠️ Checks did not pass. Skipping pre-release."
+          fi
