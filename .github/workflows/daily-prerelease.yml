@@ -1,3 +1,12 @@
+# Daily Pre-release Workflow
+#
+# This workflow runs daily at 04:00 UTC+8 (20:00 UTC) and:
+# 1. Checks if all required CI checks passed on the main branch
+# 2. If checks passed: syncs main branch to rc branch (fast-forward)
+# 3. Creates an auto-incrementing pre-release with tag v0.x
+#
+# The workflow can also be manually triggered via workflow_dispatch.
+
 name: Daily Pre-release
 
 on:
