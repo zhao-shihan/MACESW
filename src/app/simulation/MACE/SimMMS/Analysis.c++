@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/SimMMS/Action/PrimaryGeneratorAction.h++"
 #include "MACE/SimMMS/Action/TrackingAction.h++"
 #include "MACE/SimMMS/Analysis.h++"
@@ -60,7 +79,7 @@ auto Analysis::EventEndUserAction() -> void {
     const auto mmsTrack{fCDCHit and fTTCHit ?
                             std::optional{fMMSTruthTracker(*fCDCHit, *fTTCHit)} :
                             std::nullopt};
-    const auto mmsPassed{mmsTrack == std::nullopt or mmsTrack->size() > 0};
+    const auto mmsPassed{mmsTrack == std::nullopt or not mmsTrack->empty()};
     if (mmsPassed) {
         if (fPrimaryVertex and fPrimaryVertexOutput) {
             fPrimaryVertexOutput->Fill(*fPrimaryVertex);

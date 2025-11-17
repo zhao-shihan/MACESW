@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 namespace MACE::inline Utility {
 
 template<muc::ceta_string P, muc::ceta_string... Ms>
@@ -48,14 +67,16 @@ InitialStateCLIModule<P, Ms...>::InitialStateCLIModule(gsl::not_null<Mustard::CL
 template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
 auto InitialStateCLIModule<P, Ms...>::Momentum() const -> CLHEP::Hep3Vector
-    requires(sizeof...(Ms) == 1) {
+    requires(sizeof...(Ms) == 1)
+{
     return To3Vector("--momentum");
 }
 
 template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
 auto InitialStateCLIModule<P, Ms...>::Momentum() const -> std::array<CLHEP::Hep3Vector, sizeof...(Ms)>
-    requires(sizeof...(Ms) >= 2) {
+    requires(sizeof...(Ms) >= 2)
+{
     std::array<CLHEP::Hep3Vector, sizeof...(Ms)> p;
     for (auto i{1}; i <= sizeof...(Ms); ++i) {
         p[i] = To3Vector(fmt::format("--momentum-{}", i));
@@ -66,14 +87,16 @@ auto InitialStateCLIModule<P, Ms...>::Momentum() const -> std::array<CLHEP::Hep3
 template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
 auto InitialStateCLIModule<P, Ms...>::Polarization() const -> CLHEP::Hep3Vector
-    requires(P == "polarized" and sizeof...(Ms) == 1) {
+    requires(P == "polarized" and sizeof...(Ms) == 1)
+{
     return To3Vector("--polarization");
 }
 
 template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
 auto InitialStateCLIModule<P, Ms...>::Polarization() const -> std::array<CLHEP::Hep3Vector, sizeof...(Ms)>
-    requires(P == "polarized" and sizeof...(Ms) >= 2) {
+    requires(P == "polarized" and sizeof...(Ms) >= 2)
+{
     std::array<CLHEP::Hep3Vector, sizeof...(Ms)> p;
     for (auto i{1}; i <= sizeof...(Ms); ++i) {
         p[i] = To3Vector(fmt::format("--polarization-{}", i));

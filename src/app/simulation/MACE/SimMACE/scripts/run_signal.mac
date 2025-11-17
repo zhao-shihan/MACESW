@@ -17,8 +17,12 @@
 /gps/pos/radius           0 mm
 /gps/pos/sigma_r          5 mm
 /gps/ene/type             Gauss
-/gps/ene/mono             3.224 MeV    # momentum 26.3 MeV
-/gps/ene/sigma            0.459 MeV    # momentum spreading 1.9 MeV
+# CiADS full-solenoid focusing beam, 0.5-mA-proton beam on C target
+/gps/ene/mono             3.346 MeV    # momentum 26.8 MeV
+/gps/ene/sigma            0.393 MeV    # momentum spreading 1.6 MeV
+## CiADS solenoid + QM focusing beam, 0.5-mA-proton beam on C target
+#/gps/ene/mono             3.248 MeV    # momentum 26.4 MeV
+#/gps/ene/sigma            0.339 MeV    # momentum spreading 1.4 MeV
 /GPSX/NVertex             1
 /GPSX/PulseWidth          1.5 us
 
@@ -38,7 +42,10 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimMACE_signal.root
+/Mustard/Analysis/FilePath SimMACE_signal_test.root
 /Mustard/Analysis/FileMode NEW
-/run/beamOn 8000
+#/run/beamOn 8000
+
+/run/beamOn 1000000
+
 /Mustard/Run/PrintRunSummary

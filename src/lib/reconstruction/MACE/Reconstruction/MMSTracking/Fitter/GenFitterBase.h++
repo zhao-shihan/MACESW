@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #pragma once
 
 #include "MACE/Data/Hit.h++"
@@ -66,10 +85,11 @@ private:
     using Base = FitterBase<AHit, ATrack>;
 
 protected:
-    GenFitterBase(double driftErrorRMS, double lowestMomentum = 1 * CLHEP::MeV);
-    virtual ~GenFitterBase() = default;
+    explicit GenFitterBase(double driftErrorRMS, double lowestMomentum = 1 * CLHEP::MeV);
 
 public:
+    ~GenFitterBase() override = default;
+
     auto DriftErrorRMS() const -> auto { return fDriftErrorRMS; }
     auto LowestMomentum() const -> auto { return fLowestMomentum; }
     auto EnableEventDisplay() const -> auto { return fEnableEventDisplay; }
@@ -88,13 +108,13 @@ protected:
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
                  Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-    auto Initialize(const std::vector<AHitPointer>& hitData, ASeedPointer seed)
+    auto Initialize(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed)
         -> std::pair<std::shared_ptr<genfit::Track>,
                      muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>>;
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
                  Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-    auto Finalize(std::shared_ptr<genfit::Track> genfitTrack, ASeedPointer seed,
+    auto Finalize(std::shared_ptr<genfit::Track> genfitTrack, const ASeedPointer& seed,
                   const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
         -> Base::template Result<AHitPointer>;
 

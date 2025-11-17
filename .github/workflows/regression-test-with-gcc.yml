@@ -1,6 +1,17 @@
 name: Regression test (AMD64 GNU/Linux GCC)
 
 on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - ".github/workflows/regression-test-with-gcc.yml"
+      - "src/**"
+      - "test/**"
+      - "MACE.c\\+\\+"
+      - "**/CMakeLists.txt"
+      - "**.cmake"
+
   pull_request:
     branches:
       - main
@@ -52,7 +63,7 @@ jobs:
       - name: Run regression test
         run: |
           . /environment
-          bash build/test/regression_test.bash
+          bash build/test/regression_test.bash --use-hwthreads
 
       - name: Restore regression report
         uses: actions/upload-artifact@v4

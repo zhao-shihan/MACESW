@@ -1,6 +1,22 @@
-#include "MACE/PhaseI/Data/Hit.h++"
-#include "MACE/PhaseI/Data/SensorHit.h++"
-#include "MACE/PhaseI/Data/SensorRawHit.h++"
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/PhaseI/Data/SimHit.h++"
 #include "MACE/PhaseI/Data/Track.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
@@ -16,7 +32,6 @@
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
-#include "Algorithm.h++"
 #include "ReconSciFi.h++"
 
 #include "ROOT/RDataFrame.hxx"
@@ -68,82 +83,60 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     std::string fileName{argv[1]};
     TFile file{Mustard::Parallel::ProcessSpecificPath("output.root").generic_string().c_str(), "RECREATE"};
-    Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
+    Mustard::Data::Output<PhaseI::Data::Track> trackOutput{"G4Run0/Track"};
     Mustard::Data::Processor processor;
 
-    processor.Process<PhaseI::Data::SciFiSiPMHit>(
-        ROOT::RDataFrame{"G4Run0/SciFiSiPMHit", fileName}, int{}, "EvtID",
+    processor.Process<PhaseI::Data::SciFiSimHit>(
+        ROOT::RDataFrame{"G4Run0/SciFiSimHit", fileName}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
             if (byPass) {
                 return;
             }
             muc::timsort(event,
                          [](auto&& hit1, auto&& hit2) {
-                             return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));
+                             return std::tie(Get<"FiberID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"FiberID">(*hit2), Get<"t">(*hit2));
                          });
 
-            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> siPMHitData;
-            for (std::ranges::subrange siPMHitRange{event.begin(), event.begin()};
-                 siPMHitRange.begin() != event.end();
-                 siPMHitRange = {siPMHitRange.end(), siPMHitRange.end()}) {
-                siPMHitRange = std::ranges::equal_range(siPMHitRange.begin(), event.end(), *Get<"SiPMID">(**siPMHitRange.begin()), std::less{},
-                                                        [](auto&& hit) { return Get<"SiPMID">(*hit); });
+            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
+            for (std::ranges::subrange sciFiHitRange{event.begin(), event.begin()};
+                 sciFiHitRange.begin() != event.end();
+                 sciFiHitRange = {sciFiHitRange.end(), sciFiHitRange.end()}) {
+                sciFiHitRange = std::ranges::equal_range(sciFiHitRange.begin(), event.end(), *Get<"FiberID">(**sciFiHitRange.begin()), std::less{},
+                                                         [](auto&& hit) { return Get<"FiberID">(*hit); });
                 int count = 0;
-                double initialTime = *Get<"t">(**siPMHitRange.begin());
+                double initialTime = *Get<"t">(**sciFiHitRange.begin());
                 double endTime = initialTime + sciFiTracker.ThresholdTime();
-                for (int j{}; j < std::ssize(siPMHitRange); ++j) {
-                    if (*Get<"t">(*siPMHitRange[j]) >= initialTime && *Get<"t">(*siPMHitRange[j]) < endTime) {
-                        initialTime = *Get<"t">(*siPMHitRange[j]);
+                for (int j{}; j < std::ssize(sciFiHitRange); ++j) {
+                    if (*Get<"t">(*sciFiHitRange[j]) >= initialTime and *Get<"t">(*sciFiHitRange[j]) < endTime) {
+                        initialTime = *Get<"t">(*sciFiHitRange[j]);
                         count++;
-                        if (count == sciFiTracker.Threshold()) {
+                        if (count == sciFiTracker.SiPMOpticalPhotonCountThreshold()) {
                             endTime = initialTime + sciFiTracker.TimeWindow();
-                            if (*Get<"EvtID">(**siPMHitRange.begin()) != 8) {
-                                continue;
-                            }
-                            // if (std::find(trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].begin(),
-                            //               trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].end(),
-                            //               *Get<"SiPMID">(*siPMHitRange[j])) == trueIDs[*Get<"EvtID">(**siPMHitRange.begin())].end()) {
-                            //     continue;
-                            // }
-                            siPMHitData.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>());
-                            *Get<"t">(*siPMHitData.back()) = *Get<"t">(*siPMHitRange[j]);
-                            *Get<"EvtID">(*siPMHitData.back()) = *Get<"EvtID">(*siPMHitRange[j]);
-                            *Get<"SiPMID">(*siPMHitData.back()) = *Get<"SiPMID">(*siPMHitRange[j]);
-
-                            while ([&] {
-                                if (j >= std::ssize(siPMHitRange)) {
-                                    return false;
-                                } else {
-                                    return (j < std::ssize(siPMHitRange) && *Get<"t">(*siPMHitRange[j]) < endTime);
-                                }
-                            }()) {
+                            auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
+                            *Get<"t">(*sciFiHit) = *Get<"t">(*sciFiHitRange[j]);
+                            *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*sciFiHitRange[j]);
+                            *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*sciFiHitRange[j]);
+                            sciFiHitData.emplace_back(std::move(sciFiHit));
+                            while (j < std::ssize(sciFiHitRange) and *Get<"t">(*sciFiHitRange[j]) < endTime) {
                                 count++;
                                 j++;
                             }
-                            *Get<"nOptPho">(*siPMHitData.back()) = count;
+                            *Get<"nOptPho">(*sciFiHitData.back()) = count;
                             count = 0;
-                            if (j < std::ssize(siPMHitRange)) {
-                                initialTime = endTime + sciFiTracker.DeadTime();
+                            if (j < std::ssize(sciFiHitRange)) {
+                                initialTime = endTime + sciFiTracker.SiPMDeadTime();
                                 endTime = initialTime + sciFiTracker.ThresholdTime();
                             }
                         }
-                    } else if (j < std::ssize(siPMHitRange)) {
-                        while ([&] {
-                            if ((j) >= std::ssize(siPMHitRange)) {
-                                return false;
-                            } else {
-                                return ((j) < std::ssize(siPMHitRange) && *Get<"t">(*siPMHitRange[j]) < endTime);
-                            }
-                        }()) {
-                            if (j < std::ssize(siPMHitRange)) {
-                                j++;
-                            }
+                    } else if (j < std::ssize(sciFiHitRange)) {
+                        while (j < std::ssize(sciFiHitRange) and *Get<"t">(*sciFiHitRange[j]) < endTime) {
+                            j++;
                         }
 
-                        if (j < std::ssize(siPMHitRange)) {
-                            if (initialTime < *Get<"t">(*siPMHitRange[j]))
-                                initialTime = *Get<"t">(*siPMHitRange[j]);
+                        if (initialTime < *Get<"t">(*sciFiHitRange[j])) {
+                            initialTime = *Get<"t">(*sciFiHitRange[j]);
                         }
+
                         endTime = initialTime + sciFiTracker.ThresholdTime();
                         count = 0;
                     } else {
@@ -151,46 +144,8 @@ auto ReconSciFi::Main(int argc, char* argv[]) const -> int {
                     }
                 }
             }
-            auto cluster{HitNumber(siPMHitData, sciFiTracker.ThresholdTime())};
-            auto divHit{DividedHit(cluster, sciFiTracker.ThresholdTime())};
-            auto initialPosition{PositionTransform(divHit, muc::array3d{})};
-            for (auto&& initialclusterList : initialPosition) {
-                std::vector<muc::array3d> point;
-                std::vector<std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>>> hit;
-                for (auto&& initialcluster : initialclusterList) {
-                    point.push_back(initialcluster.first);
-                    hit.push_back(initialcluster.second);
-                }
-
-                int count{};
-                muc::array3d t{};
-                while (count < 50) {
-                    muc::array3d initialDir;
-                    std::tie(std::ignore, initialDir, std::ignore) = DirectionFit(point);
-                    // std::cout << initialDir[0] << " " << initialDir[1] << " " << initialDir[2] << std::endl;
-                    point.clear();
-                    // hit.clear();
-                    auto position{PositionTransform(hit, initialDir)};
-                    for (auto&& clusterList : position) {
-                        for (auto&& cluster : clusterList) {
-                            point.push_back(cluster.first);
-                            // hit.push_back(cluster.second);
-                        }
-                    }
-                    if (muc::ranges::inner_product(t, initialDir.cbegin(), 0.) > 0.99999) {
-                        break;
-                    }
-                    t = initialDir;
-                    count++;
-                }
-                auto [initialS, initialP, initialChi2] = DirectionFit(point);
-                if (std::ssize(hit) >= 4) {
-                    auto momentum = TrackFit(hit, initialS, initialP, initialChi2);
-                    reconTrack.Fill(std::move(momentum));
-                }
-            }
         });
-    reconTrack.Write();
+    trackOutput.Write();
     return EXIT_SUCCESS;
 }
 } // namespace MACE::PhaseI::ReconSciFi

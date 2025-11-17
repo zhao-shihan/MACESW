@@ -1,7 +1,24 @@
+# Copyright (C) 2020-2025  MACESW developers
+#
+# This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+# offline software.
+#
+# MACESW is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 # This file is included before "find_package"s and "LookFor"s.
 
 # =============================================================================
-# MACE build type
+# MACESW build type
 # =============================================================================
 
 if(DEFINED CMAKE_CONFIGURATION_TYPES)
@@ -20,15 +37,15 @@ else()
         set(CMAKE_BUILD_TYPE "Release")
     endif()
     string(TOLOWER ${CMAKE_BUILD_TYPE} LOWERCASED_CMAKE_BUILD_TYPE)
-    message(STATUS "MACE build type: ${CMAKE_BUILD_TYPE}")
+    message(STATUS "MACESW build type: ${CMAKE_BUILD_TYPE}")
 endif()
 
 # =============================================================================
 # Select MSVC runtime library
 # =============================================================================
 
-# Respect to MACE_USE_SHARED_MSVC_RT
-if(MACE_USE_SHARED_MSVC_RT)
+# Respect to MACESW_USE_SHARED_MSVC_RT
+if(MACESW_USE_SHARED_MSVC_RT)
     set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
 else()
     set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
@@ -38,7 +55,7 @@ endif()
 # AddressSanitizer
 # =============================================================================
 
-if(MACE_ENABLE_ASAN_IN_DEBUG_BUILD)
+if(MACESW_ENABLE_ASAN_IN_DEBUG_BUILD)
     if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|IntelLLVM)$")
         add_compile_options($<$<CONFIG:Debug>:-fsanitize=undefined>
                             $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
@@ -64,7 +81,7 @@ endif()
 # UndefinedBehaviorSanitizer
 # =============================================================================
 
-if(MACE_ENABLE_UBSAN_IN_DEBUG_BUILD)
+if(MACESW_ENABLE_UBSAN_IN_DEBUG_BUILD)
     if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|IntelLLVM)$")
         add_compile_options($<$<CONFIG:Debug>:-fsanitize=undefined> $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
                             $<$<CONFIG:RelWithDebInfo>:-fsanitize=undefined>)
@@ -86,7 +103,7 @@ endif()
 # Add debug information
 # =============================================================================
 
-if(MACE_WITH_DEBUG_INFO)
+if(MACESW_WITH_DEBUG_INFO)
     add_compile_options($<$<C_COMPILER_ID:GNU,Clang>:-g>   
                         $<$<CXX_COMPILER_ID:GNU,Clang>:-g> 
                         $<$<C_COMPILER_ID:MSVC>:/Zi> 

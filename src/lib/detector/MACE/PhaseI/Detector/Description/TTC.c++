@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/PhaseI/Detector/Description/TTC.h++"
 
 #include "Mustard/Utility/LiteralUnit.h++"
@@ -22,10 +41,10 @@ TTC::TTC() : // clang-format off
     fLength{this, 5.5_cm},
     fWidth{this, 5_cm},
     fThickness{this, 0.5_cm},
-    fRadius{this, {8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm,8.5_cm}},
+    fRadius{this, {8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm}},
     fSlantAngle{this, 17_deg},
-    fNAlongPhi{this, {12,12,12,12,12,12,12,12,12}},
-    fZPosition{this, {-20.6_cm,-15.45_cm,-10.3_cm,-5.15_cm,0_cm,5.15_cm,10.3_cm,15.45_cm,20.6_cm}},
+    fNAlongPhi{this, {12, 12, 12, 12, 12, 12, 12, 12, 12}},
+    fZPosition{this, {-20.6_cm, -15.45_cm, -10.3_cm, -5.15_cm, 0_cm, 5.15_cm, 10.3_cm, 15.45_cm, 20.6_cm}},
     fBarrelLength{this, 30_cm},
 
     fPCBLength{this, 3_cm},
@@ -198,4 +217,4 @@ auto TTC::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fCathodeSurface, "CathodeSurface");
 }
 
-} // namespace MACE::Detector::Description
+} // namespace MACE::PhaseI::Detector::Description

@@ -4,7 +4,7 @@
 /tracking/verbose 0
 
 /MACE/Physics/UseRadioactiveDecayPhysics
-/MACE/Physics/UseOpticalPhysics
+#/MACE/Physics/UseOpticalPhysics
 
 /run/initialize
 

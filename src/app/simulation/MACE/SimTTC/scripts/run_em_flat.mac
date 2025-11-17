@@ -6,11 +6,11 @@
 /run/verbose 0
 
 
-/Mustard/Detector/Description/Ixport SimTTC/SimTTC.yaml
+#/Mustard/Detector/Description/Ixport SimTTC/SimTTC.yaml
 
-/MACE/Physics/UseOpticalPhysics
+#/MACE/Physics/UseOpticalPhysics
 /run/initialize
-/process/optical/scintillation/setFiniteRiseTime true
+#/process/optical/scintillation/setFiniteRiseTime true
 
 
 /MACE/Generator/SwitchToGPSX
@@ -31,7 +31,10 @@
 # Run
 #############################################################################
 
-/Mustard/Analysis/FilePath SimTTC_em_flat.root
+/Mustard/Analysis/FilePath SimTTC_em_flat_test.root
 /Mustard/Analysis/FileMode NEW
-/run/beamOn 10000
+#/run/beamOn 10000
+
+/run/beamOn 1000000
+
 /Mustard/Run/PrintRunSummary

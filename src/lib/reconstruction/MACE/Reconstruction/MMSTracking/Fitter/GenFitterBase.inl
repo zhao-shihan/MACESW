@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 namespace MACE::inline Reconstruction::MMSTracking::inline Fitter {
 
 template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
@@ -57,7 +76,7 @@ template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
 template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
     requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPointer>& hitData, ASeedPointer seed)
+auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed)
     -> std::pair<std::shared_ptr<genfit::Track>,
                  muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>> {
     if (Mustard::Math::NormSq(*Get<"p0">(*seed)) < muc::pow(fLowestMomentum, 2)) {
@@ -91,30 +110,29 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                                                       cell.cellID,
                                                       Get<"HitID">(*hit),
                                                       nullptr};
-            } else {
-                TVectorD rawHitCoords(7);
-                rawHitCoords[0] = Mustard::ToG3<"Length">(wireStartPoint.x());
-                rawHitCoords[1] = Mustard::ToG3<"Length">(wireStartPoint.y());
-                rawHitCoords[2] = Mustard::ToG3<"Length">(wireStartPoint.z());
-                rawHitCoords[3] = Mustard::ToG3<"Length">(wireEndPoint.x());
-                rawHitCoords[4] = Mustard::ToG3<"Length">(wireEndPoint.y());
-                rawHitCoords[5] = Mustard::ToG3<"Length">(wireEndPoint.z());
-                rawHitCoords[6] = Mustard::ToG3<"Length">(*Get<"d">(*hit));
-
-                TMatrixDSym rawHitCov(7);
-                const auto varD{muc::pow(Mustard::ToG3<"Length">(this->DriftErrorRMS()), 2)};
-                rawHitCov(0, 0) = varD;
-                rawHitCov(1, 1) = varD;
-                rawHitCov(2, 2) = varD;
-                rawHitCov(3, 3) = varD;
-                rawHitCov(4, 4) = varD;
-                rawHitCov(5, 5) = varD;
-                rawHitCov(6, 6) = varD;
-
-                return new genfit::WireMeasurement{rawHitCoords, rawHitCov,
-                                                   cell.cellID, Get<"HitID">(*hit),
-                                                   nullptr};
             }
+            TVectorD rawHitCoords(7);
+            rawHitCoords[0] = Mustard::ToG3<"Length">(wireStartPoint.x());
+            rawHitCoords[1] = Mustard::ToG3<"Length">(wireStartPoint.y());
+            rawHitCoords[2] = Mustard::ToG3<"Length">(wireStartPoint.z());
+            rawHitCoords[3] = Mustard::ToG3<"Length">(wireEndPoint.x());
+            rawHitCoords[4] = Mustard::ToG3<"Length">(wireEndPoint.y());
+            rawHitCoords[5] = Mustard::ToG3<"Length">(wireEndPoint.z());
+            rawHitCoords[6] = Mustard::ToG3<"Length">(*Get<"d">(*hit));
+
+            TMatrixDSym rawHitCov(7);
+            const auto varD{muc::pow(Mustard::ToG3<"Length">(this->DriftErrorRMS()), 2)};
+            rawHitCov(0, 0) = varD;
+            rawHitCov(1, 1) = varD;
+            rawHitCov(2, 2) = varD;
+            rawHitCov(3, 3) = varD;
+            rawHitCov(4, 4) = varD;
+            rawHitCov(5, 5) = varD;
+            rawHitCov(6, 6) = varD;
+
+            return new genfit::WireMeasurement{rawHitCoords, rawHitCov,
+                                               cell.cellID, Get<"HitID">(*hit),
+                                               nullptr};
         }()};
         genfitTrack->insertPoint(new genfit::TrackPoint{measurement, genfitTrack.get()});
         measurementHitMap.emplace(measurement, hit);
@@ -129,7 +147,7 @@ template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
 template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
     requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, ASeedPointer seed,
+auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, const ASeedPointer& seed,
                                                     const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
     const auto& status{*genfitTrack->getFitStatus()};
@@ -137,7 +155,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
         return {};
     }
 
-    const genfit::MeasuredStateOnPlane* firstState;
+    const genfit::MeasuredStateOnPlane* firstState{};
     try {
         firstState = &genfitTrack->getFittedState();
     } catch (const genfit::Exception&) {
@@ -200,7 +218,7 @@ template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
          std::derived_from<genfit::AbsFitter> AFitter>
 template<Mustard::Concept::NumericVector3FloatingPoint T>
 MUSTARD_ALWAYS_INLINE auto GenFitterBase<AHit, ATrack, AFitter>::ToTVector3(T src) -> TVector3 {
-    TVector3 dest;
+    TVector3 dest{};
     dest[0] = src[0];
     dest[1] = src[1];
     dest[2] = src[2];
@@ -212,7 +230,7 @@ template<Mustard::Data::SuperTupleModel<Data::CDCHit> AHit,
          std::derived_from<genfit::AbsFitter> AFitter>
 template<Mustard::Concept::NumericVector3FloatingPoint T>
 MUSTARD_ALWAYS_INLINE auto GenFitterBase<AHit, ATrack, AFitter>::FromTVector3(const TVector3& src) -> T {
-    T dest;
+    T dest{};
     dest[0] = src[0];
     dest[1] = src[1];
     dest[2] = src[2];

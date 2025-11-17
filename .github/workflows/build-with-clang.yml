@@ -2,9 +2,8 @@ name: Build (AMD64 GNU/Linux Clang, unity build)
 
 on:
   push:
-    branches-ignore:
-      - main
-      - rc
+    branches:
+      - "**"
     paths:
       - ".github/workflows/build-with-clang.yml"
       - "src/**"

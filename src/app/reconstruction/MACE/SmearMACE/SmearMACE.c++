@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Data/MMSTrack.h++"
 #include "MACE/Data/SimHit.h++"
 #include "MACE/SmearMACE/CLI.h++"
@@ -52,7 +71,7 @@ auto SmearMACE::Main(int argc, char* argv[]) const -> int {
             break;
         }
         std::stringstream smearingConfigText;
-        const auto AppendConfigText{
+        const auto appendConfigText{
             [&](const auto& nameInConfigText, const auto& smearingConfig, const auto& identity) {
                 if (smearingConfig.empty() and not identity) {
                     return;
@@ -64,11 +83,11 @@ auto SmearMACE::Main(int argc, char* argv[]) const -> int {
                     }
                 }
             }};
-        AppendConfigText("CDCSimHit", cli.CDCSimHitSmearingConfig(), cli.CDCSimHitIdentity());
-        AppendConfigText("TTCSimHit", cli.TTCSimHitSmearingConfig(), cli.TTCSimHitIdentity());
-        AppendConfigText("MMSSimTrack", cli.MMSSimTrackSmearingConfig(), cli.MMSSimTrackIdentity());
-        AppendConfigText("MCPSimHit", cli.MCPSimHitSmearingConfig(), cli.MCPSimHitIdentity());
-        AppendConfigText("ECALSimHit", cli.ECALSimHitSmearingConfig(), cli.ECALSimHitIdentity());
+        appendConfigText("CDCSimHit", cli.CDCSimHitSmearingConfig(), cli.CDCSimHitIdentity());
+        appendConfigText("TTCSimHit", cli.TTCSimHitSmearingConfig(), cli.TTCSimHitIdentity());
+        appendConfigText("MMSSimTrack", cli.MMSSimTrackSmearingConfig(), cli.MMSSimTrackIdentity());
+        appendConfigText("MCPSimHit", cli.MCPSimHitSmearingConfig(), cli.MCPSimHitIdentity());
+        appendConfigText("ECALSimHit", cli.ECALSimHitSmearingConfig(), cli.ECALSimHitIdentity());
         Mustard::ROOTX::MakeTextTMacro(smearingConfigText.str(), "SmearingConfig", "Print SmearMACE smearing configuration")->Write();
     } while (false);
     {
@@ -76,7 +95,7 @@ auto SmearMACE::Main(int argc, char* argv[]) const -> int {
 
         Smearer smearer{cli.InputFilePath(), processor};
         const auto [iFirst, iLast]{cli.DatasetIndexRange()};
-        const auto Smear{
+        const auto smear{
             [&, iFirst = iFirst, iLast = iLast]<
                 typename... Ts>(std::type_identity<Ts...>, const auto& nameFmt, const auto& smearingConfig, const auto& identity) {
                 if (not smearingConfig.empty() or identity) {
@@ -86,11 +105,11 @@ auto SmearMACE::Main(int argc, char* argv[]) const -> int {
                 }
             }};
 
-        Smear(std::type_identity<Data::CDCSimHit>{}, cli.CDCSimHitNameFormat(), cli.CDCSimHitSmearingConfig(), cli.CDCSimHitIdentity());
-        Smear(std::type_identity<Data::TTCSimHit>{}, cli.TTCSimHitNameFormat(), cli.TTCSimHitSmearingConfig(), cli.TTCSimHitIdentity());
-        Smear(std::type_identity<Data::MMSSimTrack>{}, cli.MMSSimTrackNameFormat(), cli.MMSSimTrackSmearingConfig(), cli.MMSSimTrackIdentity());
-        Smear(std::type_identity<Data::MCPSimHit>{}, cli.MCPSimHitNameFormat(), cli.MCPSimHitSmearingConfig(), cli.MCPSimHitIdentity());
-        Smear(std::type_identity<Data::ECALSimHit>{}, cli.ECALSimHitNameFormat(), cli.ECALSimHitSmearingConfig(), cli.ECALSimHitIdentity());
+        smear(std::type_identity<Data::CDCSimHit>{}, cli.CDCSimHitNameFormat(), cli.CDCSimHitSmearingConfig(), cli.CDCSimHitIdentity());
+        smear(std::type_identity<Data::TTCSimHit>{}, cli.TTCSimHitNameFormat(), cli.TTCSimHitSmearingConfig(), cli.TTCSimHitIdentity());
+        smear(std::type_identity<Data::MMSSimTrack>{}, cli.MMSSimTrackNameFormat(), cli.MMSSimTrackSmearingConfig(), cli.MMSSimTrackIdentity());
+        smear(std::type_identity<Data::MCPSimHit>{}, cli.MCPSimHitNameFormat(), cli.MCPSimHitSmearingConfig(), cli.MCPSimHitIdentity());
+        smear(std::type_identity<Data::ECALSimHit>{}, cli.ECALSimHitNameFormat(), cli.ECALSimHitSmearingConfig(), cli.ECALSimHitIdentity());
     }
 
     return EXIT_SUCCESS;

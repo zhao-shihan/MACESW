@@ -1,9 +1,29 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Definition/ECALCrystal.h++"
 #include "MACE/Detector/Definition/ECALPhotoSensor.h++"
 #include "MACE/Detector/Description/ECAL.h++"
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/Env/BasicEnv.h++"
+#include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
@@ -30,14 +50,6 @@ using namespace Mustard::LiteralUnit;
 using namespace Mustard::MathConstant;
 using namespace Mustard::PhysicalConstant;
 
-namespace {
-auto ComputeIntersection(G4ThreeVector vertexPlane, G4ThreeVector normPlane, G4ThreeVector vertexLine, G4ThreeVector direcLine) -> G4ThreeVector {
-    double lambda{
-        normPlane.dot(vertexPlane - vertexLine) / normPlane.dot(direcLine)};
-    return vertexLine + direcLine * lambda;
-}
-} // namespace
-
 auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
     const auto& ecal{Description::ECAL::Instance()};
     const auto name{ecal.Name()};
@@ -45,8 +57,8 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
     const auto innerRadius{ecal.InnerRadius()};
     const auto crystalHypotenuse{ecal.CrystalHypotenuse()};
 
-    const auto& vertex{ecal.Mesh().fVertex};
-    const auto& faceList{ecal.Mesh().fFaceList};
+    const auto& vertex{ecal.Mesh().vertexList};
+    const auto& faceList{ecal.Mesh().faceList};
 
     const auto& moduleSelection{ecal.ModuleSelection()};
 
@@ -108,28 +120,41 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
     /////////////////////////////////////////////
     // Construct Volumes
     /////////////////////////////////////////////
-
     for (int moduleID{};
-         auto&& [centroid, normal, vertexIndex] : std::as_const(faceList)) {
+         auto&& [centroid, normal, vertexIndex, _1, _2] : std::as_const(faceList)) {
         // loop over all ECAL face
         // centroid here refer to the face 'center' of normalized ball
 
-        if ((not moduleSelection.empty()) and std::find(moduleSelection.begin(), moduleSelection.end(), moduleID) == moduleSelection.end()) {
+        if ((not moduleSelection.empty()) and std::ranges::find(moduleSelection, moduleID) == moduleSelection.end()) {
             moduleID++;
             continue;
         }
 
-        const auto SolidCrystal{
+        const auto solidCrystal{
             [&, &centroid = centroid, &vertexIndex = vertexIndex](const auto& name) {
-                const auto innerCentroid{innerRadius * centroid};
-                std::vector<G4ThreeVector> innerVertex(vertexIndex.size());
-                std::ranges::transform(vertexIndex, innerVertex.begin(),
-                                       [&](const auto& i) { return ComputeIntersection(innerCentroid, normal, vertex[i], vertex[i]); });
+                const auto computeIntersection{[](G4ThreeVector vertexPlane, G4ThreeVector normPlane, G4ThreeVector vertexLine, G4ThreeVector direcLine) {
+                    double lambda{normPlane.dot(vertexPlane - vertexLine) / normPlane.dot(direcLine)};
+                    return vertexLine + direcLine * lambda;
+                }};
+
                 const auto outerRadius{innerRadius + crystalHypotenuse};
                 const auto outerCentroid{outerRadius * centroid};
-                std::vector<G4ThreeVector> outerVertex(vertexIndex.size());
-                std::ranges::transform(vertexIndex, outerVertex.begin(),
-                                       [&](const auto& i) { return ComputeIntersection(outerCentroid, normal, vertex[i], vertex[i]); });
+                std::vector<G4ThreeVector> outerVertexes(vertexIndex.size());
+                // outer face cut vertex lines
+                std::ranges::transform(vertexIndex, outerVertexes.begin(),
+                                       [&](const auto& i) { return computeIntersection(outerCentroid, normal, vertex[i], vertex[i]); });
+                // consider package thickness
+                std::ranges::transform(outerVertexes, outerVertexes.begin(),
+                                       [&](const auto& aVertex) { return outerCentroid + (aVertex - outerCentroid).unit() * ((aVertex - outerCentroid).mag() - ecal.CrystalPackageThickness()); });
+                // inner face scaled from outer face
+                const auto innerCentroid{innerRadius * centroid};
+                if (Mustard::Env::VerboseLevelReach<'V'>()) {
+                    Mustard::MasterPrintLn("{}\t{}\t{}\t{}", moduleID, innerCentroid.x(), innerCentroid.y(), innerCentroid.z());
+                }
+                const auto innerVertexScaleFactor{innerRadius / outerRadius};
+                std::vector<G4ThreeVector> innerVertexes(vertexIndex.size());
+                std::ranges::transform(outerVertexes, innerVertexes.begin(),
+                                       [&](const auto& anOuterVertex) { return anOuterVertex * innerVertexScaleFactor; });
 
                 // clang-format off
                 /* Pentagon:
@@ -151,38 +176,38 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
                 const auto solid{Make<G4TessellatedSolid>(name)};
                 // inner surface
                 solid->AddFacet(new G4TriangularFacet{innerCentroid,
-                                                      innerVertex[0],
-                                                      innerVertex[vertexIndex.size() - 1],
+                                                      innerVertexes[0],
+                                                      innerVertexes[vertexIndex.size() - 1],
                                                       G4FacetVertexType::ABSOLUTE});
                 for (auto i{std::ssize(vertexIndex) - 1}; i > 0; --i) {
                     solid->AddFacet(new G4TriangularFacet{innerCentroid,
-                                                          innerVertex[i],
-                                                          innerVertex[i - 1],
+                                                          innerVertexes[i],
+                                                          innerVertexes[i - 1],
                                                           G4FacetVertexType::ABSOLUTE});
                 }
                 // side surface
                 for (int i{}; i < std::ssize(vertexIndex) - 1; ++i) {
-                    solid->AddFacet(new G4QuadrangularFacet{innerVertex[i],
-                                                            innerVertex[i + 1],
-                                                            outerVertex[i + 1],
-                                                            outerVertex[i],
+                    solid->AddFacet(new G4QuadrangularFacet{innerVertexes[i],
+                                                            innerVertexes[i + 1],
+                                                            outerVertexes[i + 1],
+                                                            outerVertexes[i],
                                                             G4FacetVertexType::ABSOLUTE});
                 }
-                solid->AddFacet(new G4QuadrangularFacet{innerVertex[vertexIndex.size() - 1],
-                                                        innerVertex[0],
-                                                        outerVertex[0],
-                                                        outerVertex[vertexIndex.size() - 1],
+                solid->AddFacet(new G4QuadrangularFacet{innerVertexes[vertexIndex.size() - 1],
+                                                        innerVertexes[0],
+                                                        outerVertexes[0],
+                                                        outerVertexes[vertexIndex.size() - 1],
                                                         G4FacetVertexType::ABSOLUTE});
                 // outer surface
                 for (int i{}; i < std::ssize(vertexIndex) - 1; ++i) {
                     solid->AddFacet(new G4TriangularFacet{outerCentroid,
-                                                          outerVertex[i],
-                                                          outerVertex[i + 1],
+                                                          outerVertexes[i],
+                                                          outerVertexes[i + 1],
                                                           G4FacetVertexType::ABSOLUTE});
                 }
                 solid->AddFacet(new G4TriangularFacet{outerCentroid,
-                                                      outerVertex[vertexIndex.size() - 1],
-                                                      outerVertex[0],
+                                                      outerVertexes[vertexIndex.size() - 1],
+                                                      outerVertexes[0],
                                                       G4FacetVertexType::ABSOLUTE});
                 solid->SetSolidClosed(true);
                 return solid;
@@ -192,14 +217,14 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
 
         const auto logicCrystal{
             Make<G4LogicalVolume>(
-                SolidCrystal(fmt::format("ECALCrystal_{}", moduleID)),
+                solidCrystal(fmt::format("{}Crystal_{}", name, moduleID)),
                 lyso,
-                "ECALCrystal")};
+                name + "Crystal")};
         const auto physicalCrystal{
             Make<G4PVPlacement>(
                 G4Transform3D{},
                 logicCrystal,
-                fmt::format("ECALCrystal_{}", moduleID),
+                fmt::format("{}Crystal_{}", name, moduleID),
                 Mother().LogicalVolume(),
                 true,
                 moduleID,
@@ -222,7 +247,7 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
             const auto couplerSurface{new G4OpticalSurface("coupler", unified, polished, dielectric_dielectric)};
             new G4LogicalBorderSurface{"couplerSurface",
                                        physicalCrystal,
-                                       ecalPMCoupler->PhysicalVolume("ECALPMCoupler", moduleID),
+                                       ecalPMCoupler->PhysicalVolume(name + "PMCoupler", moduleID),
                                        couplerSurface};
             couplerSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
         }

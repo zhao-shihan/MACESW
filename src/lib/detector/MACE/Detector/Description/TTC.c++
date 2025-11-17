@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Description/TTC.h++"
 
 #include "Mustard/Utility/LiteralUnit.h++"
@@ -108,7 +127,7 @@ auto TTC::CalculateWidth() -> std::vector<double> {
         dequeWidth.push_front(fWidthUp);
         dequeWidth.push_back(fWidthUp);
     }
-    return std::vector<double>(dequeWidth.begin(), dequeWidth.end());
+    return {dequeWidth.begin(), dequeWidth.end()};
 }
 
 auto TTC::CalculatePosition() -> std::vector<muc::array3d> {
@@ -128,7 +147,7 @@ auto TTC::CalculatePosition() -> std::vector<muc::array3d> {
         dequePosition.push_front(muc::array3d{fRadius, 0, -1 * (fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp)});
         dequePosition.push_back(muc::array3d{fRadius, 0, fRadius / std::tan(std::acos(nFinalSameSolidAngle * omega / (2 * pi))) + (nWidthUp - nFinalSameSolidAngle - 0.5) * fWidthUp});
     }
-    return std::vector<muc::array3d>(dequePosition.begin(), dequePosition.end());
+    return {dequePosition.begin(), dequePosition.end()};
 }
 
 auto TTC::ImportAllValue(const YAML::Node& node) -> void {

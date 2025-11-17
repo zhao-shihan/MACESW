@@ -3,61 +3,61 @@
 # 2. Replace <LIB_NAME> with a full uppercase name same as (or at least similar to, if not convenient) <lib_cmake_name>  (e.g. for yaml-cpp it is YAML_CPP, for Microsoft-GSL it is MSGSL).
 # 3. Replace <lib_name> with the full lowercase version of <LIB_NAME>.
 # 4. Replace <min_version> with the minimum version required for this library.
-# 5. Replace <src_dir_with_version> with the directory name same as what the library archive extracts to, which should includes ${MACE_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is yaml-cpp-${MACE_BUILTIN_YAML_CPP_VERSION}).
-# 6. Replace <url_with_version> with the library archive download URL template, which should includes ${MACE_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is https://github.com/jbeder/yaml-cpp/archive/refs/tags/${MACE_BUILTIN_<LIB_NAME>_VERSION}.tar.gz)
+# 5. Replace <src_dir_with_version> with the directory name same as what the library archive extracts to, which should includes ${MACESW_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is yaml-cpp-${MACESW_BUILTIN_YAML_CPP_VERSION}).
+# 6. Replace <url_with_version> with the library archive download URL template, which should includes ${MACESW_BUILTIN_<LIB_NAME>_VERSION} indicates the library version (e.g. for yaml-cpp it is https://github.com/jbeder/yaml-cpp/archive/refs/tags/${MACESW_BUILTIN_<LIB_NAME>_VERSION}.tar.gz)
 # 7. Add proper options between "reuse or download" section and "configure it" section.
-# 8. Set options MACE_BUILTIN_<LIB_NAME> and MACE_BUILTIN_<LIB_NAME>_VERSION in the main CMakeLists.txt.
+# 8. Set options MACESW_BUILTIN_<LIB_NAME> and MACESW_BUILTIN_<LIB_NAME>_VERSION in the main CMakeLists.txt.
 # 9. Add a find_dependency(<lib_cmake_name>) line to ${CMAKE_PROJECT_NAME}Config.cmake.in in need.
 # 10. Delete this guide text, and make other parts of this file prettier.
 
 message(STATUS "Looking for <lib_cmake_name>")
 
-set(MACE_<LIB_NAME>_MINIMUM_REQUIRED <min_version>)
+set(MACESW_<LIB_NAME>_MINIMUM_REQUIRED <min_version>)
 
-if(NOT MACE_BUILTIN_<LIB_NAME>)
-    find_package(<lib_cmake_name> ${MACE_<LIB_NAME>_MINIMUM_REQUIRED})
+if(NOT MACESW_BUILTIN_<LIB_NAME>)
+    find_package(<lib_cmake_name> ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED})
     if(NOT <lib_cmake_name>_FOUND)
-        set(MACE_BUILTIN_<LIB_NAME> ON)
-        message(NOTICE "***Notice: <lib_cmake_name> not found (minimum required is ${MACE_<LIB_NAME>_MINIMUM_REQUIRED}). For the time turning on MACE_BUILTIN_<LIB_NAME>")
+        set(MACESW_BUILTIN_<LIB_NAME> ON)
+        message(NOTICE "***Notice: <lib_cmake_name> not found (minimum required is ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED}). For the time turning on MACESW_BUILTIN_<LIB_NAME>")
     endif()
 endif()
 
-if(MACE_BUILTIN_<LIB_NAME>)
-    message(STATUS "MACE will use built-in <lib_cmake_name>")
+if(MACESW_BUILTIN_<LIB_NAME>)
+    message(STATUS "MACESW will use built-in <lib_cmake_name>")
     # check built-in version
-    if(MACE_BUILTIN_<LIB_NAME>_VERSION VERSION_LESS MACE_<LIB_NAME>_MINIMUM_REQUIRED)
-        message(NOTICE "***Notice: Provided MACE_BUILTIN_<LIB_NAME>_VERSION is ${MACE_BUILTIN_<LIB_NAME>_VERSION}, which is less than the requirement (${MACE_<LIB_NAME>_MINIMUM_REQUIRED}). Changing to ${MACE_<LIB_NAME>_MINIMUM_REQUIRED}")
-        set(MACE_BUILTIN_<LIB_NAME>_VERSION ${MACE_<LIB_NAME>_MINIMUM_REQUIRED})
+    if(MACESW_BUILTIN_<LIB_NAME>_VERSION VERSION_LESS MACESW_<LIB_NAME>_MINIMUM_REQUIRED)
+        message(NOTICE "***Notice: Provided MACESW_BUILTIN_<LIB_NAME>_VERSION is ${MACESW_BUILTIN_<LIB_NAME>_VERSION}, which is less than the requirement (${MACESW_<LIB_NAME>_MINIMUM_REQUIRED}). Changing to ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED}")
+        set(MACESW_BUILTIN_<LIB_NAME>_VERSION ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED})
     endif()
     # set download dest and URL
-    set(MACE_BUILTIN_<LIB_NAME>_SRC_DIR "${MACE_PROJECT_3RDPARTY_DIR}/<src_dir_with_version>")
-    set(MACE_BUILTIN_<LIB_NAME>_URL "<url_with_version>")
+    set(MACESW_BUILTIN_<LIB_NAME>_SRC_DIR "${MACESW_PROJECT_3RDPARTY_DIR}/<src_dir_with_version>")
+    set(MACESW_BUILTIN_<LIB_NAME>_URL "<url_with_version>")
     # reuse or download
     include(FetchContent)
-    if(EXISTS "${MACE_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
-        FetchContent_Declare(<lib_cmake_name> SOURCE_DIR "${MACE_BUILTIN_<LIB_NAME>_SRC_DIR}")
-        message(STATUS "Reusing <lib_cmake_name> source ${MACE_BUILTIN_<LIB_NAME>_SRC_DIR}")
+    if(EXISTS "${MACESW_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
+        FetchContent_Declare(<lib_cmake_name> SOURCE_DIR "${MACESW_BUILTIN_<LIB_NAME>_SRC_DIR}")
+        message(STATUS "Reusing <lib_cmake_name> source ${MACESW_BUILTIN_<LIB_NAME>_SRC_DIR}")
     else()
-        FetchContent_Declare(<lib_cmake_name> SOURCE_DIR "${MACE_BUILTIN_<LIB_NAME>_SRC_DIR}"
-                                    URL "${MACE_BUILTIN_<LIB_NAME>_URL}")
-        message(STATUS "<lib_cmake_name> will be downloaded from ${MACE_BUILTIN_<LIB_NAME>_URL} to ${MACE_BUILTIN_<LIB_NAME>_SRC_DIR}")
+        FetchContent_Declare(<lib_cmake_name> SOURCE_DIR "${MACESW_BUILTIN_<LIB_NAME>_SRC_DIR}"
+                                              URL "${MACESW_BUILTIN_<LIB_NAME>_URL}")
+        message(STATUS "<lib_cmake_name> will be downloaded from ${MACESW_BUILTIN_<LIB_NAME>_URL} to ${MACESW_BUILTIN_<LIB_NAME>_SRC_DIR}")
     endif()
     # set options
     # uses CACHE INTERNAL variables to propagate options. see https://discourse.cmake.org/t/what-is-the-correct-way-to-set-options-of-a-project-before-fetch-content/268/4
     # configure it
-    message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MACE_BUILTIN_<LIB_NAME>_VERSION})")
+    message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MACESW_BUILTIN_<LIB_NAME>_VERSION})")
     FetchContent_MakeAvailable(<lib_cmake_name>)
-    message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MACE_BUILTIN_<LIB_NAME>_VERSION}) - done")
+    message(STATUS "Downloading (if required) and configuring <lib_cmake_name> (version: ${MACESW_BUILTIN_<LIB_NAME>_VERSION}) - done")
     # check download
-    if(NOT EXISTS "${MACE_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
+    if(NOT EXISTS "${MACESW_BUILTIN_<LIB_NAME>_SRC_DIR}/CMakeLists.txt")
         file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-build")
         file(REMOVE_RECURSE "${CMAKE_BINARY_DIR}/_deps/<lib_name>-subbuild")
-        message(FATAL_ERROR "It seems that the download of <lib_cmake_name> has failed. You can try running cmake again, or manually download <lib_cmake_name> from ${MACE_BUILTIN_<LIB_NAME>_URL} and extract it to ${MACE_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
+        message(FATAL_ERROR "It seems that the download of <lib_cmake_name> has failed. You can try running cmake again, or manually download <lib_cmake_name> from ${MACESW_BUILTIN_<LIB_NAME>_URL} and extract it to ${MACESW_PROJECT_3RDPARTY_DIR} (and keep the directory structure). If the error persists, you can try cleaning the build tree and restarting the build.")
     endif()
 endif()
 
-if(NOT MACE_BUILTIN_<LIB_NAME>)
+if(NOT MACESW_BUILTIN_<LIB_NAME>)
     message(STATUS "Looking for <lib_cmake_name> - found (version: ${<lib_cmake_name>_VERSION})")
 else()
-    message(STATUS "Looking for <lib_cmake_name> - built-in (version: ${MACE_BUILTIN_<LIB_NAME>_VERSION})")
+    message(STATUS "Looking for <lib_cmake_name> - built-in (version: ${MACESW_BUILTIN_<LIB_NAME>_VERSION})")
 endif()

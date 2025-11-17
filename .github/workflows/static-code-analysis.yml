@@ -2,9 +2,8 @@ name: Static code analysis
 
 on:
   push:
-    branches-ignore:
-      - main
-      - rc
+    branches:
+      - "**"
     paths:
       - ".github/workflows/static-code-analysis.yml"
       - "src/**"

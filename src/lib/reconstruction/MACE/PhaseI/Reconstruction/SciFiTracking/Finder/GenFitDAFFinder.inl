@@ -56,7 +56,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::ClusterHits(std::vector<AHitPointer>& h
             clusterList,
             [&](auto&& cluster) {
                 return std::ranges::any_of(cluster, [&](auto&& element) {
-                    return std::abs(Get<"t">(*hit) - Get<"t">(*element)) < sciFiTracker.DeadTime() and
+                    return std::abs(Get<"t">(*hit) - Get<"t">(*element)) < sciFiTracker.SiPMDeadTime() and
                            fiberMap[Get<"SiPMID">(*hit)].layerID / 2 == fiberMap[Get<"SiPMID">(*element)].layerID / 2 and
                            std::abs(fiberMap[Get<"SiPMID">(*hit)].localID -
                                     fiberMap[Get<"SiPMID">(*element)].localID) <= sciFiTracker.ClusterLength();

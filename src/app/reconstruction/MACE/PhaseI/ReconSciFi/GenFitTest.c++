@@ -126,74 +126,57 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     fitter.EnableEventDisplay(false);
 
     Mustard::Data::Processor processor;
-    processor.Process<PhaseI::Data::SciFiSiPMHit>(
-        ROOT::RDataFrame{"G4Run0/SciFiSiPMHit", fileName}, int{}, "EvtID",
+    processor.Process<PhaseI::Data::SciFiSimHit>(
+        ROOT::RDataFrame{"G4Run0/SciFiSimHit", fileName}, int{}, "EvtID",
         [&](bool byPass, auto&& event) {
             if (byPass) {
                 return;
             }
-            // if (*Get<"EvtID">(**event.begin()) >= 10) {
-            //     return;
-            // }
             muc::timsort(event,
                          [](auto&& hit1, auto&& hit2) {
-                             return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));
+                             return std::tie(Get<"FiberID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"FiberID">(*hit2), Get<"t">(*hit2));
                          });
 
-            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> siPMHitData;
-            for (std::ranges::subrange siPMHitRange{event.begin(), event.begin()};
-                 siPMHitRange.begin() != event.end();
-                 siPMHitRange = {siPMHitRange.end(), siPMHitRange.end()}) {
-                siPMHitRange = std::ranges::equal_range(siPMHitRange.begin(), event.end(), *Get<"SiPMID">(**siPMHitRange.begin()), std::less{},
-                                                        [](auto&& hit) { return Get<"SiPMID">(*hit); });
+            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
+            for (std::ranges::subrange sciFiHitRange{event.begin(), event.begin()};
+                 sciFiHitRange.begin() != event.end();
+                 sciFiHitRange = {sciFiHitRange.end(), sciFiHitRange.end()}) {
+                sciFiHitRange = std::ranges::equal_range(sciFiHitRange.begin(), event.end(), *Get<"FiberID">(**sciFiHitRange.begin()), std::less{},
+                                                         [](auto&& hit) { return Get<"FiberID">(*hit); });
                 int count = 0;
-                double initialTime = *Get<"t">(**siPMHitRange.begin());
+                double initialTime = *Get<"t">(**sciFiHitRange.begin());
                 double endTime = initialTime + sciFiTracker.ThresholdTime();
-                for (int j{}; j < std::ssize(siPMHitRange); ++j) {
-                    if (*Get<"t">(*siPMHitRange[j]) >= initialTime && *Get<"t">(*siPMHitRange[j]) < endTime) {
-                        initialTime = *Get<"t">(*siPMHitRange[j]);
+                for (int j{}; j < std::ssize(sciFiHitRange); ++j) {
+                    if (*Get<"t">(*sciFiHitRange[j]) >= initialTime and *Get<"t">(*sciFiHitRange[j]) < endTime) {
+                        initialTime = *Get<"t">(*sciFiHitRange[j]);
                         count++;
-                        if (count == sciFiTracker.Threshold()) {
+                        if (count == sciFiTracker.SiPMOpticalPhotonCountThreshold()) {
                             endTime = initialTime + sciFiTracker.TimeWindow();
-                            siPMHitData.emplace_back(std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>());
-                            *Get<"t">(*siPMHitData.back()) = *Get<"t">(*siPMHitRange[j]);
-                            *Get<"EvtID">(*siPMHitData.back()) = *Get<"EvtID">(*siPMHitRange[j]);
-                            *Get<"SiPMID">(*siPMHitData.back()) = *Get<"SiPMID">(*siPMHitRange[j]);
-
-                            while ([&] {
-                                if (j >= std::ssize(siPMHitRange)) {
-                                    return false;
-                                } else {
-                                    return (j < std::ssize(siPMHitRange) && *Get<"t">(*siPMHitRange[j]) < endTime);
-                                }
-                            }()) {
+                            auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
+                            *Get<"t">(*sciFiHit) = *Get<"t">(*sciFiHitRange[j]);
+                            *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*sciFiHitRange[j]);
+                            *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*sciFiHitRange[j]);
+                            sciFiHitData.emplace_back(std::move(sciFiHit));
+                            while (j < std::ssize(sciFiHitRange) and *Get<"t">(*sciFiHitRange[j]) < endTime) {
                                 count++;
                                 j++;
                             }
-                            *Get<"nOptPho">(*siPMHitData.back()) = count;
+                            *Get<"nOptPho">(*sciFiHitData.back()) = count;
                             count = 0;
-                            if (j < std::ssize(siPMHitRange)) {
-                                initialTime = endTime + sciFiTracker.DeadTime();
+                            if (j < std::ssize(sciFiHitRange)) {
+                                initialTime = endTime + sciFiTracker.SiPMDeadTime();
                                 endTime = initialTime + sciFiTracker.ThresholdTime();
                             }
                         }
-                    } else if (j < std::ssize(siPMHitRange)) {
-                        while ([&] {
-                            if (j >= std::ssize(siPMHitRange)) {
-                                return false;
-                            } else {
-                                return (j < std::ssize(siPMHitRange) && *Get<"t">(*siPMHitRange[j]) < endTime);
-                            }
-                        }()) {
-                            if (j < std::ssize(siPMHitRange)) {
-                                j++;
-                            }
+                    } else if (j < std::ssize(sciFiHitRange)) {
+                        while (j < std::ssize(sciFiHitRange) and *Get<"t">(*sciFiHitRange[j]) < endTime) {
+                            j++;
                         }
 
-                        if (j < std::ssize(siPMHitRange)) {
-                            if (initialTime < *Get<"t">(*siPMHitRange[j]))
-                                initialTime = *Get<"t">(*siPMHitRange[j]);
+                        if (initialTime < *Get<"t">(*sciFiHitRange[j])) {
+                            initialTime = *Get<"t">(*sciFiHitRange[j]);
                         }
+
                         endTime = initialTime + sciFiTracker.ThresholdTime();
                         count = 0;
                     } else {
@@ -203,7 +186,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
             }
 
             auto nextTrackID{0};
-            for (auto&& [trackID, good] : finder(siPMHitData, nextTrackID).good) {
+            for (auto&& [trackID, good] : finder(sciFiHitData, nextTrackID).good) {
                 const auto track{fitter(good.hitData, good.seed).track};
                 if (track == nullptr) {
                     continue;

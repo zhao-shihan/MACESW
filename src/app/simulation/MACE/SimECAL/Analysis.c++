@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/SimECAL/Action/PrimaryGeneratorAction.h++"
 #include "MACE/SimECAL/Action/TrackingAction.h++"
 #include "MACE/SimECAL/Analysis.h++"
@@ -7,29 +26,23 @@
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
-#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 
 #include "TFile.h"
 #include "TMacro.h"
 
-#include "mplr/mplr.hpp"
-
 #include "fmt/core.h"
 
 #include <algorithm>
+#include <optional>
 #include <stdexcept>
 
 namespace MACE::SimECAL {
 
 Analysis::Analysis() :
-    PassiveSingleton{this},
-    fFilePath{"SimECAL_untitled"},
-    fFileMode{"NEW"},
+    AnalysisBase{this},
     fCoincidenceWithECAL{true},
     fCoincidenceWithMCP{false},
-    fLastUsedFullFilePath{},
-    fFile{},
     fPrimaryVertexOutput{},
     fDecayVertexOutput{},
     fECALSimHitOutput{},
@@ -42,22 +55,7 @@ Analysis::Analysis() :
     fMCPHit{},
     fMessengerRegister{this} {}
 
-auto Analysis::RunBegin(G4int runID) -> void {
-    // open ROOT file
-    auto fullFilePath{Mustard::Parallel::ProcessSpecificPath(fFilePath).replace_extension(".root").generic_string()};
-    const auto filePathChanged{fullFilePath != fLastUsedFullFilePath};
-    fFile = TFile::Open(fullFilePath.c_str(), filePathChanged ? fFileMode.c_str() : "UPDATE",
-                        "", ROOT::RCompressionSetting::EDefaults::kUseGeneralPurpose);
-    if (fFile == nullptr) {
-        Mustard::Throw<std::runtime_error>(fmt::format("Cannot open file '{}' with mode '{}'",
-                                                       fullFilePath, fFileMode));
-    }
-    fLastUsedFullFilePath = std::move(fullFilePath);
-    // save geometry
-    if (filePathChanged and mplr::comm_world().rank() == 0) {
-        Mustard::Geant4X::ConvertGeometryToTMacro("SimECAL_gdml", "SimECAL.gdml")->Write();
-    }
-    // initialize outputs
+auto Analysis::RunBeginUserAction(int runID) -> void {
     if (PrimaryGeneratorAction::Instance().SavePrimaryVertexData()) {
         fPrimaryVertexOutput.emplace(fmt::format("G4Run{}/SimPrimaryVertex", runID));
     }
@@ -69,8 +67,8 @@ auto Analysis::RunBegin(G4int runID) -> void {
     fMCPSimHitOutput.emplace(fmt::format("G4Run{}/MCPSimHit", runID));
 }
 
-auto Analysis::EventEnd() -> void {
-    const auto ecalPassed{not fCoincidenceWithECAL or fECALHit == nullptr or fECALHit->size() > 0};
+auto Analysis::EventEndUserAction() -> void {
+    const auto ecalPassed{not fCoincidenceWithECAL or fECALHit == nullptr or not fECALHit->empty()};
     const auto mcpPassed{not fCoincidenceWithMCP or fMCPHit == nullptr or std::ranges::any_of(*fMCPHit, [](auto&& hit) { return Get<"Trig">(*hit); })};
     if (ecalPassed and mcpPassed) {
         if (fPrimaryVertex and fPrimaryVertexOutput) {
@@ -96,7 +94,7 @@ auto Analysis::EventEnd() -> void {
     fMCPHit = {};
 }
 
-auto Analysis::RunEnd(Option_t* option) -> void {
+auto Analysis::RunEndUserAction(int) -> void {
     // write data
     if (fPrimaryVertexOutput) {
         fPrimaryVertexOutput->Write();
@@ -107,9 +105,6 @@ auto Analysis::RunEnd(Option_t* option) -> void {
     fECALSimHitOutput->Write();
     fECALPMHitOutput->Write();
     fMCPSimHitOutput->Write();
-    // close file
-    fFile->Close(option);
-    delete fFile;
     // reset output
     fPrimaryVertexOutput.reset();
     fDecayVertexOutput.reset();

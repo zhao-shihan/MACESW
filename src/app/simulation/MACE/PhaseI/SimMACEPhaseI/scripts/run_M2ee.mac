@@ -34,5 +34,5 @@
 
 /MACE/Analysis/FilePath SimMACEPhaseI_M2ee.root
 /MACE/Analysis/FileMode RECREATE
-/run/beamOn 10000
+/run/beamOn 100000
 /Mustard/Run/PrintRunSummary

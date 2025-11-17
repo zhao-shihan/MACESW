@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 namespace MACE::inline Reconstruction::MMSTracking::inline Finder {
 
 template<Mustard::Data::SuperTupleModel<Data::CDCSimHit> AHit,
@@ -27,7 +46,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     r.garbage.reserve(hitData.size());
 
     std::ranges::subrange track{hitData.cbegin(), hitData.cbegin()};
-    const auto CollectGarbage{
+    const auto collectGarbage{
         [&] { r.garbage.insert(r.garbage.end(), track.begin(), track.end()); }};
 
     muc::flat_hash_set<short> cellHit;
@@ -40,7 +59,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
                                                        })};
 
         if (std::ranges::ssize(track) < this->MinNHit()) {
-            CollectGarbage();
+            collectGarbage();
             continue;
         }
 
@@ -49,7 +68,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
             cellHit.emplace(Get<"CellID">(*hit));
         }
         if (ssize(cellHit) < this->MinNHit()) {
-            CollectGarbage();
+            collectGarbage();
             continue;
         }
 

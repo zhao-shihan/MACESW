@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Definition/CDCCell.h++"
 #include "MACE/Detector/Description/CDC.h++"
 
@@ -53,15 +72,14 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
                         sense.halfLength,
                         -super.cellAzimuthWidth / 2,
                         super.cellAzimuthWidth));
-                } else {
-                    return static_cast<G4VSolid*>(Make<G4TwistedTubs>(
-                        cellName,
-                        sense.stereoAzimuthAngle,
-                        cellRIn / std::cos(sense.stereoAzimuthAngle / 2),
-                        cellROut / std::cos(sense.stereoAzimuthAngle / 2),
-                        sense.halfLength,
-                        super.cellAzimuthWidth));
                 }
+                return static_cast<G4VSolid*>(Make<G4TwistedTubs>(
+                    cellName,
+                    sense.stereoAzimuthAngle,
+                    cellRIn / std::cos(sense.stereoAzimuthAngle / 2),
+                    cellROut / std::cos(sense.stereoAzimuthAngle / 2),
+                    sense.halfLength,
+                    super.cellAzimuthWidth));
             }()};
             const auto logicalCell{Make<G4LogicalVolume>(
                 solidCell,
@@ -98,15 +116,14 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
                         sense.halfLength,
                         -phiSV / 2,
                         phiSV));
-                } else {
-                    return static_cast<G4VSolid*>(Make<G4TwistedTubs>(
-                        svName,
-                        sense.stereoAzimuthAngle,
-                        svRIn / std::cos(sense.stereoAzimuthAngle / 2),
-                        svROut / std::cos(sense.stereoAzimuthAngle / 2),
-                        sense.halfLength,
-                        phiSV));
                 }
+                return static_cast<G4VSolid*>(Make<G4TwistedTubs>(
+                    svName,
+                    sense.stereoAzimuthAngle,
+                    svRIn / std::cos(sense.stereoAzimuthAngle / 2),
+                    svROut / std::cos(sense.stereoAzimuthAngle / 2),
+                    sense.halfLength,
+                    phiSV));
             }()};
             const auto logicalSV{Make<G4LogicalVolume>(
                 solidSV,
@@ -137,7 +154,7 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
                 solidFW,
                 nist->FindOrBuildMaterial("G4_Al"),
                 fwName)};
-            const auto PlaceFW{
+            const auto placeFW{
                 [&](int copyNo, double r, double phi0) {
                     return Make<G4PVPlacement>( // clang-format off
                         G4Transform3D{CLHEP::HepRotationZ{phi0 + phiFWFront}, {}} * // clang-format on
@@ -152,12 +169,12 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
             const auto rInnerWire{sense.innerRadius + rFW};
             const auto rOuterWire{sense.outerRadius + rFW};
             const auto rCenterWire{muc::midpoint(rInnerWire, rOuterWire)};
-            PlaceFW(0, rInnerWire, -super.cellAzimuthWidth / 2);
-            PlaceFW(1, rInnerWire, 0);
-            PlaceFW(2, rCenterWire, -super.cellAzimuthWidth / 2);
+            placeFW(0, rInnerWire, -super.cellAzimuthWidth / 2);
+            placeFW(1, rInnerWire, 0);
+            placeFW(2, rCenterWire, -super.cellAzimuthWidth / 2);
             if (&sense == &super.sense.back()) {
-                PlaceFW(3, rOuterWire, -super.cellAzimuthWidth / 2);
-                PlaceFW(4, rOuterWire, 0);
+                placeFW(3, rOuterWire, -super.cellAzimuthWidth / 2);
+                placeFW(4, rOuterWire, 0);
             }
 
             //

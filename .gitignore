@@ -1,3 +1,4 @@
+.clang-tidy
 **/.cache/
 **/.ipynb_checkpoints/
 **/.temp/
@@ -16,7 +17,8 @@
 **/*.root
 **/*.so*
 **/*.swp
-**/build/
+**/*.tar
+**/build*/
 **/GPATH
 **/GRTAGS
 **/GTAGS
@@ -31,3 +33,4 @@ document/doxygen/rtf/
 document/doxygen/xml/
 install/
 thirdparty/
+tooling/clang-tidy-fix-*.yml

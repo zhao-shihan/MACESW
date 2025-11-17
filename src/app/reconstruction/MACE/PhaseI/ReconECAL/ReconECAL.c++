@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Data/SimHit.h++"
 #include "MACE/Detector/Description/ECAL.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
@@ -62,12 +81,11 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
     }
 
     const auto& ecal{MACE::Detector::Description::ECAL::Instance()};
-    const auto& faceList{ecal.Mesh().fFaceList};
-    const auto& clusterMap{ecal.Mesh().fClusterMap};
+    const auto& faceList{ecal.Mesh().faceList};
 
     std::map<int, CLHEP::Hep3Vector> centroidMap;
 
-    for (int i{}; auto&& [centroid, _1, _2] : std::as_const(faceList)) {
+    for (int i{}; auto&& [centroid, _1, _2, _3, _4] : std::as_const(faceList)) {
         centroidMap[i] = centroid;
         i++;
     }
@@ -121,16 +139,16 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                 return;
             }
 
-            const auto Clustering = [&](std::unordered_set<short>& set,
+            const auto clustering = [&](std::unordered_set<short>& set,
                                         CLHEP::Hep3Vector& c,
                                         std::vector<short>::iterator seedIt) {
                 const auto addClusterLayers = [&](short module) {
                     set.insert(module);
-                    for (auto&& neighbor : clusterMap.at(module)) {
+                    for (auto&& neighbor : faceList[module].neighborModuleID) {
                         set.insert(neighbor);
-                        for (auto&& secondNeighbor : clusterMap.at(neighbor)) {
+                        for (auto&& secondNeighbor : faceList[neighbor].neighborModuleID) {
                             set.insert(secondNeighbor);
-                            set.insert(clusterMap.at(secondNeighbor).begin(), clusterMap.at(secondNeighbor).end());
+                            set.insert(faceList[secondNeighbor].neighborModuleID.begin(), faceList[secondNeighbor].neighborModuleID.end());
                         }
                     }
                 };
@@ -152,8 +170,8 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                 // return totalEnergy;
             };
 
-            auto firstClusterEnergy = Clustering(firstCluster, firstCenter, firstSeedModule);
-            auto secondClusterEnergy = Clustering(secondCluster, secondCenter, secondSeedModule);
+            auto firstClusterEnergy = clustering(firstCluster, firstCenter, firstSeedModule);
+            auto secondClusterEnergy = clustering(secondCluster, secondCenter, secondSeedModule);
 
             if (firstClusterEnergy + secondClusterEnergy > muonium_mass_c2) {
                 return;
