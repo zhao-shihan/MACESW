@@ -50,9 +50,9 @@ namespace MACE::PhaseI::inline Simulation::inline SD {
 
 using namespace Mustard::LiteralUnit;
 
-SciFiSD::SciFiSD(const G4String& sdName) :
+SciFiSD::SciFiSD(const G4String& sdName, const SciFiSiPMSD* sciFiSiPMSD) :
     G4VSensitiveDetector{sdName},
-    fSciFiSiPMSD{},
+    fSciFiSiPMSD{sciFiSiPMSD},
     fSplitHit{},
     fHitsCollection{} {
     collectionName.insert(sdName + "HC");

@@ -31,7 +31,7 @@ namespace MACE::PhaseI::inline Simulation::inline SD {
 
 class SciFiSD : public G4VSensitiveDetector {
 public:
-    explicit SciFiSD(const G4String& sdName);
+    explicit SciFiSD(const G4String& sdName, const SciFiSiPMSD* sciFiSiPMSD = {});
 
     auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
     auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;

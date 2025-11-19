@@ -48,7 +48,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::ClusterHits(std::vector<AHitPointer>& h
 
     muc::timsort(hitData,
                  [](auto&& hit1, auto&& hit2) {
-                     return std::tie(Get<"SiPMID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"SiPMID">(*hit2), Get<"t">(*hit2));
+                     return std::tie(Get<"FiberID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"FiberID">(*hit2), Get<"t">(*hit2));
                  });
 
     for (auto&& hit : hitData) {
@@ -57,9 +57,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::ClusterHits(std::vector<AHitPointer>& h
             [&](auto&& cluster) {
                 return std::ranges::any_of(cluster, [&](auto&& element) {
                     return std::abs(Get<"t">(*hit) - Get<"t">(*element)) < sciFiTracker.SiPMDeadTime() and
-                           fiberMap[Get<"SiPMID">(*hit)].layerID / 2 == fiberMap[Get<"SiPMID">(*element)].layerID / 2 and
-                           std::abs(fiberMap[Get<"SiPMID">(*hit)].localID -
-                                    fiberMap[Get<"SiPMID">(*element)].localID) <= sciFiTracker.ClusterLength();
+                           fiberMap[Get<"FiberID">(*hit)].layerID / 2 == fiberMap[Get<"FiberID">(*element)].layerID / 2 and
+                           std::abs(fiberMap[Get<"FiberID">(*hit)].localID -
+                                    fiberMap[Get<"FiberID">(*element)].localID) <= sciFiTracker.ClusterLength();
                 });
             })};
         if (cluster != clusterList.end()) {
@@ -86,7 +86,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vecto
     std::vector<std::vector<AHitPointer>> tCluster;
 
     for (auto&& cluster : hitData) {
-        auto firstSiPMID{Get<"SiPMID">(*cluster.front())};
+        auto firstSiPMID{Get<"FiberID">(*cluster.front())};
         auto layerType{fiberMap[firstSiPMID].layerType};
 
         if (layerType == "LHelical") {
@@ -136,9 +136,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
 
         double sum = 0.0;
         for (const auto& hit : cluster) {
-            auto siPMID = Get<"SiPMID">(*hit);
+            auto fiberID = Get<"FiberID">(*hit);
 
-            sum += fiberMap[siPMID].rotationAngle;
+            sum += fiberMap[fiberID].rotationAngle;
         }
         return sum / cluster.size();
     };
@@ -174,7 +174,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
 
                 if (std::abs(lAvgTime - tAvgTime) < sciFiTracker.ThresholdTime() and
                     std::abs(rAvgTime - tAvgTime) < sciFiTracker.ThresholdTime() and
-                    AreAdjacent({Get<"SiPMID">(*lHits.front()), Get<"SiPMID">(*rHits.front()), Get<"SiPMID">(*tHits.front())}) and
+                    AreAdjacent({Get<"FiberID">(*lHits.front()), Get<"FiberID">(*rHits.front()), Get<"FiberID">(*tHits.front())}) and
                     (std::abs(angleCondition1 - tAvgAngle) <= 0.05 * std::numbers::pi or
                      std::abs(angleCondition2 - tAvgAngle) <= 0.05 * std::numbers::pi)) {
                     result.insert({lHits, rHits, tHits});
@@ -188,7 +188,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
             auto lAvgTime = calculateAvgTime(lHits);
             auto tAvgTime = calculateAvgTime(tHits);
             if (std::abs(lAvgTime - tAvgTime) < sciFiTracker.ThresholdTime() and
-                AreAdjacent({Get<"SiPMID">(*lHits.front()), Get<"SiPMID">(*tHits.front())})) {
+                AreAdjacent({Get<"FiberID">(*lHits.front()), Get<"FiberID">(*tHits.front())})) {
                 result.insert({lHits, tHits});
             }
         }
@@ -199,7 +199,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
             auto rAvgTime = calculateAvgTime(rHits);
             auto tAvgTime = calculateAvgTime(tHits);
             if (std::abs(rAvgTime - tAvgTime) < sciFiTracker.ThresholdTime() and
-                AreAdjacent({Get<"SiPMID">(*rHits.front()), Get<"SiPMID">(*tHits.front())})) {
+                AreAdjacent({Get<"FiberID">(*rHits.front()), Get<"FiberID">(*tHits.front())})) {
                 result.insert({rHits, tHits});
             }
         }
@@ -210,7 +210,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
             auto lAvgTime = calculateAvgTime(lHits);
             auto rAvgTime = calculateAvgTime(rHits);
             if (std::abs(lAvgTime - rAvgTime) < sciFiTracker.ThresholdTime() and
-                AreAdjacent({Get<"SiPMID">(*lHits.front()), Get<"SiPMID">(*rHits.front())})) {
+                AreAdjacent({Get<"FiberID">(*lHits.front()), Get<"FiberID">(*rHits.front())})) {
                 result.insert({lHits, rHits});
             }
         }
@@ -345,27 +345,27 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
         double tAngle{-1};
         double rLLayer{}, rRLayer{}, rTLayer{};
         for (auto&& hitList : hitLists) {
-            if (fiberMap[Get<"SiPMID">(*hitList.front())].layerType == "LHelical") {
+            if (fiberMap[Get<"FiberID">(*hitList.front())].layerType == "LHelical") {
                 lAngle = 0;
                 for (auto&& hit : hitList) {
-                    lAngle += fiberMap[Get<"SiPMID">(*hit)].rotationAngle;
-                    rLLayer += fiberMap[Get<"SiPMID">(*hit)].radius;
+                    lAngle += fiberMap[Get<"FiberID">(*hit)].rotationAngle;
+                    rLLayer += fiberMap[Get<"FiberID">(*hit)].radius;
                 }
                 lAngle /= hitList.size();
                 rLLayer /= hitList.size();
-            } else if (fiberMap[Get<"SiPMID">(*hitList.front())].layerType == "RHelical") {
+            } else if (fiberMap[Get<"FiberID">(*hitList.front())].layerType == "RHelical") {
                 rAngle = 0;
                 for (auto&& hit : hitList) {
-                    rAngle += fiberMap[Get<"SiPMID">(*hit)].rotationAngle;
-                    rRLayer += fiberMap[Get<"SiPMID">(*hit)].radius;
+                    rAngle += fiberMap[Get<"FiberID">(*hit)].rotationAngle;
+                    rRLayer += fiberMap[Get<"FiberID">(*hit)].radius;
                 }
                 rAngle /= hitList.size();
                 rRLayer /= hitList.size();
             } else {
                 tAngle = 0;
                 for (auto&& hit : hitList) {
-                    tAngle += fiberMap[Get<"SiPMID">(*hit)].rotationAngle;
-                    rTLayer += fiberMap[Get<"SiPMID">(*hit)].radius;
+                    tAngle += fiberMap[Get<"FiberID">(*hit)].rotationAngle;
+                    rTLayer += fiberMap[Get<"FiberID">(*hit)].radius;
                 }
                 tAngle /= hitList.size();
                 rTLayer /= hitList.size();
@@ -588,20 +588,20 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
             for (int i{}; i < std::ssize(clusterLists); ++i) {
                 auto&& cluster = clusterLists[i];
                 for (auto&& hit : cluster) {
-                    auto rLayer{fiberMap[Get<"SiPMID">(*hit)].radius};
-                    if (processedSiPMIDs.count(Get<"SiPMID">(*hit)) > 0) {
+                    auto rLayer{fiberMap[Get<"FiberID">(*hit)].radius};
+                    if (processedSiPMIDs.count(Get<"FiberID">(*hit)) > 0) {
                         continue;
                     }
-                    processedSiPMIDs.insert(Get<"SiPMID">(*hit));
-                    double rotationAngle{fiberMap[Get<"SiPMID">(*hit)].rotationAngle};
+                    processedSiPMIDs.insert(Get<"FiberID">(*hit));
+                    double rotationAngle{fiberMap[Get<"FiberID">(*hit)].rotationAngle};
 
-                    if (fiberMap.at(Get<"SiPMID">(*hit)).layerType == "LHelical") {
+                    if (fiberMap.at(Get<"FiberID">(*hit)).layerType == "LHelical") {
                         double b{sciFiTracker.FiberLength() / (2 * std::numbers::pi)};
                         double minDistance;
                         std::tie(minDistance, t, theta) = this->FindHLMinDistanceSquare(rLayer, b, rotationAngle,
                                                                                         s0, dir, initialT, initialTheta);
                         distance += minDistance;
-                    } else if (fiberMap.at(Get<"SiPMID">(*hit)).layerType == "RHelical") {
+                    } else if (fiberMap.at(Get<"FiberID">(*hit)).layerType == "RHelical") {
                         double b{-sciFiTracker.FiberLength() / (2 * std::numbers::pi)};
                         double minDistance;
                         std::tie(minDistance, t, theta) = this->FindHLMinDistanceSquare(rLayer, b, rotationAngle,

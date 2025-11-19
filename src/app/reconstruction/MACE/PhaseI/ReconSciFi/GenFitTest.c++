@@ -115,7 +115,6 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("NEW"s).required().nargs(1);
     cli->add_argument("-c", "--description").help("Description YAML file path.").nargs(1);
     Mustard::Env::MPIEnv env{argc, argv, {}};
-    const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     std::string fileName{argv[1]};
     TFile file{Mustard::Parallel::ProcessSpecificPath("output1.root").generic_string().c_str(), "RECREATE"};
     Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
@@ -138,51 +137,13 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                          });
 
             std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
-            for (std::ranges::subrange sciFiHitRange{event.begin(), event.begin()};
-                 sciFiHitRange.begin() != event.end();
-                 sciFiHitRange = {sciFiHitRange.end(), sciFiHitRange.end()}) {
-                sciFiHitRange = std::ranges::equal_range(sciFiHitRange.begin(), event.end(), *Get<"FiberID">(**sciFiHitRange.begin()), std::less{},
-                                                         [](auto&& hit) { return Get<"FiberID">(*hit); });
-                int count = 0;
-                double initialTime = *Get<"t">(**sciFiHitRange.begin());
-                double endTime = initialTime + sciFiTracker.ThresholdTime();
-                for (int j{}; j < std::ssize(sciFiHitRange); ++j) {
-                    if (*Get<"t">(*sciFiHitRange[j]) >= initialTime and *Get<"t">(*sciFiHitRange[j]) < endTime) {
-                        initialTime = *Get<"t">(*sciFiHitRange[j]);
-                        count++;
-                        if (count == sciFiTracker.SiPMOpticalPhotonCountThreshold()) {
-                            endTime = initialTime + sciFiTracker.TimeWindow();
-                            auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
-                            *Get<"t">(*sciFiHit) = *Get<"t">(*sciFiHitRange[j]);
-                            *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*sciFiHitRange[j]);
-                            *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*sciFiHitRange[j]);
-                            sciFiHitData.emplace_back(std::move(sciFiHit));
-                            while (j < std::ssize(sciFiHitRange) and *Get<"t">(*sciFiHitRange[j]) < endTime) {
-                                count++;
-                                j++;
-                            }
-                            *Get<"nOptPho">(*sciFiHitData.back()) = count;
-                            count = 0;
-                            if (j < std::ssize(sciFiHitRange)) {
-                                initialTime = endTime + sciFiTracker.SiPMDeadTime();
-                                endTime = initialTime + sciFiTracker.ThresholdTime();
-                            }
-                        }
-                    } else if (j < std::ssize(sciFiHitRange)) {
-                        while (j < std::ssize(sciFiHitRange) and *Get<"t">(*sciFiHitRange[j]) < endTime) {
-                            j++;
-                        }
-
-                        if (initialTime < *Get<"t">(*sciFiHitRange[j])) {
-                            initialTime = *Get<"t">(*sciFiHitRange[j]);
-                        }
-
-                        endTime = initialTime + sciFiTracker.ThresholdTime();
-                        count = 0;
-                    } else {
-                        break;
-                    }
-                }
+            for (auto&& hit : event) {
+                auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
+                *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*hit);
+                *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*hit);
+                *Get<"nOptPho">(*sciFiHit) = *Get<"nOptPho">(*hit);
+                *Get<"t">(*sciFiHit) = *Get<"t">(*hit);
+                sciFiHitData.emplace_back(std::move(sciFiHit));
             }
 
             auto nextTrackID{0};
@@ -194,7 +155,6 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                 std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
                 // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
                 std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
-                std::cout << Get<"EvtID">(*track) << " " << Get<"t">(*track) << std::endl;
                 reconTrack.Fill(*track);
             }
         });
