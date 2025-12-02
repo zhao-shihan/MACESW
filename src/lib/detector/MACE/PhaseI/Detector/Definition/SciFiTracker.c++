@@ -157,7 +157,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                                          2_pi)};
     const auto logicalBracket{
         Make<G4LogicalVolume>(solidBracket,
-                              G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), // G4_PLASTIC_SC_VINYLTOLUENE or G4_Air
+                              G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), // G4_PLASTIC_SC_VINYLTOLUENE or G4_AIR
                               scifiName + "Bracket")};
     Make<G4PVPlacement>(G4Transform3D{},
                         logicalBracket,
