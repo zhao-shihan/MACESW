@@ -23,7 +23,7 @@ if(NOT MACESW_BUILTIN_PMP)
     find_package(pmp ${MACESW_PMP_MINIMUM_REQUIRED})
     if(NOT pmp_FOUND)
         set(MACESW_BUILTIN_PMP ON)
-        message(NOTICE "***Notice: pmp not found (minimum required is ${MACESW_PMP_MINIMUM_REQUIRED}). For the time turning on MACESW_BUILTIN_PMP")
+        message(NOTICE "***Notice: pmp not found (minimum required is ${MACESW_PMP_MINIMUM_REQUIRED}). Temporarily turning on MACESW_BUILTIN_PMP")
     endif()
 endif()
 

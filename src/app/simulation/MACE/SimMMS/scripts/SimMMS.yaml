@@ -35,7 +35,7 @@ MMSBeamPipe:
 MMSField:
   Radius: 610
   Length: 2200
-  FastField: 9.9999999999999991e-05
+  NominalField: 9.9999999999999991e-05
 MMSMagnet:
   InnerRadius: 550
   OuterRadius: 600

@@ -17,14 +17,14 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-#include "MACE/Utility/EventGeneratorCLI.h++"
+#include "MACE/Generator/EventGeneratorCLI.h++"
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/IO/Print.h++"
 
 #include <cstdlib>
 
-namespace MACE::inline Utility {
+namespace MACE::Generator {
 
 EventGeneratorCLIModule::EventGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli) :
     ModuleBase{cli} {
@@ -70,4 +70,4 @@ auto EventGeneratorCLIModule::GenerateOrExit() const -> std::optional<unsigned l
     return nGenerate;
 }
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator

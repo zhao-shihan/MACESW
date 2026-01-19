@@ -40,7 +40,7 @@ auto TruthFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     Get<"x0">(*track) = Get<"x0">(firstHit);
     Get<"Ek0">(*track) = Get<"Ek0">(firstHit);
     Get<"p0">(*track) = Get<"p0">(firstHit);
-    Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().FastField());
+    Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().NominalField());
     Get<"CreatProc">(*track) = Get<"CreatProc">(firstHit);
 
     if (not fCheckHitDataConsistency) {

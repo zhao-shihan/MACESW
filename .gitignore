@@ -32,5 +32,6 @@ document/doxygen/man/
 document/doxygen/rtf/
 document/doxygen/xml/
 install/
+src/lib/utility/MACE/Version.inl
 thirdparty/
 tooling/clang-tidy-fix-*.yml

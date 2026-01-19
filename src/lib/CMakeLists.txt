@@ -18,6 +18,7 @@
 add_subdirectory(analysis)
 add_subdirectory(data)
 add_subdirectory(detector)
+add_subdirectory(generator)
 add_subdirectory(reconstruction)
 add_subdirectory(simulation)
 add_subdirectory(utility)

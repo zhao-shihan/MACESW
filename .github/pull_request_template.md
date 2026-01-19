@@ -7,6 +7,7 @@ Fixes: #<issue-number> (if applicable)
 (Select one or more and delete other options from below)
 - Bug fix (non-breaking change which fixes an issue)
 - New feature (non-breaking change which adds functionality)
+- Refactor (non-breaking change which optimizes code structure)
 - Breaking change (fix or feature that would cause existing behavior to change)
 - Documentation update
 - CI / tooling
@@ -18,8 +19,8 @@ Fixes: #<issue-number> (if applicable)
 - [ ] I linked related issues and provided context in the PR description.
 - [ ] My code follows the [coding style guide](https://github.com/zhao-shihan/MACESW/blob/main/STYLE_GUIDE.md) and linting rules.
 - [ ] I added/updated unit tests where applicable.
-- [ ] I updated relevant documentation (README, Doxygen, or design docs).
-- [ ] I ran the test-suite locally and all tests pass.
+- [ ] I updated relevant documentation (README, Doxygen, or design docs) where applicable.
+- [ ] I ran the test-suite locally and all tests pass if applicable.
 - [ ] All CI checks pass.
 
 ## Implementation details (optional)

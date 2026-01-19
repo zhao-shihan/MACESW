@@ -18,7 +18,7 @@ if(NOT MACESW_BUILTIN_<LIB_NAME>)
     find_package(<lib_cmake_name> ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED})
     if(NOT <lib_cmake_name>_FOUND)
         set(MACESW_BUILTIN_<LIB_NAME> ON)
-        message(NOTICE "***Notice: <lib_cmake_name> not found (minimum required is ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED}). For the time turning on MACESW_BUILTIN_<LIB_NAME>")
+        message(NOTICE "***Notice: <lib_cmake_name> not found (minimum required is ${MACESW_<LIB_NAME>_MINIMUM_REQUIRED}). Temporarily turning on MACESW_BUILTIN_<LIB_NAME>")
     endif()
 endif()
 

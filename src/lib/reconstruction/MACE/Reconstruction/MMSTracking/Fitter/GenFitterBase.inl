@@ -193,7 +193,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
     Get<"x0">(*track) = this->template FromTVector3<muc::array3d>(x0);
     Get<"Ek0">(*track) = ek0;
     Get<"p0">(*track) = this->template FromTVector3<muc::array3d>(p0);
-    Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().FastField());
+    Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().NominalField());
 
     if (fEnableEventDisplay) {
         genfit::EventDisplay::getInstance()->addEvent(genfitTrack.get());

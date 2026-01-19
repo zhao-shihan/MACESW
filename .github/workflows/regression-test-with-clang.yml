@@ -3,7 +3,8 @@ name: Regression test (AMD64 GNU/Linux Clang)
 on:
   push:
     branches:
-      - "**"
+      - main
+      - rc
     paths:
       - ".github/workflows/regression-test-with-clang.yml"
       - "src/**"

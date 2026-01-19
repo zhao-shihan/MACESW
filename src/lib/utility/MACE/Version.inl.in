@@ -17,22 +17,21 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-#include "MACE/Detector/Description/FieldOption.h++"
-#include "MACE/Detector/Description/Solenoid.h++"
-#include "MACE/Detector/Field/SolenoidFieldS2.h++"
+// ==============================================================================
+// This file is auto generated, any modification to it will be lost. DO NOT EDIT.
+// ==============================================================================
 
-namespace MACE::Detector::Field {
+namespace MACE {
 
-SolenoidFieldS2::SolenoidFieldS2() : // clang-format off
-    MagneticFieldBase<SolenoidFieldS2>{}, // clang-format on
-    fField{NominalField{{}}} {
-    const auto& fieldOption{Detector::Description::FieldOption::Instance()};
-    const auto& solenoid{Detector::Description::Solenoid::Instance()};
-    if (fieldOption.UseFast()) {
-        fField = NominalField{solenoid.NominalField(), 0, 0};
-    } else {
-        fField = FieldMap{fieldOption.ParsedFieldDataFilePath().generic_string(), "SolenoidFieldS2"};
-    }
-}
+enum struct Version : int {
+    Major = @MACESW_VERSION_MAJOR@,
+    Minor = @MACESW_VERSION_MINOR@,
+    Patch = @MACESW_VERSION_PATCH@
+};
 
-} // namespace MACE::Detector::Field
+constexpr inline const char versionString[]{"@MACESW_VERSION@"};
+
+constexpr inline const char compilerIDString[]{"@CMAKE_CXX_COMPILER_ID@"};
+constexpr inline const char compilerVersionString[]{"@CMAKE_CXX_COMPILER_VERSION@"};
+
+} // namespace MACE

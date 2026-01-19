@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-namespace MACE::inline Utility {
+namespace MACE::Generator {
 
 template<int M, int N, typename A>
 auto MatrixElementBasedGeneratorCLIModule::PhaseSpaceIntegral(Mustard::Executor<unsigned long long>& executor,
@@ -46,4 +46,4 @@ auto MatrixElementBasedGeneratorCLIModule::PhaseSpaceIntegral(Mustard::Executor<
     return result;
 }
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator

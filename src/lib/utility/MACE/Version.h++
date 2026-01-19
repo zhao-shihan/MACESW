@@ -19,26 +19,8 @@
 
 #pragma once
 
-#include "Mustard/CLI/Module/ModuleBase.h++"
-#include "Mustard/CLI/MonteCarloCLI.h++"
+#if __cplusplus < 202002L
+#    error "MACESW requires at least C++20"
+#endif
 
-#include <optional>
-#include <string>
-
-namespace MACE::inline Utility {
-
-class EventGeneratorCLIModule : public Mustard::CLI::ModuleBase {
-public:
-    explicit EventGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
-
-    auto DefaultOutput(std::string path) -> void;
-    auto DefaultOutputTree(std::string name) -> void;
-
-    auto GenerateOrExit() const -> std::optional<unsigned long long>;
-};
-
-template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>
-using EventGeneratorCLI = Mustard::CLI::MonteCarloCLI<EventGeneratorCLIModule,
-                                                      AExtraModules...>;
-
-} // namespace MACE::inline Utility
+#include "MACE/Version.inl"

@@ -16,7 +16,7 @@ Accelerator:
 ECALField:
   Radius: 560
   Length: 1000
-  FastField: 0.0001
+  NominalField: 0.0001
 ECALMagnet:
   InnerRadius: 500
   OuterRadius: 550
@@ -49,7 +49,7 @@ MMSBeamPipe:
 MMSField:
   Radius: 610
   Length: 2200
-  FastField: 9.9999999999999991e-05
+  NominalField: 9.9999999999999991e-05
 MMSMagnet:
   InnerRadius: 550
   OuterRadius: 600
@@ -79,7 +79,7 @@ Solenoid:
   ReferenceCoilSpacing: 30
   FieldRadius: 131
   MaterialName: G4_Cu
-  FastField: 9.9999999999999991e-05
+  NominalField: 9.9999999999999991e-05
 VirtualDetectorA:
   Thickness: 1.0000000000000002e-06
 VirtualDetectorB:

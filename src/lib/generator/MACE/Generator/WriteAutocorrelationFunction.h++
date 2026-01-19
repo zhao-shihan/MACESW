@@ -17,26 +17,24 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-namespace MACE::inline Utility {
+#pragma once
+
+#include "TAxis.h"
+#include "TGraph.h"
+
+#include "Eigen/Core"
+
+#include "fmt/core.h"
+
+#include <array>
+#include <utility>
+#include <vector>
+
+namespace MACE::Generator {
 
 template<int D>
-auto WriteAutocorrelationFunction(const std::vector<std::pair<unsigned, Eigen::Array<double, D, 1>>>& autocorrelationFunction) -> void {
-    std::array<TGraph, D> graph;
-    for (int i{}; i < D; ++i) {
-        graph[i].SetName(fmt::format("ACF_u{}", i).c_str());
-        graph[i].SetTitle(fmt::format("Autocorrelation function of u{}", i).c_str());
-        graph[i].GetXaxis()->SetTitle("Lag");
-        graph[i].GetYaxis()->SetTitle("Autocorrelation");
-    }
-    for (auto&& [lag, autocorrelation] : autocorrelationFunction) {
-        for (int i{}; i < D; ++i) {
-            graph[i].AddPoint(lag, autocorrelation[i]);
-        }
-    }
-    for (int i{}; i < D; ++i) {
-        graph[i].SetOption("P");
-        graph[i].Write();
-    }
-}
+auto WriteAutocorrelationFunction(const std::vector<std::pair<unsigned, Eigen::Array<double, D, 1>>>& autocorrelationFunction) -> void;
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator
+
+#include "MACE/Generator/WriteAutocorrelationFunction.inl"

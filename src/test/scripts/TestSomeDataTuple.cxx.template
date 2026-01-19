@@ -1,3 +1,9 @@
+// Usage:
+// 1. Replace <data_tuple_name> with the name of datatuple (e.g. SimDecayVertex).
+// 2. Go to the "==USER DEFINE==" section and modify the dataframe definitions.
+// 3. Remove the ".template" file name suffix and assign it a proper file name.
+// 4. Delete this guide text and the section guides, and format the code properly.
+
 #include "ROOT/RDataFrame.hxx"
 #include "TCanvas.h"
 #include "TFile.h"
@@ -9,7 +15,7 @@
 #include <iostream>
 #include <string>
 
-const std::string dataTupleName{"CDCSimHit"};
+const std::string dataTupleName{"<data_tuple_name>"};
 
 const void Judge(double pValue) {
     const std::string boldInvert{"\x1B[1m\x1B[7m"};
@@ -30,7 +36,7 @@ const void Judge(double pValue) {
     }
 }
 
-auto TestCDCSimHit(std::string moduleName, std::string testFileName, std::string sampleFileName) {
+auto Test<data_tuple_name>(std::string moduleName, std::string testFileName, std::string sampleFileName) {
     gROOT->SetBatch(kTRUE);
 
     auto SaveRegressionResult{
@@ -94,6 +100,7 @@ auto TestCDCSimHit(std::string moduleName, std::string testFileName, std::string
             h2->DrawClone();
             h1->DrawClone("SAME");
             pad2->cd();
+            pull->SetStats(false);
             pull->Draw();
             auto file{TFile("regression_report.root", "update")};
             c1->Write();
@@ -115,15 +122,28 @@ auto TestCDCSimHit(std::string moduleName, std::string testFileName, std::string
 
     std::clog << "[Note] testing. Module: " << moduleName << "; " << "DataTuple: " << dataTupleName << std::endl;
 
+// =========================================================================
+// ============================== USER DEFINE ==============================
+// =========================================================================
+
+// Define each component of the array-type columns as needed
+// The defined columns are in one-to-one correspondence with those in the "Read<data_tuple_name>.cxx" of the same datatuple
     auto df{df0.Define("x_0", "x[0]")
                 .Define("x_1", "x[1]")
                 .Define("x_2", "x[2]")
                 .Define("p_0", "p[0]")
                 .Define("p_1", "p[1]")
                 .Define("p_2", "p[2]")
+                .Define("x0_0", "x0[0]")
+                .Define("x0_1", "x0[1]")
+                .Define("x0_2", "x0[2]")
                 .Define("p0_0", "p0[0]")
                 .Define("p0_1", "p0[1]")
                 .Define("p0_2", "p0[2]")};
+
+// =========================================================================
+// =========================================================================
+// =========================================================================
 
     auto histKeyList{sampleDir->GetListOfKeys()};
     std::clog << "Get " << histKeyList->GetEntries() << " entries from sample file." << std::endl;

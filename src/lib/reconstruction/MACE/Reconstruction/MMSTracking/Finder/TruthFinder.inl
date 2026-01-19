@@ -100,7 +100,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
         Get<"x0">(*seed) = Get<"x0">(firstHit);
         Get<"Ek0">(*seed) = Get<"Ek0">(firstHit);
         Get<"p0">(*seed) = Get<"p0">(firstHit);
-        Data::CalculateHelix(*seed, Detector::Description::MMSField::Instance().FastField());
+        Data::CalculateHelix(*seed, Detector::Description::MMSField::Instance().NominalField());
         Get<"CreatProc">(*seed) = Get<"CreatProc">(firstHit);
     }
 

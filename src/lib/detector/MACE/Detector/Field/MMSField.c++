@@ -25,11 +25,11 @@ namespace MACE::Detector::Field {
 
 MMSField::MMSField() :
     MagneticFieldBase<MMSField>{},
-    fField{FastField{{}}} {
+    fField{NominalField{{}}} {
     const auto& fieldOption{Detector::Description::FieldOption::Instance()};
     const auto& ecalField{Detector::Description::MMSField::Instance()};
     if (fieldOption.UseFast()) {
-        fField = FastField{0, 0, ecalField.FastField()};
+        fField = NominalField{0, 0, ecalField.NominalField()};
     } else {
         fField = FieldMap{fieldOption.ParsedFieldDataFilePath().generic_string(), "MMSField"};
     }

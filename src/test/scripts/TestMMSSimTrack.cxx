@@ -30,7 +30,6 @@ const void Judge(double pValue) {
     }
 }
 
-// int main()
 auto TestMMSSimTrack(std::string moduleName, std::string testFileName, std::string sampleFileName) {
     gROOT->SetBatch(kTRUE);
 
@@ -70,7 +69,7 @@ auto TestMMSSimTrack(std::string moduleName, std::string testFileName, std::stri
                 pull->SetBinError(i, 1);
             }
             // draw
-            auto canvasName{moduleName + "_MMSSimHit_" + histName};
+            auto canvasName{moduleName + "_" + dataTupleName + "_" + histName};
             auto pad1Name{"hist"};
             auto pad2Name{"pull"};
             TCanvas* c1 = new TCanvas(canvasName.data(), canvasName.data(), 800, 600);

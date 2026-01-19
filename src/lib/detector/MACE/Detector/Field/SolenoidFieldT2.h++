@@ -36,11 +36,11 @@ public:
     auto B(T x) const -> T { return std::visit([&x](auto&& f) { return f.B(x); }, fField); } // clang-format on
 
 private:
-    using FastField = Mustard::Detector::Field::ToroidField;
+    using NominalField = Mustard::Detector::Field::ToroidField;
     using FieldMap = Mustard::Detector::Field::MagneticFieldMapSymmetryY<>;
 
 private:
-    std::variant<FastField, FieldMap> fField;
+    std::variant<NominalField, FieldMap> fField;
 };
 
 } // namespace MACE::Detector::Field

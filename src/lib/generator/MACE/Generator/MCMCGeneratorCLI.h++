@@ -19,22 +19,21 @@
 
 #pragma once
 
-#include "TAxis.h"
-#include "TGraph.h"
+#include "MACE/Generator/MatrixElementBasedGeneratorCLI.h++"
 
-#include "Eigen/Core"
+#include "Mustard/CLI/Module/ModuleBase.h++"
 
-#include "fmt/core.h"
+namespace MACE::Generator {
 
-#include <array>
-#include <utility>
-#include <vector>
+class MCMCGeneratorCLIModule : public Mustard::CLI::ModuleBase {
+public:
+    explicit MCMCGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 
-namespace MACE::inline Utility {
+    auto AddMCMCStepSizeOption() -> void;
+};
 
-template<int D>
-auto WriteAutocorrelationFunction(const std::vector<std::pair<unsigned, Eigen::Array<double, D, 1>>>& autocorrelationFunction) -> void;
+template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>
+using MCMCGeneratorCLI = MatrixElementBasedGeneratorCLI<MCMCGeneratorCLIModule,
+                                                        AExtraModules...>;
 
-} // namespace MACE::inline Utility
-
-#include "MACE/Utility/WriteAutocorrelationFunction.inl"
+} // namespace MACE::Generator

@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License along with
 # MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-file(GLOB_RECURSE AppMACEUtility_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/MACE/*.c++)
-add_library(AppMACEUtility STATIC ${AppMACEUtility_SOURCES})
-target_include_directories(AppMACEUtility PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(AppMACEUtility PUBLIC MACEDetector
-                                            MACESimulation
-                                            Mustard::Mustard) 
+file(GLOB_RECURSE MACEGenerator_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/MACE/*.c++)
+
+add_library(MACEGenerator STATIC ${MACEGenerator_SOURCES})
+target_include_directories(MACEGenerator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(MACEGenerator PUBLIC Mustard::Mustard)

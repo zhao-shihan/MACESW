@@ -17,13 +17,13 @@
 
 message(STATUS "Looking for Mustard")
 
-set(MACESW_MUSTARD_MINIMUM_REQUIRED 0.25.1103)
+set(MACESW_MUSTARD_MINIMUM_REQUIRED 0.25.1222)
 
 if(NOT MACESW_BUILTIN_MUSTARD)
     find_package(Mustard ${MACESW_MUSTARD_MINIMUM_REQUIRED})
     if(NOT Mustard_FOUND)
         set(MACESW_BUILTIN_MUSTARD ON)
-        message(NOTICE "***Notice: Mustard not found (minimum required is ${MACESW_MUSTARD_MINIMUM_REQUIRED}). For the time turning on MACESW_BUILTIN_MUSTARD")
+        message(NOTICE "***Notice: Mustard not found (minimum required is ${MACESW_MUSTARD_MINIMUM_REQUIRED}). Temporarily turning on MACESW_BUILTIN_MUSTARD")
     endif()
 endif()
 

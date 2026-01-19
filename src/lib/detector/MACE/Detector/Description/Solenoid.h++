@@ -79,9 +79,9 @@ public:
 
     // Field
 
-    auto FastField() const -> auto { return fFastField; }
+    auto NominalField() const -> auto { return fNominalField; }
 
-    auto FastField(double val) -> void { fFastField = val; }
+    auto NominalField(double val) -> void { fNominalField = val; }
 
 private:
     auto ImportAllValue(const YAML::Node& node) -> void override;
@@ -107,7 +107,7 @@ private:
 
     // Field
 
-    double fFastField;
+    double fNominalField;
 };
 
 } // namespace MACE::Detector::Description

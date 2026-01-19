@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-namespace MACE::inline Utility {
+namespace MACE::Generator {
 
 template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
@@ -111,4 +111,4 @@ auto InitialStateCLIModule<P, Ms...>::To3Vector(std::string_view option) const -
     return {vector[0], vector[1], vector[2]};
 }
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator

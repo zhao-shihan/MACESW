@@ -66,40 +66,6 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
     window->AddElement(hydrogenElement, ttc.WindowHydrogenElement());
     window->AddElement(oxygenElement, ttc.WindowOxygenElement());
 
-    // Construct Material Optical Properties Tables
-    const auto [minPhotonEnergy, maxPhotonEnergy]{std::ranges::minmax(ttc.ScintillationComponent1EnergyBin())};
-    const auto scintillatorPropertiesTable{new G4MaterialPropertiesTable};
-    scintillatorPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, ttc.RIndex());
-    scintillatorPropertiesTable->AddProperty("ABSLENGTH", {minPhotonEnergy, maxPhotonEnergy}, ttc.AbsLength());
-    scintillatorPropertiesTable->AddProperty("SCINTILLATIONCOMPONENT1", ttc.ScintillationComponent1EnergyBin(), ttc.ScintillationComponent1());
-    scintillatorPropertiesTable->AddConstProperty("SCINTILLATIONYIELD", ttc.ScintillationYield());
-    scintillatorPropertiesTable->AddConstProperty("SCINTILLATIONRISETIME1", ttc.ScintillationRiseTimeConstant1());
-    scintillatorPropertiesTable->AddConstProperty("SCINTILLATIONTIMECONSTANT1", ttc.ScintillationDecayTimeConstant1());
-    scintillatorPropertiesTable->AddConstProperty("RESOLUTIONSCALE", ttc.ResolutionScale());
-    ttcScintillatorMaterial->SetMaterialPropertiesTable(scintillatorPropertiesTable);
-
-    const auto lightCouplerPropertiesTable{new G4MaterialPropertiesTable};
-    lightCouplerPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, ttc.LightCouplerRIndex()); // EJ-550
-    lightCouplerPropertiesTable->AddProperty("ABSLENGTH", {minPhotonEnergy, maxPhotonEnergy}, ttc.LightCouplerAbsLength());
-    lightCoupler->SetMaterialPropertiesTable(lightCouplerPropertiesTable);
-
-    const auto windowPropertiesTable{new G4MaterialPropertiesTable};
-    windowPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, ttc.WindowRIndex());
-    window->SetMaterialPropertiesTable(windowPropertiesTable);
-
-    const auto reflectorSurfacePropertiesTable{new G4MaterialPropertiesTable};
-    reflectorSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, ttc.ReflectorReflectivity());
-
-    const auto couplerSurfacePropertiesTable{new G4MaterialPropertiesTable};
-    couplerSurfacePropertiesTable->AddProperty("TRANSMITTANCE", {minPhotonEnergy, maxPhotonEnergy}, ttc.CouplerTransmittance());
-
-    const auto airPaintSurfacePropertiesTable{new G4MaterialPropertiesTable};
-    airPaintSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, ttc.AirPaintReflectivity());
-
-    const auto cathodeSurfacePropertiesTable{new G4MaterialPropertiesTable};
-    cathodeSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, ttc.CathodeSurface());
-    cathodeSurfacePropertiesTable->AddProperty("EFFICIENCY", ttc.SiPMEnergyBin(), ttc.SiPMEfficiency());
-
     // Construct Detector
     int tileID{};
     const auto nCircle{ssize(ttc.NAlongPhi())};
@@ -243,31 +209,6 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         ttcVirtualBoxLogic,
         false,
         checkOverlaps);
-
-    // Construct Optical Surface
-    const auto reflectorSurface{new G4OpticalSurface("TTCReflector", unified, polished, dielectric_metal)};
-    new G4LogicalSkinSurface{"TTCReflectorSurface", ttcScintillatorLogic, reflectorSurface};
-    reflectorSurface->SetMaterialPropertiesTable(reflectorSurfacePropertiesTable);
-    const auto airPaintSurface{new G4OpticalSurface("TTCAirPaint", unified, polished, dielectric_metal)};
-    new G4LogicalBorderSurface{"TTCAirPaintSurface",
-                               PhysicalVolume("TTCVirtualBoxPhysics"),
-                               ttcScintillatorPhysics,
-                               airPaintSurface};
-    airPaintSurface->SetMaterialPropertiesTable(airPaintSurfacePropertiesTable);
-
-    const auto couplerUpSurface{new G4OpticalSurface("TTCCoupler", unified, polished, dielectric_dielectric)};
-    new G4LogicalBorderSurface{"TTCCouplerSurface",
-                               ttcScintillatorPhysics,
-                               ttcLightCouplerUpPhysics,
-                               couplerUpSurface};
-    couplerUpSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
-    const auto couplerDownSurface{new G4OpticalSurface("TTCCoupler", unified, polished, dielectric_dielectric)};
-    new G4LogicalBorderSurface{"TTCCouplerSurface",
-                               ttcScintillatorPhysics,
-                               ttcLightCouplerDownPhysics,
-                               couplerDownSurface};
-    couplerDownSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
-
     // set the position of the Silicon inside the Window
     Make<G4PVPlacement>(
         nullptr,
@@ -278,10 +219,71 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         false,
         checkOverlaps);
 
-    // Construct Silicon Optical Surface
-    const auto cathodeSurface{new G4OpticalSurface("TTCCathode", unified, polished, dielectric_metal)};
-    new G4LogicalSkinSurface{"TTCCathodeSkinSurface", ttcSiliconeLogic, cathodeSurface};
-    cathodeSurface->SetMaterialPropertiesTable(cathodeSurfacePropertiesTable);
+    // optical properties
+    if (ttc.UseOptics()) {
+        // Construct Material Optical Properties Tables
+        const auto [minPhotonEnergy, maxPhotonEnergy]{std::ranges::minmax(ttc.ScintillationComponent1EnergyBin())};
+        const auto scintillatorPropertiesTable{new G4MaterialPropertiesTable};
+        scintillatorPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, ttc.RIndex());
+        scintillatorPropertiesTable->AddProperty("ABSLENGTH", {minPhotonEnergy, maxPhotonEnergy}, ttc.AbsLength());
+        scintillatorPropertiesTable->AddProperty("SCINTILLATIONCOMPONENT1", ttc.ScintillationComponent1EnergyBin(), ttc.ScintillationComponent1());
+        scintillatorPropertiesTable->AddConstProperty("SCINTILLATIONYIELD", ttc.ScintillationYield());
+        scintillatorPropertiesTable->AddConstProperty("SCINTILLATIONRISETIME1", ttc.ScintillationRiseTimeConstant1());
+        scintillatorPropertiesTable->AddConstProperty("SCINTILLATIONTIMECONSTANT1", ttc.ScintillationDecayTimeConstant1());
+        scintillatorPropertiesTable->AddConstProperty("RESOLUTIONSCALE", ttc.ResolutionScale());
+        ttcScintillatorMaterial->SetMaterialPropertiesTable(scintillatorPropertiesTable);
+
+        const auto lightCouplerPropertiesTable{new G4MaterialPropertiesTable};
+        lightCouplerPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, ttc.LightCouplerRIndex()); // EJ-550
+        lightCouplerPropertiesTable->AddProperty("ABSLENGTH", {minPhotonEnergy, maxPhotonEnergy}, ttc.LightCouplerAbsLength());
+        lightCoupler->SetMaterialPropertiesTable(lightCouplerPropertiesTable);
+
+        const auto windowPropertiesTable{new G4MaterialPropertiesTable};
+        windowPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, ttc.WindowRIndex());
+        window->SetMaterialPropertiesTable(windowPropertiesTable);
+
+        const auto reflectorSurfacePropertiesTable{new G4MaterialPropertiesTable};
+        reflectorSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, ttc.ReflectorReflectivity());
+
+        const auto couplerSurfacePropertiesTable{new G4MaterialPropertiesTable};
+        couplerSurfacePropertiesTable->AddProperty("TRANSMITTANCE", {minPhotonEnergy, maxPhotonEnergy}, ttc.CouplerTransmittance());
+
+        const auto airPaintSurfacePropertiesTable{new G4MaterialPropertiesTable};
+        airPaintSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, ttc.AirPaintReflectivity());
+
+        const auto cathodeSurfacePropertiesTable{new G4MaterialPropertiesTable};
+        cathodeSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, ttc.CathodeSurface());
+        cathodeSurfacePropertiesTable->AddProperty("EFFICIENCY", ttc.SiPMEnergyBin(), ttc.SiPMEfficiency());
+
+        // Construct Optical Surface
+        const auto reflectorSurface{new G4OpticalSurface("TTCReflector", unified, polished, dielectric_metal)};
+        new G4LogicalSkinSurface{"TTCReflectorSurface", ttcScintillatorLogic, reflectorSurface};
+        reflectorSurface->SetMaterialPropertiesTable(reflectorSurfacePropertiesTable);
+        const auto airPaintSurface{new G4OpticalSurface("TTCAirPaint", unified, polished, dielectric_metal)};
+        new G4LogicalBorderSurface{"TTCAirPaintSurface",
+                                   PhysicalVolume("TTCVirtualBoxPhysics"),
+                                   ttcScintillatorPhysics,
+                                   airPaintSurface};
+        airPaintSurface->SetMaterialPropertiesTable(airPaintSurfacePropertiesTable);
+
+        const auto couplerUpSurface{new G4OpticalSurface("TTCCoupler", unified, polished, dielectric_dielectric)};
+        new G4LogicalBorderSurface{"TTCCouplerSurface",
+                                   ttcScintillatorPhysics,
+                                   ttcLightCouplerUpPhysics,
+                                   couplerUpSurface};
+        couplerUpSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
+        const auto couplerDownSurface{new G4OpticalSurface("TTCCoupler", unified, polished, dielectric_dielectric)};
+        new G4LogicalBorderSurface{"TTCCouplerSurface",
+                                   ttcScintillatorPhysics,
+                                   ttcLightCouplerDownPhysics,
+                                   couplerDownSurface};
+        couplerDownSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
+
+        // Construct Silicon Optical Surface
+        const auto cathodeSurface{new G4OpticalSurface("TTCCathode", unified, polished, dielectric_metal)};
+        new G4LogicalSkinSurface{"TTCCathodeSkinSurface", ttcSiliconeLogic, cathodeSurface};
+        cathodeSurface->SetMaterialPropertiesTable(cathodeSurfacePropertiesTable);
+    }
 }
 
 } // namespace MACE::PhaseI::Detector::Definition

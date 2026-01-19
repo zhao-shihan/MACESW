@@ -23,7 +23,7 @@ if(NOT MACESW_BUILTIN_GENFIT)
     find_package(genfit ${MACESW_GENFIT_MINIMUM_REQUIRED})
     if(NOT genfit_FOUND)
         set(MACESW_BUILTIN_GENFIT ON)
-        message(NOTICE "***Notice: GenFit not found (minimum required is ${MACESW_GENFIT_MINIMUM_REQUIRED}). For the time turning on MACESW_BUILTIN_GENFIT")
+        message(NOTICE "***Notice: GenFit not found (minimum required is ${MACESW_GENFIT_MINIMUM_REQUIRED}). Temporarily turning on MACESW_BUILTIN_GENFIT")
     endif()
 endif()
 

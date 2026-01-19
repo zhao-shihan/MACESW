@@ -32,7 +32,7 @@ namespace MACE::Detector::Field {
 
 class MMSField : public Mustard::Detector::Field::MagneticFieldBase<MMSField> {
 private:
-    using FastField = Mustard::Detector::Field::UniformMagneticField;
+    using NominalField = Mustard::Detector::Field::UniformMagneticField;
     using FieldMap = Mustard::Detector::Field::MagneticFieldMapSymmetryY<>;
 
 public:
@@ -42,7 +42,7 @@ public:
     auto B(T x) const -> T { return std::visit([&x](auto&& f) { return f.B(x); }, fField); } // clang-format on
 
 private:
-    std::variant<FastField, FieldMap> fField;
+    std::variant<NominalField, FieldMap> fField;
 };
 
 } // namespace MACE::Detector::Field

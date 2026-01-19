@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "MACE/Utility/EventGeneratorCLI.h++"
+#include "MACE/Generator/EventGeneratorCLI.h++"
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/ModuleBase.h++"
@@ -39,7 +39,7 @@
 #include <optional>
 #include <tuple>
 
-namespace MACE::inline Utility {
+namespace MACE::Generator {
 
 class MatrixElementBasedGeneratorCLIModule : public Mustard::CLI::ModuleBase {
 public:
@@ -57,6 +57,6 @@ template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>
 using MatrixElementBasedGeneratorCLI = EventGeneratorCLI<MatrixElementBasedGeneratorCLIModule,
                                                          AExtraModules...>;
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator
 
-#include "MACE/Utility/MatrixElementBasedGeneratorCLI.inl"
+#include "MACE/Generator/MatrixElementBasedGeneratorCLI.inl"

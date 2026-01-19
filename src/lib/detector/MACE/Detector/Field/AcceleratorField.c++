@@ -33,8 +33,8 @@ AcceleratorField::AcceleratorField() : // clang-format off
     }
 }
 
-AcceleratorField::FastField::FastField() :
-    fB{Detector::Description::MMSField::Instance().FastField()} {
+AcceleratorField::NominalField::NominalField() :
+    fB{Detector::Description::MMSField::Instance().NominalField()} {
     const auto& accelerator{Description::Accelerator::Instance()};
     fZ0 = accelerator.MaxPotentialPosition();
     fE1 = -accelerator.MaxPotential() / accelerator.DecelerateFieldLength();

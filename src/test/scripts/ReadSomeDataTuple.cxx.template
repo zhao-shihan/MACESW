@@ -1,3 +1,9 @@
+// Usage:
+// 1. Replace <data_tuple_name> with the name of datatuple (e.g. SimDecayVertex).
+// 2. Go to the "==USER DEFINE==" section and modify the dataframe definitions and histogram ranges as needed.
+// 3. Remove the ".template" file name suffix and assign it a proper file name.
+// 4. Delete this guide text and the section guides, and format the code properly.
+
 #include "ROOT/RDataFrame.hxx"
 #include "TCanvas.h"
 #include "TFile.h"
@@ -11,9 +17,9 @@
 #include <vector>
 
 const auto nBinsValueType{100};
-auto DataTupleName{"SimDecayVertex"};
+auto DataTupleName{"<data_tuple_name>"};
 
-auto ReadSimDecayVertex(auto moduleName, auto srcFileName, auto dstFileName) -> int {
+auto Read<data_tuple_name>(auto moduleName, auto srcFileName, auto dstFileName) -> int {
     ROOT::RDataFrame df0{Form("G4Run0/%s", DataTupleName), srcFileName};
     const auto dstFile{new TFile(dstFileName, "UPDATE")};
     auto moduleDir{static_cast<TDirectory*>(dstFile->Get(moduleName))};
@@ -33,15 +39,35 @@ auto ReadSimDecayVertex(auto moduleName, auto srcFileName, auto dstFileName) -> 
     dstFile->cd();
     dstDir->cd();
 
+// =========================================================================
+// ============================== USER DEFINE ==============================
+// =========================================================================
+
+// Define each component of the array-type columns as needed
     auto df{df0.Define("x_0", "x[0]")
                 .Define("x_1", "x[1]")
-                .Define("x_2", "x[2]")};
+                .Define("x_2", "x[2]")
+                .Define("p_0", "p[0]")
+                .Define("p_1", "p[1]")
+                .Define("p_2", "p[2]")
+                .Define("x0_0", "x0[0]")
+                .Define("x0_1", "x0[1]")
+                .Define("x0_2", "x0[2]")
+                .Define("p0_0", "p0[0]")
+                .Define("p0_1", "p0[1]")
+                .Define("p0_2", "p0[2]")};
+
+// Specify histogram parameters: expression(column name), xLow, xUp
+// The type of xLow and xUp can be double(e.g. 0.0), RResultPtr<double>(e.g. df.Max("x_0")) or a function returning double(e.g. the lambda in the 4th row below)
     std::vector<std::tuple<std::string, std::any, std::any>> histParameterList{
-        {"t",   0.,                                                                                 std::function([&]() -> double { return *df.Mean("t") + 3 * *df.StdDev("t"); })    },
+        {"TrkID", 0.,                                                                                   10.                                                                                 },
+        {"x_0",   df.Min("x_0"),                                                                        df.Max("x_0")                                                                       },
         {"x_0", std::function([&]() -> double { return *df.Mean("x_0") - 3 * *df.StdDev("x_0"); }), std::function([&]() -> double { return *df.Mean("x_0") + 3 * *df.StdDev("x_0"); })},
-        {"x_1", std::function([&]() -> double { return *df.Mean("x_1") - 3 * *df.StdDev("x_1"); }), std::function([&]() -> double { return *df.Mean("x_1") + 3 * *df.StdDev("x_1"); })},
-        {"x_2", std::function([&]() -> double { return *df.Mean("x_2") - 3 * *df.StdDev("x_2"); }), std::function([&]() -> double { return *df.Mean("x_2") + 3 * *df.StdDev("x_2"); })}
     };
+
+// =========================================================================
+// =========================================================================
+// =========================================================================
 
     std::vector<ROOT::RDF::RResultPtr<TH1>> histList;
     std::ranges::transform(histParameterList, std::back_inserter(histList),

@@ -17,13 +17,13 @@
 
 message(STATUS "Looking for macesw_offline_data")
 
-set(MACESW_MACESW_OFFLINE_DATA_MINIMUM_REQUIRED 0.25.103013)
+set(MACESW_MACESW_OFFLINE_DATA_MINIMUM_REQUIRED 0.26.010616)
 
 if(NOT MACESW_BUILTIN_MACESW_OFFLINE_DATA)
     find_package(macesw_offline_data ${MACESW_MACESW_OFFLINE_DATA_MINIMUM_REQUIRED})
     if(NOT macesw_offline_data_FOUND)
         set(MACESW_BUILTIN_MACESW_OFFLINE_DATA ON)
-        message(NOTICE "***Notice: macesw_offline_data not found (minimum required is ${MACESW_MACESW_OFFLINE_DATA_MINIMUM_REQUIRED}). For the time turning on MACESW_BUILTIN_MACESW_OFFLINE_DATA")
+        message(NOTICE "***Notice: macesw_offline_data not found (minimum required is ${MACESW_MACESW_OFFLINE_DATA_MINIMUM_REQUIRED}). Temporarily turning on MACESW_BUILTIN_MACESW_OFFLINE_DATA")
     endif()
 endif()
 
@@ -36,7 +36,7 @@ if(MACESW_BUILTIN_MACESW_OFFLINE_DATA)
     endif()
     # set download dest and URL
     set(MACESW_BUILTIN_MACESW_OFFLINE_DATA_SRC_DIR "${MACESW_PROJECT_3RDPARTY_DIR}/macesw_offline_data-v${MACESW_BUILTIN_MACESW_OFFLINE_DATA_VERSION}")
-    set(MACESW_BUILTIN_MACESW_OFFLINE_DATA_URL "https://code.ihep.ac.cn/zhaoshh7/macesw_offline_data/-/archive/v${MACESW_BUILTIN_MACESW_OFFLINE_DATA_VERSION}/macesw_offline_data-v${MACESW_BUILTIN_MACESW_OFFLINE_DATA_VERSION}.tar.gz")
+    set(MACESW_BUILTIN_MACESW_OFFLINE_DATA_URL "https://github.com/MACESW-LFS/macesw_offline_data/archive/refs/tags/v${MACESW_BUILTIN_MACESW_OFFLINE_DATA_VERSION}.tar.gz")
     # reuse or download
     include(FetchContent)
     if(EXISTS "${MACESW_BUILTIN_MACESW_OFFLINE_DATA_SRC_DIR}/CMakeLists.txt")

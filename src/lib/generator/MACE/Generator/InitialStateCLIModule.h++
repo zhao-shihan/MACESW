@@ -32,7 +32,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace MACE::inline Utility {
+namespace MACE::Generator {
 
 template<muc::ceta_string P, muc::ceta_string... Ms>
     requires((P == "polarized" or P == "unpolarized") and sizeof...(Ms) >= 1)
@@ -53,6 +53,6 @@ public:
     auto To3Vector(std::string_view option) const -> CLHEP::Hep3Vector;
 };
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator
 
-#include "MACE/Utility/InitialStateCLIModule.inl"
+#include "MACE/Generator/InitialStateCLIModule.inl"

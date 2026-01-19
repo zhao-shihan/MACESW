@@ -21,9 +21,9 @@
 #include "MACE/Detector/Description/MMSField.h++"
 #include "MACE/Detector/Description/TTC.h++"
 #include "MACE/GenBkgM2ENNE/GenBkgM2ENNE.h++"
-#include "MACE/Utility/InitialStateCLIModule.h++"
-#include "MACE/Utility/MCMCGeneratorCLI.h++"
-#include "MACE/Utility/WriteAutocorrelationFunction.h++"
+#include "MACE/Generator/InitialStateCLIModule.h++"
+#include "MACE/Generator/MCMCGeneratorCLI.h++"
+#include "MACE/Generator/WriteAutocorrelationFunction.h++"
 
 #include "Mustard/Data/GeneratedEvent.h++"
 #include "Mustard/Data/Output.h++"
@@ -42,6 +42,8 @@
 #include "muc/numeric"
 #include "muc/utility"
 
+#include <string>
+
 namespace MACE::GenBkgM2ENNE {
 
 using namespace Mustard::LiteralUnit::Energy;
@@ -53,9 +55,10 @@ GenBkgM2ENNE::GenBkgM2ENNE() :
     Subprogram{"GenBkgM2ENNE", "Generate muonium decay with hard photon exchange (M -> e+ nu nu e-)."} {}
 
 auto GenBkgM2ENNE::Main(int argc, char* argv[]) const -> int {
-    MCMCGeneratorCLI<InitialStateCLIModule<"unpolarized", "muonium">> cli;
+    Generator::MCMCGeneratorCLI<Generator::InitialStateCLIModule<"unpolarized", "muonium">> cli;
     cli.DefaultOutput("m2enne_bkg.root");
     cli.DefaultOutputTree("m2enne");
+    cli.AddMCMCStepSizeOption();
     auto& biasCLI{cli->add_mutually_exclusive_group()};
     biasCLI.add_argument("--mace-bias").help("Enable MACE detector signal region importance sampling.").flag();
     biasCLI.add_argument("--ep-ek-bias").help("Apply soft upper bound for positron kinetic energy.").flag();
@@ -67,24 +70,24 @@ auto GenBkgM2ENNE::Main(int argc, char* argv[]) const -> int {
     Mustard::UseXoshiro<256> random{cli};
 
     Mustard::M2ENNEGenerator generator("muonium", cli.Momentum(),
-                                       cli->present<double>("--thinning-ratio"), cli->present<unsigned>("--acf-sample-size"));
+                                       cli->present<double>("--thinning-ratio"), cli->present<unsigned>("--acf-sample-size"),
+                                       cli->present<double>("--mcmc-step-size"));
 
     if (cli["--mace-bias"] == true) {
         const auto& cdc{Detector::Description::CDC::Instance()};
         const auto& ttc{Detector::Description::TTC::Instance()};
-        const auto mmsB{Detector::Description::MMSField::Instance().FastField()};
-        generator.Acceptance([inPxyCut = (cdc.GasInnerRadius() / 2) * mmsB * c_light,
-                              outPxyCut = (ttc.Radius() / 2) * mmsB * c_light,
+        const auto mmsB{Detector::Description::MMSField::Instance().NominalField()};
+        generator.Acceptance([outPxyCut = (ttc.Radius() / 2) * mmsB * c_light,
                               cosCut = 1 / muc::hypot(2 * cdc.GasOuterRadius() / cdc.GasOuterLength(), 1.),
                               epEkCut = cli->get<double>("--ep-ek-soft-upper-bound"),
                               scPxy = muc::soft_cmp{cli->get<double>("--pxy-softening-factor")},
                               scCos = muc::soft_cmp{cli->get<double>("--cos-theta-softening-factor")},
                               scEk = muc::soft_cmp{cli->get<double>("--ep-ek-softening-factor")}](auto&& momenta) {
-            // .         e+ n   n   e-
-            const auto& [p0, _1, _2, p3]{momenta};
-            const auto p0Low{scEk(p0.e() - electron_mass_c2) < scEk(epEkCut)};
-            const auto p3Seen{scPxy(p3.perp()) > scPxy(outPxyCut) and scCos(muc::abs(p3.cosTheta())) < scCos(cosCut)};
-            return p0Low and p3Seen;
+            // .         e+  n   n   e-
+            const auto& [q1, _1, _2, q4]{momenta};
+            const auto epSlow{scEk(q1.e() - electron_mass_c2) < scEk(epEkCut)};
+            const auto emFast{scPxy(q4.perp()) > scPxy(outPxyCut) and scCos(muc::abs(q4.cosTheta())) < scCos(cosCut)};
+            return epSlow and emFast;
         });
     } else if (cli["--ep-ek-bias"] == true) {
         generator.Acceptance([epEkCut = cli->get<double>("--ep-ek-soft-upper-bound"),
@@ -115,7 +118,7 @@ auto GenBkgM2ENNE::Main(int argc, char* argv[]) const -> int {
     Mustard::ProcessSpecificFile<TFile> file{cli->get("--output"), cli->get("--output-mode")};
     auto& rng{*CLHEP::HepRandom::getTheEngine()};
     const auto autocorrelationFunction{generator.MCMCInitialize(rng)};
-    WriteAutocorrelationFunction(autocorrelationFunction);
+    Generator::WriteAutocorrelationFunction(autocorrelationFunction);
 
     // Generate events
     if (*nEvent == 0) {

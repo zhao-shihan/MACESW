@@ -34,7 +34,7 @@ ECALField::ECALField() : // clang-format off
     fRadius{60_cm},
     fLength{100_cm},
     // Field
-    fFastField{0.1_T} {}
+    fNominalField{0.1_T} {}
 
 auto ECALField::Center() const -> muc::array3d {
     using namespace Mustard::VectorArithmeticOperator;
@@ -47,7 +47,7 @@ auto ECALField::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fRadius, "Radius");
     ImportValue(node, fLength, "Length");
     // Field
-    ImportValue(node, fFastField, "FastField");
+    ImportValue(node, fNominalField, "NominalField");
 }
 
 auto ECALField::ExportAllValue(YAML::Node& node) const -> void {
@@ -55,7 +55,7 @@ auto ECALField::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fRadius, "Radius");
     ExportValue(node, fLength, "Length");
     // Field
-    ExportValue(node, fFastField, "FastField");
+    ExportValue(node, fNominalField, "NominalField");
 }
 
 } // namespace MACE::Detector::Description

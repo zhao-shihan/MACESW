@@ -25,11 +25,11 @@ namespace MACE::Detector::Field {
 
 SolenoidFieldS3::SolenoidFieldS3() : // clang-format off
     MagneticFieldBase<SolenoidFieldS3>{}, // clang-format on
-    fField{FastField{{}}} {
+    fField{NominalField{{}}} {
     const auto& fieldOption{Detector::Description::FieldOption::Instance()};
     const auto& solenoid{Detector::Description::Solenoid::Instance()};
     if (fieldOption.UseFast()) {
-        fField = FastField{0, 0, solenoid.FastField()};
+        fField = NominalField{0, 0, solenoid.NominalField()};
     } else {
         fField = FieldMap{fieldOption.ParsedFieldDataFilePath().generic_string(), "SolenoidFieldS3"};
     }

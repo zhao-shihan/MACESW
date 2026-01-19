@@ -19,19 +19,26 @@
 
 #pragma once
 
-#include "MACE/Utility/MatrixElementBasedGeneratorCLI.h++"
-
 #include "Mustard/CLI/Module/ModuleBase.h++"
+#include "Mustard/CLI/MonteCarloCLI.h++"
 
-namespace MACE::inline Utility {
+#include <optional>
+#include <string>
 
-class MCMCGeneratorCLIModule : public Mustard::CLI::ModuleBase {
+namespace MACE::Generator {
+
+class EventGeneratorCLIModule : public Mustard::CLI::ModuleBase {
 public:
-    explicit MCMCGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+    explicit EventGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
+
+    auto DefaultOutput(std::string path) -> void;
+    auto DefaultOutputTree(std::string name) -> void;
+
+    auto GenerateOrExit() const -> std::optional<unsigned long long>;
 };
 
 template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>
-using MCMCGeneratorCLI = MatrixElementBasedGeneratorCLI<MCMCGeneratorCLIModule,
-                                                        AExtraModules...>;
+using EventGeneratorCLI = Mustard::CLI::MonteCarloCLI<EventGeneratorCLIModule,
+                                                      AExtraModules...>;
 
-} // namespace MACE::inline Utility
+} // namespace MACE::Generator

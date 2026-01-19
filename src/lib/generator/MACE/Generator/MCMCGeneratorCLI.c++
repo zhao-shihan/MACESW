@@ -17,11 +17,11 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-#include "MACE/Utility/MCMCGeneratorCLI.h++"
+#include "MACE/Generator/MCMCGeneratorCLI.h++"
 
 #include "Mustard/CLI/CLI.h++"
 
-namespace MACE::inline Utility {
+namespace MACE::Generator {
 
 MCMCGeneratorCLIModule::MCMCGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli) :
     ModuleBase{cli} {
@@ -38,4 +38,12 @@ MCMCGeneratorCLIModule::MCMCGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI<>
         .scan<'i', unsigned>();
 }
 
-} // namespace MACE::inline Utility
+auto MCMCGeneratorCLIModule::AddMCMCStepSizeOption() -> void {
+    TheCLI()
+        ->add_argument("-d", "--mcmc-step-size")
+        .help("Step size in MCMC sampling.")
+        .nargs(1)
+        .scan<'g', double>();
+}
+
+} // namespace MACE::Generator

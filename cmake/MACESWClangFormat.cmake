@@ -18,7 +18,7 @@
 find_program(CLANG_FORMAT_EXE clang-format)
 if(NOT CLANG_FORMAT_EXE)
     set(MACESW_CLANG_FORMAT OFF)
-    message(NOTICE "***Notice: clang-format not found. For the time turning off MACESW_CLANG_FORMAT")
+    message(NOTICE "***Notice: clang-format not found. Temporarily turning off MACESW_CLANG_FORMAT")
 endif()
 
 if(MACESW_CLANG_FORMAT)

@@ -1,14 +1,14 @@
-# Nightly Pre-release Workflow
+# Nightly tagging workflow
 #
-# This workflow runs nightly to create pre-release builds from the rc branch.
+# This workflow runs nightly to create tag on the rc branch.
 #
 # The workflow performs the following steps:
 # 1. Checks if all required checks passed on main branch (waits for pending checks)
 # 2. Syncs main branch to rc branch (fast-forward only)
-# 3. Checks if there are new commits since the last v0.* tag
-# 4. Creates a new tag and GitHub pre-release only if changes exist
+# 3. Checks if there are new commits since the last nightly tag
+# 4. Creates a new tag only if changes exist
 
-name: Nightly pre-release
+name: Nightly tagging
 
 on:
   schedule:
@@ -26,8 +26,8 @@ env:
   TZ: UTC
 
 jobs:
-  nightly-prerelease:
-    name: Nightly pre-release
+  nightly-tagging:
+    name: Nightly tagging
     timeout-minutes: 180
     runs-on: ubuntu-latest
     steps:
@@ -47,20 +47,20 @@ jobs:
           echo "::group::Checking main branch check status"
 
           # Define this workflow name to avoid circular dependency
-          THIS_WORKFLOW_NAME="Nightly pre-release"
+          THIS_WORKFLOW_NAME="Nightly tagging"
 
           # Get the latest commit SHA from main branch
           MAIN_SHA=$(git rev-parse origin/main)
           echo "Main branch HEAD commit: ${MAIN_SHA}"
 
           MAX_WAIT_SECONDS=10800  # 180 minutes = 10800 seconds
-          POLL_INTERVAL=30        # Check every 30 seconds
+          POLL_INTERVAL=10        # Check every 10 seconds
           ELAPSED=0
           ALL_PENDING=""  # Initialize outside loop for timeout access
 
           while [ ${ELAPSED} -lt ${MAX_WAIT_SECONDS} ]; do
             echo ""
-            echo "Checking status at $(date -u +"%Y-%m-%d %H:%M:%S UTC") (elapsed: ${ELAPSED}s)"
+            echo "Checking status at $(date --iso-8601=seconds) (elapsed: ${ELAPSED}s)"
 
             # Get status checks using GitHub API
             STATUS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
@@ -112,7 +112,6 @@ jobs:
               echo "::endgroup::"
               exit 1
             fi
-            # Remove empty/whitespace-only lines
             TRIMMED_FAILING_STATUSES=$(echo "${FAILING_STATUSES}" | awk 'NF')
             if [ -n "${TRIMMED_FAILING_STATUSES}" ]; then
               echo "::error::The following status checks have failed on main:"
@@ -132,9 +131,10 @@ jobs:
               echo "::endgroup::"
               exit 1
             fi
-            if [ -n "${FAILING_CHECKS}" ]; then
+            TRIMMED_FAILING_CHECKS=$(echo "${FAILING_CHECKS}" | awk 'NF')
+            if [ -n "${TRIMMED_FAILING_CHECKS}" ]; then
               echo "::error::The following check runs have failed on main:"
-              echo "${FAILING_CHECKS}" | while read -r check; do
+              echo "${TRIMMED_FAILING_CHECKS}" | while read -r check; do
                 echo "::error::  - ${check}"
               done
               echo "checks_passed=false" >> $GITHUB_OUTPUT
@@ -209,7 +209,7 @@ jobs:
         run: |
           echo "::group::Syncing main to rc branch"
           git fetch origin main:main || git fetch origin main
-          git checkout rc || git checkout -b rc
+          git switch rc || git switch -c rc
           git merge --ff-only main || {
             echo "::error::Failed to fast-forward merge main into rc."
             echo "::error::Manual intervention required."
@@ -218,14 +218,26 @@ jobs:
           git push origin rc
           echo "::endgroup::"
 
-      - name: Check for new commits and determine release necessity
+      - name: Check for new commits and determine tagging necessity
         if: steps.check_main_status.outputs.checks_passed == 'true'
         id: check_commits
         run: |
           echo "::group::Checking for new commits"
 
           # Generate today's tag name
-          TODAY_TAG="v0.$(date +%y.%m%d)"
+          CMAKELISTS_CONTENT=$(cat CMakeLists.txt)
+          VERSION_MAJOR=$(echo "$CMAKELISTS_CONTENT" | grep -E "set\(MACESW_VERSION_MAJOR [0-9]+\)" | tail -n 1 | sed -E 's/.*set\(MACESW_VERSION_MAJOR ([0-9]+)\).*/\1/')
+          VERSION_MINOR=$(echo "$CMAKELISTS_CONTENT" | grep -E "set\(MACESW_VERSION_MINOR [0-9]+\)" | tail -n 1 | sed -E 's/.*set\(MACESW_VERSION_MINOR ([0-9]+)\).*/\1/')
+          VERSION_PATCH=$(echo "$CMAKELISTS_CONTENT" | grep -E "set\(MACESW_VERSION_PATCH [0-9]+\)" | tail -n 1 | sed -E 's/.*set\(MACESW_VERSION_PATCH ([0-9]+)\).*/\1/')
+
+          if [ -z "$VERSION_MAJOR" ] || [ -z "$VERSION_MINOR" ] || [ -z "$VERSION_PATCH" ]; then
+            echo "::error::Failed to extract version from CMakeLists.txt"
+            exit 1
+          fi
+
+          BASE_VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+          COMMIT_SHA_SHORT=$(git rev-parse --short=7 rc)
+          TODAY_TAG="v${BASE_VERSION}-nightly@$(date +'%Y%m%d')+git@${COMMIT_SHA_SHORT}"
           echo "today_tag=${TODAY_TAG}" >> $GITHUB_OUTPUT
           echo "Today's tag would be: ${TODAY_TAG}"
 
@@ -233,132 +245,94 @@ jobs:
           if git rev-parse "${TODAY_TAG}" >/dev/null 2>&1; then
             REASON="Tag ${TODAY_TAG} already exists for today"
             echo "skip_reason=${REASON}" >> $GITHUB_OUTPUT
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "::warning::${REASON}. Skipping release creation."
+            echo "should_tagging=false" >> $GITHUB_OUTPUT
+            echo "::warning::${REASON}. Skipping tagging."
             echo "::endgroup::"
             exit 0
           fi
 
-          # Get the latest pre-release tag (any tag starting with v0.)
-          LATEST_TAG=$(git tag -l "v0.*" --sort=-version:refname \
-            | head -n 1)
+          # Get the latest nightly tag (any tag matching 'v*-nightly*')
+          LATEST_NIGHTLY_TAG=$(git tag -l 'v*-nightly*' --sort=-version:refname | head -n 1)
 
-          if [ -z "${LATEST_TAG}" ]; then
-            echo "No previous pre-release tags found."
-            echo "This will be the first release."
+          if [ -z "${LATEST_NIGHTLY_TAG}" ]; then
+            echo "No previous nightly tag found."
+            echo "This will be the first nightly tag."
             echo "skip_reason=" >> $GITHUB_OUTPUT
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "latest_tag=" >> $GITHUB_OUTPUT
+            echo "should_tagging=true" >> $GITHUB_OUTPUT
+            echo "latest_nightly_tag=" >> $GITHUB_OUTPUT
             echo "::endgroup::"
             exit 0
           fi
 
-          echo "Latest pre-release tag: ${LATEST_TAG}"
-          echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
+          echo "Latest nightly tag: ${LATEST_NIGHTLY_TAG}"
+          echo "latest_nightly_tag=${LATEST_NIGHTLY_TAG}" >> $GITHUB_OUTPUT
 
           # Get commit SHAs
-          LATEST_TAG_COMMIT=$(git rev-list -n 1 "${LATEST_TAG}")
+          LATEST_NIGHTLY_COMMIT=$(git rev-list -n 1 "${LATEST_NIGHTLY_TAG}")
           RC_HEAD_COMMIT=$(git rev-parse rc)
 
-          echo "Latest tag commit: ${LATEST_TAG_COMMIT}"
+          echo "Latest tag commit: ${LATEST_NIGHTLY_COMMIT}"
           echo "RC branch HEAD: ${RC_HEAD_COMMIT}"
 
           # Compare commits
-          if [ "${LATEST_TAG_COMMIT}" = "${RC_HEAD_COMMIT}" ]; then
-            REASON="No new commits since last release (${LATEST_TAG})"
+          if [ "${LATEST_NIGHTLY_COMMIT}" = "${RC_HEAD_COMMIT}" ]; then
+            REASON="No new commits since ${LATEST_NIGHTLY_TAG}"
             echo "skip_reason=${REASON}" >> $GITHUB_OUTPUT
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "::warning::${REASON}. Skipping release creation."
+            echo "should_tagging=false" >> $GITHUB_OUTPUT
+            echo "::warning::${REASON}. Skipping tagging."
           else
             # Count new commits
-            COMMIT_RANGE="${LATEST_TAG_COMMIT}..${RC_HEAD_COMMIT}"
+            COMMIT_RANGE="${LATEST_NIGHTLY_COMMIT}..${RC_HEAD_COMMIT}"
             NEW_COMMIT_COUNT=$(git rev-list --count "${COMMIT_RANGE}")
-            echo "Found ${NEW_COMMIT_COUNT} new commit(s) since ${LATEST_TAG}"
+            echo "Found ${NEW_COMMIT_COUNT} new commit(s) since ${LATEST_NIGHTLY_TAG}"
             echo "skip_reason=" >> $GITHUB_OUTPUT
-            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "should_tagging=true" >> $GITHUB_OUTPUT
           fi
 
           echo "::endgroup::"
 
       - name: Create tag
-        if: steps.check_main_status.outputs.checks_passed == 'true' && steps.check_commits.outputs.should_release == 'true'
+        if: steps.check_main_status.outputs.checks_passed == 'true' && steps.check_commits.outputs.should_tagging == 'true'
         run: |
           TAG="${{ steps.check_commits.outputs.today_tag }}"
           echo "::group::Creating tag ${TAG}"
-          git tag -a "${TAG}" -m "Nightly pre-release ${TAG}"
+          git tag -a "${TAG}" -m "Nightly tag ${TAG}"
           git push origin "${TAG}"
           echo "::endgroup::"
-
-      - name: Create GitHub release
-        if: steps.check_main_status.outputs.checks_passed == 'true' && steps.check_commits.outputs.should_release == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const tag = '${{ steps.check_commits.outputs.today_tag }}';
-            const latestTag = '${{ steps.check_commits.outputs.latest_tag }}';
-
-            // Generate release notes
-            let releaseBody = `Nightly pre-release build for ${tag}\n\n`;
-            releaseBody += `This is an automated pre-release `;
-            releaseBody += `created from the \`rc\` branch.\n\n`;
-
-            if (latestTag) {
-              releaseBody += `### Changes since ${latestTag}\n\n`;
-              const compareUrl = `https://github.com/` +
-                `${context.repo.owner}/${context.repo.repo}/` +
-                `compare/${latestTag}...${tag}`;
-              releaseBody += `See the [comparison view](${compareUrl})`;
-              releaseBody += ` for detailed changes.\n`;
-            } else {
-              releaseBody += `This is the first pre-release.\n`;
-            }
-
-            await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: tag,
-              name: `Pre-release ${tag}`,
-              body: releaseBody,
-              draft: false,
-              prerelease: true
-            });
-
-            const msg = `Successfully created pre-release ${tag}`;
-            core.notice(msg);
 
       - name: Job summary
         if: always()
         run: |
-          echo "## Nightly Pre-release Summary" >> "${GITHUB_STEP_SUMMARY}"
+          echo "## Nightly tagging summary" >> "${GITHUB_STEP_SUMMARY}"
           echo "" >> "${GITHUB_STEP_SUMMARY}"
 
-          CHECKS_OUTCOME="${{ steps.check_main_status.outcome }}"
+          CHECK_MAIN_STATUS_OUTCOME="${{ steps.check_main_status.outcome }}"
           CHECKS_PASSED="${{ steps.check_main_status.outputs.checks_passed }}"
-          STEP_OUTCOME="${{ steps.check_commits.outcome }}"
-          SHOULD_RELEASE="${{ steps.check_commits.outputs.should_release }}"
+          CHECK_COMMITS_OUTCOME="${{ steps.check_commits.outcome }}"
+          SHOULD_TAGGING="${{ steps.check_commits.outputs.should_tagging }}"
 
           # Check if main branch checks failed
-          if [ "${CHECKS_OUTCOME}" = "failure" ] || [ "${CHECKS_PASSED}" = "false" ]; then
-            echo "❌ **Release Skipped - Checks Failed**" >> "${GITHUB_STEP_SUMMARY}"
+          if [ "${CHECK_MAIN_STATUS_OUTCOME}" = "failure" ] || [ "${CHECKS_PASSED}" = "false" ]; then
+            echo "❌ **Tagging skipped - checks failed**" >> "${GITHUB_STEP_SUMMARY}"
             echo "- Required checks on main branch have not passed" >> "${GITHUB_STEP_SUMMARY}"
             echo "- Please review the workflow logs for details" >> "${GITHUB_STEP_SUMMARY}"
             echo "- The rc branch will not be updated until all checks pass" >> "${GITHUB_STEP_SUMMARY}"
-          elif [ "${STEP_OUTCOME}" != "success" ]; then
-            echo "❌ **Failed to determine release status**" >> "${GITHUB_STEP_SUMMARY}"
+          elif [ "${CHECK_COMMITS_OUTCOME}" != "success" ]; then
+            echo "❌ **Failed to determine tagging necessity**" >> "${GITHUB_STEP_SUMMARY}"
             echo "- The check for new commits step may have failed" >> "${GITHUB_STEP_SUMMARY}"
             echo "- Please review the workflow logs for errors" >> "${GITHUB_STEP_SUMMARY}"
-          elif [ "${SHOULD_RELEASE}" = "true" ]; then
+          elif [ "${SHOULD_TAGGING}" = "true" ]; then
             TAG="${{ steps.check_commits.outputs.today_tag }}"
-            echo "✅ **Release Created**: ${TAG}" >> "${GITHUB_STEP_SUMMARY}"
-            LATEST="${{ steps.check_commits.outputs.latest_tag }}"
+            echo "✅ **Tag created**: ${TAG}" >> "${GITHUB_STEP_SUMMARY}"
+            LATEST="${{ steps.check_commits.outputs.latest_nightly_tag }}"
             if [ -n "${LATEST}" ]; then
-              echo "- Previous release: ${LATEST}" >> "${GITHUB_STEP_SUMMARY}"
+              echo "- Previous nightly tag: ${LATEST}" >> "${GITHUB_STEP_SUMMARY}"
               echo "- New commits were found" >> "${GITHUB_STEP_SUMMARY}"
             else
-              echo "- This is the first pre-release" >> "${GITHUB_STEP_SUMMARY}"
+              echo "- This is the first nightly tag" >> "${GITHUB_STEP_SUMMARY}"
             fi
           else
-            echo "⏭️ **Release Skipped**" >> "${GITHUB_STEP_SUMMARY}"
+            echo "⏭️ **Tagging skipped**" >> "${GITHUB_STEP_SUMMARY}"
             REASON="${{ steps.check_commits.outputs.skip_reason }}"
             echo "- Reason: ${REASON}" >> "${GITHUB_STEP_SUMMARY}"
           fi
