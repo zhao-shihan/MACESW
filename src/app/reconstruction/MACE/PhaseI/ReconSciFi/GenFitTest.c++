@@ -138,6 +138,9 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
 
             std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
             for (auto&& hit : event) {
+                if (*Get<"nOptPho">(*hit) <= 3) {
+                    continue;
+                }
                 auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
                 *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*hit);
                 *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*hit);
