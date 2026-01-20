@@ -87,7 +87,7 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
 
     const auto fSciFiSD{new SD::SciFiSD{scifiName}};
     sciFiTracker.RegisterSD(scifiName + "HelicalFiberCore", fSciFiSD);
-    sciFiTracker.RegisterSD(scifiName + "TransverseFiberCore", fSciFiSD);
+    sciFiTracker.RegisterSD(scifiName + "AxialFiberCore", fSciFiSD);
 
     const auto sciFiSiPMSD{new SD::SciFiSiPMSD{scifiName + "SiPM"}};
     sciFiTracker.RegisterSD(scifiName + "SiPM", sciFiSiPMSD);

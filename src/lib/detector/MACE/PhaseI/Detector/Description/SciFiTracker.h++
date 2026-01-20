@@ -47,7 +47,7 @@ public:
     auto FiberCoreWidth() const -> auto { return fFiberCoreWidth; }
     auto FiberCladdingWidth() const -> auto { return fFiberCladdingWidth; }
     auto FiberLength() const -> auto { return fFiberLength; }
-    auto TransverseLightGuideLength() const -> auto { return fTransverseLightGuideLength; }
+    auto AxialLightGuideLength() const -> auto { return fAxialLightGuideLength; }
     auto DetectorLayerConfiguration() const -> const auto& { return *fLayerConfiguration; }
     auto DetectorFiberInformation() const -> const auto& { return *fFiberMap; }
     auto NLayer() const -> auto { return *fNLayer; }
@@ -82,7 +82,7 @@ public:
     auto FiberCoreRadius(double val) -> void { fFiberCoreWidth = val; }
     auto FiberCladdingRadius(double val) -> void { fFiberCladdingWidth = val; }
     auto FiberLength(double val) -> void { fFiberLength = val; }
-    auto TransverseLightGuideLength(double val) -> void { fTransverseLightGuideLength = val; }
+    auto AxialLightGuideLength(double val) -> void { fAxialLightGuideLength = val; }
     auto ScintillationTimeConstant1(double val) -> void { fScintillationTimeConstant1 = val; }
     auto NLayer(int val) -> void { fNLayer = val; }
     auto LayerType(std::vector<std::string> val) -> void { fLayerType = std::move(val); }
@@ -138,7 +138,7 @@ private:
     double fSiPMLength;
     double fSiPMWidth;
     double fSiPMThickness;
-    double fTransverseLightGuideLength;
+    double fAxialLightGuideLength;
     double fEpoxyThickness;
 
 private:

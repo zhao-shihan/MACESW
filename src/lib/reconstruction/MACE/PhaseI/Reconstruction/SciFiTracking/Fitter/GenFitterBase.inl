@@ -81,7 +81,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
     for (auto&& hit : dataSet) {
         const auto measurement{
             [&]() -> genfit::AbsMeasurement* {
-                if (fiberMap[*Get<"FiberID">(*hit)].layerType == "Transverse") {
+                if (fiberMap[*Get<"FiberID">(*hit)].layerType == "Axial") {
                     double x = fiberMap[*Get<"FiberID">(*hit)].radius * std::cos(fiberMap[*Get<"FiberID">(*hit)].rotationAngle);
                     double y = fiberMap[*Get<"FiberID">(*hit)].radius * std::sin(fiberMap[*Get<"FiberID">(*hit)].rotationAngle);
                     double z = sciFiTracker.FiberLength() / 2;
