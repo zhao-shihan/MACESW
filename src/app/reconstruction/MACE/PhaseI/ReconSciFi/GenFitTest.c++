@@ -77,36 +77,6 @@ using namespace std::literals;
 GenFitTest::GenFitTest() :
     Subprogram{"GenFitTest", "GenFit test for Scintilating Fiber Tracker (SciFi Tracker) event reconstruction."} {}
 
-void addVerticalWireMeasurement(genfit::Track* track, double x, double y, double zStart, double zEnd, int detID, int hitID) {
-    // 创建导线的两个端点（与z轴平行）
-    TVector3 p1(x, y, zStart); // 起点
-    TVector3 p2(x, y, zEnd);   // 终点
-
-    // 创建7维坐标向量
-    TVectorD hitCoords(7);
-    hitCoords[0] = p1.X(); // 端点1 x
-    hitCoords[1] = p1.Y(); // 端点1 y
-    hitCoords[2] = p1.Z(); // 端点1 z
-    hitCoords[3] = p2.X(); // 端点2 x
-    hitCoords[4] = p2.Y(); // 端点2 y
-    hitCoords[5] = p2.Z(); // 端点2 z
-    hitCoords[6] = 0;      // 漂移距离=0 (直接击中)
-
-    TMatrixDSym hitCov(7);
-    hitCov.UnitMatrix();
-    hitCov(6, 6) = 0.0289 * 0.0289; // 漂移距离的方差
-
-    // 创建导线测量
-    genfit::WireMeasurement* meas =
-        new genfit::WireMeasurement(hitCoords, hitCov, detID, hitID++, nullptr);
-    // meas->Print();
-    //  设置左右分辨率
-    meas->setLeftRightResolution(-1);
-
-    // 添加到轨迹
-    track->insertPoint(new genfit::TrackPoint(meas, track));
-}
-
 auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
@@ -123,6 +93,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     // MACE::PhaseI::SciFiTracking::GenFitReferenceKalmanFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     MACE::PhaseI::SciFiTracking::GenFitDAFFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     fitter.EnableEventDisplay(false);
+    int count1{0};
 
     Mustard::Data::Processor processor;
     processor.Process<PhaseI::Data::SciFiSimHit>(
@@ -138,7 +109,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
 
             std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
             for (auto&& hit : event) {
-                if (*Get<"nOptPho">(*hit) <= 3) {
+                if (*Get<"nOptPho">(*hit) <= 1) {
                     continue;
                 }
                 auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
@@ -155,12 +126,14 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                 if (track == nullptr) {
                     continue;
                 }
+                count1++;
                 std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
                 // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
                 std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
                 reconTrack.Fill(*track);
             }
         });
+    std::cout << count1 << std::endl;
     reconTrack.Write();
     // fitter.OpenEventDisplay();
     return EXIT_SUCCESS;
