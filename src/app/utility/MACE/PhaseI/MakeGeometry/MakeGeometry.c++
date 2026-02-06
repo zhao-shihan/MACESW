@@ -6,6 +6,7 @@
 #include "MACE/PhaseI/Detector/Definition/CentralBeamPipe.h++"
 #include "MACE/PhaseI/Detector/Definition/MRPC.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
+#include "MACE/PhaseI/Detector/Definition/TTC.h++"
 #include "MACE/PhaseI/Detector/Definition/World.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
 #include "MACE/PhaseI/MakeGeometry/MakeGeometry.h++"
@@ -61,7 +62,7 @@ auto MakeGeometry::Main(int argc, char* argv[]) const -> int {
     auto& ecalCrystal{fWorld->NewDaughter<MACE::Detector::Definition::ECALCrystal>(fCheckOverlap)};
     auto& ecalPhotoSensor{fWorld->NewDaughter<MACE::Detector::Definition::ECALPhotoSensor>(fCheckOverlap)};
     auto& centralBeamPipe{fWorld->NewDaughter<PhaseI::Detector::Definition::CentralBeamPipe>(fCheckOverlap)};
-    auto& mrpc{fWorld->NewDaughter<PhaseI::Detector::Definition::MRPC>(fCheckOverlap)};
+    auto& ttc{fWorld->NewDaughter<MACE::PhaseI::Detector::Definition::TTC>(fCheckOverlap)};
     auto& sciFiTracker{fWorld->NewDaughter<PhaseI::Detector::Definition::SciFiTracker>(fCheckOverlap)};
 
     centralBeamPipe.NewDaughter<MACE::Detector::Definition::Target>(fCheckOverlap);
