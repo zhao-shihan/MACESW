@@ -16,7 +16,6 @@
 /gps/pos/centre 0. 0. 0. cm
 /gps/ang/type iso
 
-/MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
 /MACE/Analysis/FilePath SimMACEPhaseI_ep_mono.root

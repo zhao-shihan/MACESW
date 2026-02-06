@@ -21,6 +21,7 @@
 #include "MACE/Detector/Description/ECAL.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
 #include "MACE/PhaseI/ReconECAL/ReconECAL.h++"
+#include "MACE/Reconstruction/ECALClustering/Clusterer.h++"
 
 #include "Mustard/CLI/BasicCLI.h++"
 #include "Mustard/Data/Output.h++"
@@ -42,6 +43,7 @@
 #include "TH3.h"
 #include "TRandom.h"
 #include "TTree.h"
+#include "TVector3.h"
 
 #include "muc/algorithm"
 
@@ -58,8 +60,7 @@ namespace MACE::PhaseI::ReconECAL {
 ReconECAL::ReconECAL() :
     Subprogram{"ReconECAL", "Electromagnetic calorimeter (ECAL) event reconstruction in PhaseI."} {}
 
-using namespace Mustard::LiteralUnit::Energy;
-using namespace Mustard::LiteralUnit::Time;
+using namespace Mustard::LiteralUnit;
 using namespace Mustard::MathConstant;
 using namespace Mustard::PhysicalConstant;
 using namespace std::literals;
@@ -67,38 +68,57 @@ using namespace std::literals;
 auto ReconECAL::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
-    cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("data"s).required().nargs(1);
+    cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("G4Run0/ECALSimHit"s).required().nargs(1);
     cli->add_argument("-o", "--output").help("Output file path.").required().nargs(1);
-    cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("NEW"s).required().nargs(1);
-    cli->add_argument("-c", "--description").help("Description YAML file path.").nargs(1);
-    Mustard::Env::MPIEnv env{argc, argv, {}};
+    cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("RECREATE"s).required().nargs(1);
+    cli->add_argument("-d", "--description").help("Description YAML file path.").nargs(1);
+    cli->add_argument("-single", "--track-single").help("Reconstruction of single event.").flag();
+    cli->add_argument("-double", "--track-double").help("Reconstruction of double events.").flag();
+    cli->add_argument("-triple", "--track-triple").help("Reconstruction of triple events.").flag();
+    cli->add_argument("-optics", "--optics").help("Use optical response.").flag();
+    cli->add_argument("-cali", "--calibration").help("Use calibration configurations.").flag();
+    Mustard::Env::MPIEnv env{argc, argv, cli};
 
+    const auto doSingle{cli["--track-single"] == true};
+    const auto doDouble{cli["--track-double"] == true};
+    const auto doTriple{cli["--track-triple"] == true};
+    const auto useOptics{cli["--optics"] == true};
+    const auto useCalibration{cli["--calibration"] == true};
+    std::vector<bool> reconstructionConfig{doSingle, doDouble, doTriple};
+
+    if (std::ranges::count(reconstructionConfig, true) != 1) {
+        Mustard::PrintError("One and only one reconstruction mode must be enabled.");
+    }
     if (const auto descriptionPath{cli->present("--description")}) {
         Mustard::Detector::Description::DescriptionIO::Import<MACE::Detector::Description::ECAL>(*descriptionPath);
     } else {
-        Mustard::Detector::Description::DescriptionIO::
-            Import<MACE::Detector::Description::ECAL>("../../../../simulation/MACE/PhaseI/SimMACEPhaseI/SimMACEPhaseI_geom.yaml");
+        Detector::Description::UsePhaseIDefault();
     }
 
     const auto& ecal{MACE::Detector::Description::ECAL::Instance()};
-    const auto& faceList{ecal.Mesh().faceList};
-
-    std::map<int, CLHEP::Hep3Vector> centroidMap;
-
-    for (int i{}; auto&& [centroid, _1, _2, _3, _4] : std::as_const(faceList)) {
-        centroidMap[i] = centroid;
-        i++;
-    }
+    const auto& moduleList{ecal.Array().moduleList};
 
     TFile outputFile{Mustard::Parallel::ProcessSpecificPath(cli->get("--output").c_str()).generic_string().c_str(), cli->get("--output-mode").c_str()};
-    using ECALEnergy = Mustard::Data::TupleModel<Mustard::Data::Value<float, "Edep", "Energy deposition">,
-                                                 Mustard::Data::Value<float, "Edep1", "Energy deposition 1">,
-                                                 Mustard::Data::Value<float, "Edep2", "Energy deposition 2">,
-                                                 Mustard::Data::Value<float, "dE", "Delta energy">,
-                                                 Mustard::Data::Value<double, "dt", "Delta time">,
-                                                 Mustard::Data::Value<double, "theta", "angle">>;
-    Mustard::Data::Output<ECALEnergy> reconEnergy{"G4Run0/ReconECAL"};
 
+    using ECALEnergy = Mustard::Data::TupleModel<
+        Mustard::Data::Value<double, "Edep1", "Energy deposition of the 1st cluster">,
+        Mustard::Data::Value<double, "Edep2", "Energy deposition of the 2nd cluster">,
+        Mustard::Data::Value<double, "Edep3", "Energy deposition of the 3rd cluster">,
+        Mustard::Data::Value<double, "TotalEdep", "Energy deposition in total">,
+        Mustard::Data::Value<int, "PE1", "Photoelectron counts of the 1st cluster">,
+        Mustard::Data::Value<int, "PE2", "Photoelectron counts of the 2nd cluster">,
+        Mustard::Data::Value<int, "PE3", "Photoelectron counts of the 3rd cluster">,
+        Mustard::Data::Value<int, "TotalPE", "Photoelectron counts in total">,
+        // Mustard::Data::Value<double, "t", "Time of the track">,
+        Mustard::Data::Value<double, "dE", "Energy difference of the tracks">,
+        Mustard::Data::Value<double, "dt", "Time difference of the tracks">,
+        Mustard::Data::Value<muc::array3f, "Position1", "Position of the 1st cluster">,
+        Mustard::Data::Value<muc::array3f, "Position2", "Position of the 2nd cluster">,
+        Mustard::Data::Value<muc::array3f, "Position3", "Position of the 3rd cluster">,
+        Mustard::Data::Value<double, "cosTheta", "Cosine of angle between the tracks">,
+        Mustard::Data::Value<double, "theta", "Angle between the tracks">>;
+
+    Mustard::Data::Output<ECALEnergy> reconEnergy{"G4Run0/ReconECAL"};
     Mustard::Data::Processor processor;
     processor.Process<Data::ECALSimHit>(
         ROOT::RDataFrame{cli->get("--input-tree"), cli->get<std::vector<std::string>>("input")}, int{}, "EvtID",
@@ -110,83 +130,125 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                          [](auto&& hit1, auto&& hit2) {
                              return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
                          });
-            std::unordered_map<short, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
-            std::vector<short> potentialSeedModule;
+            std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
+            std::vector<int> potentialSeedModule;
+            muc::array3f truthHitMomentum{};
 
             for (auto&& hit : event) {
                 hitDict.try_emplace(Get<"ModID">(*hit), hit);
-                if (Get<"Edep">(*hit) < 15_MeV) {
-                    continue;
-                }
                 potentialSeedModule.emplace_back(Get<"ModID">(*hit));
+                if (Get<"TrkID">(*hit) == 1 and Get<"HitID">(*hit) == 0) {
+                    truthHitMomentum = Get<"p0">(*hit);
+                }
             }
+            CLHEP::Hep3Vector truthHitVector{
+                truthHitMomentum.at(0),
+                truthHitMomentum.at(1),
+                truthHitMomentum.at(2)};
 
-            if (std::ssize(potentialSeedModule) < 2) {
-                return;
-            }
+            double energy1{};
+            double energy2{};
+            // double energy3{};
+            int pe1{};
+            // int pe2{};
+            // int pe3{};
+            CLHEP::Hep3Vector weightedPosition1{};
+            CLHEP::Hep3Vector weightedPosition2{};
+            // CLHEP::Hep3Vector weightedPosition3{};
+            CLHEP::Hep3Vector clusterPosition1{};
+            CLHEP::Hep3Vector clusterPosition2{};
+            // CLHEP::Hep3Vector clusterPosition3{};
+            Mustard::Data::Tuple<ECALEnergy> energyTuple;
 
-            std::unordered_set<short> firstCluster;
-            std::unordered_set<short> secondCluster;
-
-            CLHEP::Hep3Vector firstCenter{};
-            CLHEP::Hep3Vector secondCenter{};
-
-            auto firstSeedModule = potentialSeedModule.begin();
-            auto secondSeedModule = std::ranges::find_if(
-                potentialSeedModule,
-                [&](short m) { return centroidMap.at(*firstSeedModule).angle(centroidMap.at(m)) > 0.5 * pi; });
-            if (secondSeedModule == potentialSeedModule.end()) {
-                return;
-            }
-
-            const auto clustering = [&](std::unordered_set<short>& set,
-                                        CLHEP::Hep3Vector& c,
-                                        std::vector<short>::iterator seedIt) {
-                const auto addClusterLayers = [&](short module) {
-                    set.insert(module);
-                    for (auto&& neighbor : faceList[module].neighborModuleID) {
-                        set.insert(neighbor);
-                        for (auto&& secondNeighbor : faceList[neighbor].neighborModuleID) {
-                            set.insert(secondNeighbor);
-                            set.insert(faceList[secondNeighbor].neighborModuleID.begin(), faceList[secondNeighbor].neighborModuleID.end());
-                        }
-                    }
-                };
-                addClusterLayers(*seedIt);
-                float totalEnergy{};
-                CLHEP::Hep3Vector weightedCentroid{};
-
-                for (const auto& module : set) {
+            if (doSingle) {
+                auto seedModule = potentialSeedModule.begin();
+                auto cluster = ECALClustering::Clusterer(*seedModule, moduleList);
+                for (const auto& module : cluster) {
                     auto hitIt = hitDict.find(module);
                     if (hitIt == hitDict.end() or Get<"Edep">(*hitIt->second) < 50_keV) {
                         continue;
                     }
-                    float energy = Get<"Edep">(*hitIt->second);
-                    weightedCentroid += energy * centroidMap.at(module);
-                    totalEnergy += energy;
+                    auto energy = Get<"Edep">(*hitIt->second);
+                    weightedPosition1 += energy * moduleList.at(module).centroid;
+
+                    if (useOptics) {
+                        auto pe = Get<"nOptPho">(*hitIt->second);
+                        if (pe > 3) {
+                            energy1 += energy;
+                            pe1 += pe;
+                        }
+                    } else {
+                        energy1 += energy;
+                    }
+                    if (energy1 != 0) {
+                        clusterPosition1 = weightedPosition1 / energy1;
+                    }
+
+                    Get<"Edep1">(energyTuple) = energy1;
+                    Get<"PE1">(energyTuple) = pe1;
+                    Get<"Position1">(energyTuple) = clusterPosition1;
+                    if (useCalibration) {
+                        Get<"cosTheta">(energyTuple) = clusterPosition1.cosTheta(truthHitVector);
+                    } else {
+                        Get<"theta">(energyTuple) = clusterPosition1.theta(CLHEP::Hep3Vector{0, 0, 1});
+                    }
                 }
-                c = weightedCentroid / totalEnergy;
-                return gRandom->Gaus(totalEnergy, 0.14 * std::sqrt(totalEnergy));
-                // return totalEnergy;
-            };
+            } else if (doDouble) {
+                if (std::ssize(potentialSeedModule) < 2) {
+                    return;
+                }
+                auto firstSeedModule = potentialSeedModule.begin();
+                auto secondSeedModule = std::ranges::find_if(
+                    potentialSeedModule,
+                    [&](int moduleID) {
+                        const auto& c1{moduleList.at(*firstSeedModule).centroid};
+                        const auto& c2{moduleList.at(moduleID).centroid};
+                        return c1.angle(c2) > 0.8 * pi;
+                    });
+                if (secondSeedModule == potentialSeedModule.end()) {
+                    return;
+                }
+                auto firstCluster = ECALClustering::Clusterer(*firstSeedModule, moduleList);
+                auto secondCluster = ECALClustering::Clusterer(*secondSeedModule, moduleList);
+                for (const auto& module : firstCluster) {
+                    auto hitIt = hitDict.find(module);
+                    if (hitIt == hitDict.end() or Get<"Edep">(*hitIt->second) < 50_keV) {
+                        continue;
+                    }
+                    auto energy = Get<"Edep">(*hitIt->second);
+                    weightedPosition1 += energy * moduleList.at(module).centroid;
+                    energy1 += energy;
+                    if (energy1 != 0) {
+                        clusterPosition1 = weightedPosition1 / energy1;
+                    }
+                }
+                for (const auto& module : secondCluster) {
+                    auto hitIt = hitDict.find(module);
+                    if (hitIt == hitDict.end() or Get<"Edep">(*hitIt->second) < 50_keV) {
+                        continue;
+                    }
+                    auto energy = Get<"Edep">(*hitIt->second);
+                    weightedPosition2 += energy * moduleList.at(module).centroid;
+                    energy2 += energy;
+                    if (energy2 != 0) {
+                        clusterPosition2 = weightedPosition2 / energy2;
+                    }
+                }
 
-            auto firstClusterEnergy = clustering(firstCluster, firstCenter, firstSeedModule);
-            auto secondClusterEnergy = clustering(secondCluster, secondCenter, secondSeedModule);
-
-            if (firstClusterEnergy + secondClusterEnergy > muonium_mass_c2) {
-                return;
+                Get<"Edep1">(energyTuple) = energy1;
+                Get<"Position1">(energyTuple) = clusterPosition1;
+                Get<"Edep2">(energyTuple) = energy2;
+                Get<"Position2">(energyTuple) = clusterPosition2;
+                Get<"TotalEdep">(energyTuple) = energy1 + energy2;
+                Get<"dE">(energyTuple) = std::abs(energy1 - energy2);
+                Get<"dt">(energyTuple) = std::abs(*Get<"t">(*hitDict.at(*firstSeedModule)) - *Get<"t">(*hitDict.at(*secondSeedModule)));
+                Get<"cosTheta">(energyTuple) = clusterPosition1.cosTheta(clusterPosition2);
+            } else if (doTriple) {
+                // To be implemented
             }
 
-            Mustard::Data::Tuple<ECALEnergy> energyTuple;
-            Get<"Edep">(energyTuple) = firstClusterEnergy + secondClusterEnergy;
-            Get<"Edep1">(energyTuple) = firstClusterEnergy;
-            Get<"Edep2">(energyTuple) = secondClusterEnergy;
-            Get<"dE">(energyTuple) = std::abs(firstClusterEnergy - secondClusterEnergy);
-            Get<"dt">(energyTuple) = std::abs(*Get<"t">(*hitDict.at(*firstSeedModule)) - *Get<"t">(*hitDict.at(*secondSeedModule)));
-            Get<"theta">(energyTuple) = firstCenter.angle(secondCenter);
             reconEnergy.Fill(std::move(energyTuple));
         });
-
     reconEnergy.Write();
 
     return EXIT_SUCCESS;

@@ -8,6 +8,8 @@
 #/MACE/Physics/UseRadioactiveDecayPhysics
 #/MACE/Physics/UseOpticalPhysics
 
+#/Mustard/Detector/Description/Import SimMACEPhaseI_geom.yaml
+
 /run/initialize
 
 /MACE/Generator/SwitchToGPSX
@@ -24,11 +26,18 @@
 /GPSX/NVertex             1
 /GPSX/PulseWidth          0 ns
 
+/Mustard/Physics/MuonDecay/RadiativeDecay/BR 0
+/Mustard/Physics/MuonDecay/ICDecay/BR 0
+/Mustard/Physics/MuonDecay/DoubleRadiativeDecay/BR 1
+/Mustard/Physics/MuonDecay/UpdateDecayBR
+
+/MACE/Analysis/CoincidenceWithECAL    no
+
 #############################################################################
 # Run
 #############################################################################
 
-/MACE/Analysis/FilePath SimMACEPhaseI_bkg.root
+/MACE/Analysis/FilePath SimMACEPhaseI_mu2egg
 /MACE/Analysis/FileMode RECREATE
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

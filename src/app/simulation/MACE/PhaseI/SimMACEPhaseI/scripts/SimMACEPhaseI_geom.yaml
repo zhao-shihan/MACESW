@@ -56,25 +56,6 @@ ECAL:
   ResolutionScale: 1
   ModuleSelection: []
   WaveformIntegralTime: 100
-MRPC:
-  HoneyCombThickness: 4
-  PCBThickness: 1.5
-  MylarThickness: 0.34999999999999998
-  AnodeThickness: 0.13
-  OuterGlassThickness: 0.69999999999999996
-  InnerGlassThickness: 0.54000000000000004
-  NGaps: 6
-  GasGapThickness: 0.22
-  GasTankThickness: 1.5
-  NMRPCs: 8
-  CentralRadius: 63.5
-  CentralMRPCLength: 300
-  CentralMRPCWidth: 100
-  CornerRadius: 116
-  CornerMRPCLength: 300
-  CornerMRPCWidth: 100
-  TimeResolutionFWHM: 0.10000000000000001
-  SpacialResolutionFWHM: 1
 
 Target:
   ShapeType: Cylinder

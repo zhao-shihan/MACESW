@@ -25,6 +25,7 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Geant4X/Generator/DataReaderPrimaryGenerator.h++"
 #include "Mustard/Geant4X/Generator/EcoMugCosmicRayMuon.h++"
 #include "Mustard/Geant4X/Generator/GeneralParticleSourceX.h++"
 
@@ -41,6 +42,7 @@ public:
 
     auto SwitchToGPSX() -> void { fGenerator = &fAvailableGenerator.gpsx; }
     auto SwitchToEcoMug() -> void { fGenerator = &fAvailableGenerator.ecoMug; }
+    auto SwitchToFromDataPrimaryGenerator() -> void { fGenerator = &fAvailableGenerator.dataReaderPrimaryGenerator; }
 
     auto SavePrimaryVertexData() const -> auto { return fSavePrimaryVertexData; }
     auto SavePrimaryVertexData(bool val) -> void { fSavePrimaryVertexData = val; }
@@ -54,6 +56,7 @@ private:
     struct {
         Mustard::Geant4X::GeneralParticleSourceX gpsx;
         Mustard::Geant4X::EcoMugCosmicRayMuon ecoMug;
+        Mustard::Geant4X::DataReaderPrimaryGenerator dataReaderPrimaryGenerator;
     } fAvailableGenerator;
     G4VPrimaryGenerator* fGenerator;
 

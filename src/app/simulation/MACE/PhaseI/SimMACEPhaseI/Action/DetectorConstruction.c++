@@ -19,12 +19,11 @@
 
 #include "MACE/Detector/Definition/ECALCrystal.h++"
 #include "MACE/Detector/Definition/ECALPhotoSensor.h++"
-#include "MACE/Detector/Definition/Target.h++"
 #include "MACE/Detector/Description/ECAL.h++"
 #include "MACE/PhaseI/Detector/Definition/CentralBeamPipe.h++"
-#include "MACE/PhaseI/Detector/Definition/MRPC.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
 #include "MACE/PhaseI/Detector/Definition/TTC.h++"
+#include "MACE/PhaseI/Detector/Definition/Target.h++"
 #include "MACE/PhaseI/Detector/Definition/World.h++"
 #include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
@@ -32,7 +31,6 @@
 #include "MACE/PhaseI/SimMACEPhaseI/Messenger/DetectorMessenger.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/ECALPMSD.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/ECALSD.h++"
-#include "MACE/PhaseI/SimMACEPhaseI/SD/MRPCSD.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/SciFiSD.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/SciFiSiPMSD.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/TTCSD.h++"
@@ -74,7 +72,7 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     auto& sciFiTracker{fWorld->NewDaughter<PhaseI::SciFiTracker>(fCheckOverlap)};
     auto& ttc{fWorld->NewDaughter<PhaseI::TTC>(fCheckOverlap)};
 
-    centralBeamPipe.NewDaughter<Target>(fCheckOverlap);
+    centralBeamPipe.NewDaughter<PhaseI::Target>(fCheckOverlap);
 
     const auto& ecalName{MACE::Detector::Description::ECAL::Instance().Name()};
     const auto& scifiName{MACE::PhaseI::Detector::Description::SciFiTracker::Instance().Name()};

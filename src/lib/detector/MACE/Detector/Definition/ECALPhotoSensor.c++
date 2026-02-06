@@ -20,6 +20,7 @@
 #include "MACE/Detector/Definition/ECALCrystal.h++"
 #include "MACE/Detector/Definition/ECALPhotoSensor.h++"
 #include "MACE/Detector/Description/ECAL.h++"
+#include "MACE/Detector/Description/Vacuum.h++"
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
 #include "Mustard/Env/BasicEnv.h++"
@@ -61,7 +62,7 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
     const auto& ecal{Description::ECAL::Instance()};
     const auto name{ecal.Name()};
 
-    const auto mppcNPixelRows{ecal.MPPCNPixelRow()};
+    const auto mppcNPixelRowSet{ecal.MPPCNPixelRowSet()};
     const auto mppcPixelSizeSet{ecal.MPPCPixelSizeSet()};
     const auto mppcPitch{ecal.MPPCPitch()};
     const auto mppcThickness{ecal.MPPCThickness()};
@@ -122,26 +123,26 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
     /////////////////////////////////////////////
     // Construct Volumes
     /////////////////////////////////////////////
-    const auto& faceList{ecal.Mesh().faceList};
+    const auto& moduleList{ecal.Array().moduleList};
     const auto& moduleSelection{ecal.ModuleSelection()};
     std::map<int, std::vector<int>> idListOfType;
-    for (int moduleID{}; moduleID < std::ssize(faceList); ++moduleID) {
-        idListOfType[faceList.at(moduleID).typeID].emplace_back(moduleID);
+    for (auto&& module : std::as_const(moduleList)) {
+        idListOfType[module.typeID].emplace_back(module.moduleID);
     }
 
     std::vector<int> chosenType;
     chosenType.reserve(moduleSelection.size());
     for (auto&& chosen : moduleSelection) {
-        chosenType.emplace_back(faceList.at(chosen).typeID);
+        chosenType.emplace_back(moduleList.at(chosen).typeID);
     }
     for (auto&& [type, moduleIDList] : idListOfType) { // loop over type(10 total)
         if (not chosenType.empty() and std::ranges::find(chosenType, type) == chosenType.end()) {
             continue;
         }
 
-        const auto mppcNPixelRow{mppcNPixelRows.at(type)};
+        const auto mppcNPixelRows{mppcNPixelRowSet.at(type)};
         const auto mppcPixelSize{mppcPixelSizeSet.at(type)};
-        const auto mppcWidth{mppcNPixelRow * (mppcPixelSize + mppcPitch) + mppcPitch};
+        const auto mppcWidth{mppcNPixelRows * (mppcPixelSize + mppcPitch) + mppcPitch};
 
         const auto solidCoupler{Make<G4Box>("temp", mppcWidth / 2, mppcWidth / 2, mppcCouplerThickness / 2)};
         const auto logicCoupler{Make<G4LogicalVolume>(solidCoupler, siliconeGrease, name + "MPPCCoupler")};
@@ -151,11 +152,11 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
 
         const auto solidPixel{Make<G4Box>("temp", mppcPixelSize / 2, mppcPixelSize / 2, mppcThickness / 2)};
         const auto logicPixel{Make<G4LogicalVolume>(solidPixel, silicon, name + "PMCathode")};
-        for (int copyNo{}; copyNo < mppcNPixelRow * mppcNPixelRow; copyNo++) {
-            const auto rowNum{copyNo / mppcNPixelRow};
-            const auto colNum{copyNo % mppcNPixelRow};
-            const auto xOffSet{(2 * rowNum + 1 - mppcNPixelRow) * ((mppcPixelSize + mppcPitch) / 2)};
-            const auto yOffset{(2 * colNum + 1 - mppcNPixelRow) * ((mppcPixelSize + mppcPitch) / 2)};
+        for (int copyNo{}; copyNo < mppcNPixelRows * mppcNPixelRows; copyNo++) {
+            const auto rowNum{copyNo / mppcNPixelRows};
+            const auto colNum{copyNo % mppcNPixelRows};
+            const auto xOffSet{(2 * rowNum + 1 - mppcNPixelRows) * ((mppcPixelSize + mppcPitch) / 2)};
+            const auto yOffset{(2 * colNum + 1 - mppcNPixelRows) * ((mppcPixelSize + mppcPitch) / 2)};
             const auto zOffset{(mppcWindowThickness - mppcThickness) / 2};
             Make<G4PVPlacement>(
                 G4Transform3D({}, {xOffSet, yOffset, zOffset}),
@@ -194,8 +195,8 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
                 checkOverlaps);
             const auto ecalCrystal{FindSibling<ECALCrystal>()};
             if (ecalCrystal) {
-                const auto couplerSurface{new G4OpticalSurface("coupler", unified, polished, dielectric_dielectric)};
-                new G4LogicalBorderSurface{"couplerSurface",
+                const auto couplerSurface{new G4OpticalSurface("Coupler", unified, polished, dielectric_dielectric)};
+                new G4LogicalBorderSurface{"CouplerSurface",
                                            ecalCrystal->PhysicalVolume(name + fmt::format("Crystal_{}", moduleID)),
                                            physicalCoupler,
                                            couplerSurface};
@@ -208,13 +209,14 @@ auto ECALPhotoSensor::ConstructMPPC(G4bool checkOverlaps) -> void {
         /////////////////////////////////////////////
 
         const auto cathodeSurface{new G4OpticalSurface("Cathode", unified, polished, dielectric_metal)};
-        new G4LogicalSkinSurface{"cathodeSkinSurface", logicPixel, cathodeSurface};
+        new G4LogicalSkinSurface{"CathodeSkinSurface", logicPixel, cathodeSurface};
         cathodeSurface->SetMaterialPropertiesTable(cathodeSurfacePropertiesTable);
     }
 }
 
 auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
     const auto& ecal{Description::ECAL::Instance()};
+    const auto& vacuum{Description::Vacuum::Instance()};
     const auto name{ecal.Name()};
 
     const auto pmtCouplerThickness{ecal.PMTCouplerThickness()};
@@ -236,6 +238,11 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
     const auto potassiumElement{nist->FindOrBuildElement("K")};
     const auto antimonyElement{nist->FindOrBuildElement("Sb")};
     const auto cesiumElement{nist->FindOrBuildElement("Cs")};
+
+    auto vacuumMaterial{nist->FindMaterial(vacuum.Name())};
+    if (not vacuumMaterial) {
+        vacuumMaterial = nist->BuildMaterialWithNewDensity(vacuum.Name(), "G4_AIR", vacuum.Density(), 293.15_K, vacuum.Pressure());
+    }
 
     const auto siliconeGrease{new G4Material("siliconeGrease", 1.06_g_cm3, 4, kStateLiquid)};
     siliconeGrease->AddElement(carbonElement, 2);
@@ -279,17 +286,17 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
     // Construct Volumes
     /////////////////////////////////////////////
 
-    const auto& faceList{ecal.Mesh().faceList};
+    const auto& moduleList{ecal.Array().moduleList};
     const auto& moduleSelection{ecal.ModuleSelection()};
     std::map<int, std::vector<int>> idListOfType;
-    for (auto moduleID{0}; moduleID < std::ssize(faceList); ++moduleID) {
-        idListOfType[faceList.at(moduleID).typeID].emplace_back(moduleID);
+    for (auto&& module : std::as_const(moduleList)) {
+        idListOfType[module.typeID].emplace_back(module.moduleID);
     }
 
     std::vector<int> chosenType;
     chosenType.reserve(moduleSelection.size());
     for (auto&& chosen : moduleSelection) {
-        chosenType.emplace_back(faceList.at(chosen).typeID);
+        chosenType.emplace_back(moduleList.at(chosen).typeID);
     }
     const auto& pmtDimensions{ecal.PMTDimensions()};
     for (auto&& [typeID, moduleIDList] : std::as_const(idListOfType)) {
@@ -306,7 +313,7 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
         const auto logicPMTShell{Make<G4LogicalVolume>(solidPMTShell, glass, name + "PMTShell")};
 
         const auto solidPMTVacuum{Make<G4Tubs>("temp", 0, pmtDiameter / 2 - pmtWindowThickness, pmtLength / 2 - pmtWindowThickness - pmtCathodeThickness / 2, 0, 2 * pi)};
-        const auto logicPMTVacuum{Make<G4LogicalVolume>(solidPMTVacuum, nist->FindOrBuildMaterial("G4_Galactic"), name + "PMTVacuum")};
+        const auto logicPMTVacuum{Make<G4LogicalVolume>(solidPMTVacuum, vacuumMaterial, name + "PMTVacuum")};
 
         const auto solidCathode{Make<G4Tubs>("temp", 0, cathodeDiameter / 2, pmtCathodeThickness / 2, 0, 2 * pi)};
         const auto logicCathode{Make<G4LogicalVolume>(solidCathode, bialkali, name + "PMCathode")};
@@ -341,8 +348,8 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
                 checkOverlaps);
             const auto ecalCrystal{FindSibling<ECALCrystal>()};
             if (ecalCrystal) {
-                const auto couplerSurface{new G4OpticalSurface("coupler", unified, polished, dielectric_dielectric)};
-                new G4LogicalBorderSurface{"couplerSurface",
+                const auto couplerSurface{new G4OpticalSurface("Coupler", unified, polished, dielectric_dielectric)};
+                new G4LogicalBorderSurface{"CouplerSurface",
                                            ecalCrystal->PhysicalVolume(name + fmt::format("Crystal_{}", moduleID)),
                                            physicalCoupler,
                                            couplerSurface};
@@ -368,7 +375,7 @@ auto ECALPhotoSensor::ConstructPMT(G4bool checkOverlaps) -> void {
             checkOverlaps);
 
         const auto cathodeSurface{new G4OpticalSurface("Cathode", unified, polished, dielectric_metal)};
-        new G4LogicalSkinSurface{"cathodeSkinSurface", logicCathode, cathodeSurface};
+        new G4LogicalSkinSurface{"CathodeSkinSurface", logicCathode, cathodeSurface};
         cathodeSurface->SetMaterialPropertiesTable(cathodeSurfacePropertiesTable);
     }
 }

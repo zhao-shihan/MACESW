@@ -1,0 +1,31 @@
+#############################################################################
+# Initialization settings
+#############################################################################
+
+/control/verbose 0
+/run/verbose 0
+/event/verbose 0
+/tracking/verbose 0
+
+#/MACE/Physics/UseRadioactiveDecayPhysics
+/MACE/Physics/UseOpticalPhysics
+
+/Mustard/Detector/Description/Import SimMACEPhaseI_geom.yaml
+
+/run/initialize
+
+/MACE/Generator/SwitchToGPSX
+/gps/particle gamma
+/gps/direction -0.23125886635800655 0.8838167136188589 -0.38654064702619223
+/gps/ene/mono 53 MeV
+/gps/pos/centre 0 0 0 cm
+
+#############################################################################
+# Run
+#############################################################################
+
+
+/Mustard/Analysis/FilePath SimMACEPhaseI_ECAL_cali
+/Mustard/Analysis/FileMode RECREATE
+/run/beamOn 10
+/Mustard/Run/PrintRunSummary

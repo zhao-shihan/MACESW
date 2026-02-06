@@ -19,16 +19,16 @@
 
 namespace MACE::Detector::Description {
 
-inline auto ECAL::MeshManager::Get(const ECAL* ecal) -> const MeshInformation& {
+inline auto ECAL::ArrayManager::Get(const ECAL* ecal) -> const ArrayInformation& {
     if (fOutdated) {
-        fMesh = ecal->CalculateMeshInformation();
+        fArray = ecal->CalculateArrayInformation();
         fOutdated = false;
     }
-    return fMesh;
+    return fArray;
 }
 
 inline void ECAL::SetGeometryOutdated() const {
-    fMeshManager.SetOutdated();
+    fArrayManager.SetOutdated();
 }
 
 } // namespace MACE::Detector::Description

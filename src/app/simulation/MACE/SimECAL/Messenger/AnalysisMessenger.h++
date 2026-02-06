@@ -52,8 +52,6 @@ public:
 
 private:
     std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithAString> fFilePath;
-    std::unique_ptr<G4UIcmdWithAString> fFileMode;
     std::unique_ptr<G4UIcmdWithABool> fSavePrimaryVertexData;
     std::unique_ptr<G4UIcmdWithABool> fSaveDecayVertexData;
     std::unique_ptr<G4UIcmdWithABool> fCoincidenceWithECAL;

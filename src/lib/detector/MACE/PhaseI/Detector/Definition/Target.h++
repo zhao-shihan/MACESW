@@ -19,31 +19,13 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
+#include "Mustard/Detector/Definition/DefinitionBase.h++"
 
-#include <memory>
+namespace MACE::PhaseI::Detector::Definition {
 
-class G4UIcmdWithADoubleAndUnit;
-class G4UIdirectory;
-
-namespace MACE::PhaseI::SimMACEPhaseI::inline SD {
-
-class MRPCSD;
-
-class MRPCSDMessenger final : public Mustard::Geant4X::SingletonMessenger<MRPCSDMessenger,
-                                                                          MRPCSD> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
-
+class Target final : public Mustard::Detector::Definition::DefinitionBase {
 private:
-    MRPCSDMessenger();
-    ~MRPCSDMessenger() override;
-
-public:
-    auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
-
-private:
-    std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fIonizingEnergyDepositionThreshold;
+    auto Construct(bool checkOverlaps) -> void override;
 };
 
-} // namespace MACE::PhaseI::SimMACEPhaseI::inline SD
+} // namespace MACE::PhaseI::Detector::Definition
