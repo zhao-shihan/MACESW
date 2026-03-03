@@ -121,16 +121,18 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
             }
 
             auto nextTrackID{0};
-            for (auto&& [trackID, good] : finder(sciFiHitData, nextTrackID).good) {
-                const auto track{fitter(good.hitData, good.seed).track};
-                if (track == nullptr) {
-                    continue;
+            if (sciFiHitData.size() >= 4) {
+                for (auto&& [trackID, good] : finder(sciFiHitData, nextTrackID).good) {
+                    const auto track{fitter(good.hitData, good.seed).track};
+                    if (track == nullptr) {
+                        continue;
+                    }
+                    count1++;
+                    std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
+                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
+                    std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
+                    reconTrack.Fill(*track);
                 }
-                count1++;
-                std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
-                // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
-                std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
-                reconTrack.Fill(*track);
             }
         });
     std::cout << count1 << std::endl;
