@@ -4,7 +4,6 @@
 #include "MACE/Detector/Description/ECAL.h++"
 #include "MACE/MakeGeometry/MakeGeometry.h++"
 #include "MACE/PhaseI/Detector/Definition/CentralBeamPipe.h++"
-#include "MACE/PhaseI/Detector/Definition/MRPC.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
 #include "MACE/PhaseI/Detector/Definition/TTC.h++"
 #include "MACE/PhaseI/Detector/Definition/World.h++"
