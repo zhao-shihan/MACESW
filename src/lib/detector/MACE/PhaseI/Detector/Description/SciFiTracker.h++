@@ -47,7 +47,10 @@ public:
     auto FiberCoreWidth() const -> auto { return fFiberCoreWidth; }
     auto FiberCladdingWidth() const -> auto { return fFiberCladdingWidth; }
     auto FiberLength() const -> auto { return fFiberLength; }
-    auto AxialLightGuideLength() const -> auto { return fAxialLightGuideLength; }
+    auto HelicalLightGuideAngle() const -> auto { return fHelicalLightGuideAngle; }
+    auto StraightLightGuideExtensionLength() const -> auto { return fStraightLightGuideExtensionLength; }
+    auto LightGuideEntryLength() const -> auto { return fLightGuideEntryLength; }
+    auto LightGuideCurvatureRadius() const -> auto { return fLightGuideCurvatureRadius; }
     auto DetectorLayerConfiguration() const -> const auto& { return *fLayerConfiguration; }
     auto DetectorFiberInformation() const -> const auto& { return *fFiberMap; }
     auto NLayer() const -> auto { return *fNLayer; }
@@ -82,7 +85,10 @@ public:
     auto FiberCoreRadius(double val) -> void { fFiberCoreWidth = val; }
     auto FiberCladdingRadius(double val) -> void { fFiberCladdingWidth = val; }
     auto FiberLength(double val) -> void { fFiberLength = val; }
-    auto AxialLightGuideLength(double val) -> void { fAxialLightGuideLength = val; }
+    auto HelicalLightGuideAngle(std::vector<double> val) -> void { fHelicalLightGuideAngle = val; }
+    auto StraightLightGuideExtensionLength(double val) -> void { fStraightLightGuideExtensionLength = val; }
+    auto LightGuideEntryLength(std::vector<double> val) -> void { fLightGuideEntryLength = val; }
+    auto LightGuideCurvatureRadius(double val) -> void { fLightGuideCurvatureRadius = val; }
     auto ScintillationTimeConstant1(double val) -> void { fScintillationTimeConstant1 = val; }
     auto NLayer(int val) -> void { fNLayer = val; }
     auto LayerType(std::vector<std::string> val) -> void { fLayerType = std::move(val); }
@@ -138,8 +144,11 @@ private:
     double fSiPMLength;
     double fSiPMWidth;
     double fSiPMThickness;
-    double fAxialLightGuideLength;
     double fEpoxyThickness;
+    std::vector<double> fHelicalLightGuideAngle;
+    double fStraightLightGuideExtensionLength;
+    std::vector<double> fLightGuideEntryLength;
+    double fLightGuideCurvatureRadius;
 
 private:
     auto CalculateLayerConfiguration() const -> std::vector<LayerConfiguration>;
