@@ -80,19 +80,19 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
     crystalPropertiesTable->AddConstProperty("SCINTILLATIONYIELD", ecal.ScintillationYield());
     crystalPropertiesTable->AddConstProperty("SCINTILLATIONTIMECONSTANT1", ecal.ScintillationTimeConstant1());
     crystalPropertiesTable->AddConstProperty("RESOLUTIONSCALE", ecal.ResolutionScale());
+    if (ecal.UseOptics()) {
+        if (ecal.UsePhaseICrystal()) {
+            crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.95, 1.95});
+            cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
+        } else {
+            crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.79, 1.79});
+            cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
+        }
 
-    if (ecal.UsePhaseICrystal()) {
-        crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.95, 1.95});
-        cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
-    } else {
-        crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.79, 1.79});
-        cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
+        if (Mustard::Env::VerboseLevelReach<'V'>()) {
+            crystalPropertiesTable->DumpTable();
+        }
     }
-
-    if (Mustard::Env::VerboseLevelReach<'V'>()) {
-        crystalPropertiesTable->DumpTable();
-    }
-
     const auto reflectorSurfacePropertiesTable{new G4MaterialPropertiesTable};
     reflectorSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, {0.99, 0.99});
 
@@ -223,23 +223,24 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
         /////////////////////////////////////////////
         // Construct Optical Surface
         /////////////////////////////////////////////
+        if (ecal.UseOptics()) {
+            const auto reflectorSurface{new G4OpticalSurface("Reflector", unified, polished, dielectric_metal)};
+            new G4LogicalSkinSurface{"ReflectorSurface", logicCrystal, reflectorSurface};
+            reflectorSurface->SetMaterialPropertiesTable(reflectorSurfacePropertiesTable);
 
-        const auto reflectorSurface{new G4OpticalSurface("Reflector", unified, polished, dielectric_metal)};
-        new G4LogicalSkinSurface{"ReflectorSurface", logicCrystal, reflectorSurface};
-        reflectorSurface->SetMaterialPropertiesTable(reflectorSurfacePropertiesTable);
+            const auto coatingSurface{new G4OpticalSurface("Coating", unified, polished, dielectric_metal)};
+            new G4LogicalBorderSurface{"CoatingSurface", Mother().PhysicalVolume(), physicalCrystal, coatingSurface};
+            coatingSurface->SetMaterialPropertiesTable(coatingSurfacePropertiesTable);
 
-        const auto coatingSurface{new G4OpticalSurface("Coating", unified, polished, dielectric_metal)};
-        new G4LogicalBorderSurface{"CoatingSurface", Mother().PhysicalVolume(), physicalCrystal, coatingSurface};
-        coatingSurface->SetMaterialPropertiesTable(coatingSurfacePropertiesTable);
-
-        const auto ecalPMCoupler{FindSibling<ECALPhotoSensor>()};
-        if (ecalPMCoupler) {
-            const auto couplerSurface{new G4OpticalSurface("Coupler", unified, polished, dielectric_dielectric)};
-            new G4LogicalBorderSurface{"CouplerSurface",
-                                       physicalCrystal,
-                                       ecalPMCoupler->PhysicalVolume(name + "PMCoupler", moduleID),
-                                       couplerSurface};
-            couplerSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
+            const auto ecalPMCoupler{FindSibling<ECALPhotoSensor>()};
+            if (ecalPMCoupler) {
+                const auto couplerSurface{new G4OpticalSurface("Coupler", unified, polished, dielectric_dielectric)};
+                new G4LogicalBorderSurface{"CouplerSurface",
+                                           physicalCrystal,
+                                           ecalPMCoupler->PhysicalVolume(name + "PMCoupler", moduleID),
+                                           couplerSurface};
+                couplerSurface->SetMaterialPropertiesTable(couplerSurfacePropertiesTable);
+            }
         }
     }
 }
