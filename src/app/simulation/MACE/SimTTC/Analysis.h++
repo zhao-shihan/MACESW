@@ -20,6 +20,7 @@
 #pragma once
 
 #include "MACE/Data/MMSTrack.h++"
+#include "MACE/Data/PhotosensorDataModel.h++"
 #include "MACE/Data/SensorHit.h++"
 #include "MACE/Data/SimHit.h++"
 #include "MACE/Data/SimVertex.h++"
@@ -42,7 +43,7 @@ class TFile;
 
 namespace MACE::inline Simulation::inline Hit {
 class TTCHit;
-class TTCSiPMHit;
+class PhotosensorHit;
 } // namespace MACE::inline Simulation::inline Hit
 
 namespace MACE::SimTTC {
@@ -57,7 +58,7 @@ public:
     auto SubmitPrimaryVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
     auto SubmitDecayVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
     auto SubmitTTCHC(const std::vector<gsl::owner<TTCHit*>>& hc) -> void { fTTCHit = &hc; }
-    auto SubmitTTCSiPMHC(const std::vector<gsl::owner<TTCSiPMHit*>>& hc) -> void { fTTCSiPMHit = &hc; }
+    auto SubmitTTCSiPMHC(const std::vector<gsl::owner<PhotosensorHit*>>& hc) -> void { fTTCSiPMHit = &hc; }
 
 private:
     auto RunBeginUserAction(int runID) -> void override;
@@ -71,12 +72,12 @@ private:
     std::optional<Mustard::Data::Output<Data::SimPrimaryVertex>> fPrimaryVertexOutput;
     std::optional<Mustard::Data::Output<Data::SimDecayVertex>> fDecayVertexOutput;
     std::optional<Mustard::Data::Output<Data::TTCSimHit>> fTTCSimHitOutput;
-    std::optional<Mustard::Data::Output<Data::TTCSiPMHit>> fTTCSiPMHitOutput;
+    std::optional<Mustard::Data::Output<Data::SimPhotosensorHitModel>> fTTCSiPMHitOutput;
 
     const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>* fPrimaryVertex;
     const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>* fDecayVertex;
     const std::vector<gsl::owner<TTCHit*>>* fTTCHit;
-    const std::vector<gsl::owner<TTCSiPMHit*>>* fTTCSiPMHit;
+    const std::vector<gsl::owner<PhotosensorHit*>>* fTTCSiPMHit;
     AnalysisMessenger::Register<Analysis> fMessengerRegister;
 };
 

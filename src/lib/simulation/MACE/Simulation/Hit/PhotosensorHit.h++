@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "MACE/Data/SensorHit.h++"
+#include "MACE/Data/PhotosensorDataModel.h++"
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Geant4X/Memory/UseG4Allocator.h++"
@@ -29,10 +29,10 @@
 
 namespace MACE::inline Simulation::inline Hit {
 
-class TTCSiPMHit final : public Mustard::Geant4X::UseG4Allocator<TTCSiPMHit>,
-                         public G4VHit,
-                         public Mustard::Data::Tuple<Data::TTCSiPMHit> {};
+class PhotosensorHit final : public Mustard::Geant4X::UseG4Allocator<PhotosensorHit>,
+                             public G4VHit,
+                             public Mustard::Data::Tuple<Data::SimPhotosensorHitModel> {};
 
-using TTCSiPMHitCollection = G4THitsCollection<TTCSiPMHit>;
+using PhotosensorHitCollection = G4THitsCollection<PhotosensorHit>;
 
 } // namespace MACE::inline Simulation::inline Hit

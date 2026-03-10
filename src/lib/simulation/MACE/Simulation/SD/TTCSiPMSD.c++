@@ -50,7 +50,7 @@ TTCSiPMSD::TTCSiPMSD(const G4String& sdName, const Type type) :
 auto TTCSiPMSD::Initialize(G4HCofThisEvent* hitsCollectionOfThisEvent) -> void {
     fHit.clear(); // clear at the begin of event allows TTCSD to get optical photon counts at the end of event
 
-    fHitsCollection = new TTCSiPMHitCollection(SensitiveDetectorName, collectionName[0]);
+    fHitsCollection = new PhotosensorHitCollection(SensitiveDetectorName, collectionName[0]);
     auto hitsCollectionID{G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection)};
     hitsCollectionOfThisEvent->AddHitsCollection(hitsCollectionID, fHitsCollection);
 }
@@ -73,14 +73,12 @@ auto TTCSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto siPMLocalID{postStepPoint.GetTouchable()->GetReplicaNumber(1)};
     const auto position{postStepPoint.GetTouchable()->GetHistory()->GetTopTransform().TransformPoint(postStepPoint.GetPosition())};
     // new a hit
-    auto hit{std::make_unique_for_overwrite<TTCSiPMHit>()};
+    auto hit{std::make_unique_for_overwrite<PhotosensorHit>()};
     Get<"EvtID">(*hit) = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
-    Get<"HitID">(*hit) = -1; // to be determined
-    Get<"TileID">(*hit) = tileID;
-    Get<"SiPMID">(*hit) = tileID * nSiPM - siPMLocalID;
+    Get<"ChID">(*hit) = tileID * nSiPM - siPMLocalID;
     Get<"t">(*hit) = postStepPoint.GetGlobalTime();
     Get<"x">(*hit) = {static_cast<float>(position.x()), static_cast<float>(position.z())};
-    Get<"k">(*hit) = preStepPoint.GetTouchable()->GetHistory()->GetTopTransform().TransformAxis(preStepPoint.GetMomentumDirection()) / hbar_Planck;
+    Get<"k">(*hit) = preStepPoint.GetTouchable()->GetHistory()->GetTopTransform().TransformAxis(preStepPoint.GetMomentumDirection()) / hbarc;
     fHit[tileID].emplace_back(std::move(hit));
 
     return true;
@@ -90,8 +88,6 @@ auto TTCSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
     for (int hitID{};
          auto&& [tileID, hitOfDetector] : fHit) {
         for (auto&& hit : hitOfDetector) {
-            Get<"HitID">(*hit) = hitID++;
-            Ensures(Get<"TileID">(*hit) == tileID);
             fHitsCollection->insert(hit.release());
         }
     }
@@ -101,7 +97,7 @@ auto TTCSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, std::vector
     muc::flat_hash_map<int, std::vector<int>> nHit;
     for (auto&& [tileID, hit] : fHit) {
         if (not hit.empty()) {
-            auto upSiPMNOpticalPhotonHit = std::ranges::count_if(hit, [](const auto& hit) { return Get<"SiPMID">(*hit) % 2 != 0; });
+            auto upSiPMNOpticalPhotonHit = std::ranges::count_if(hit, [](const auto& hit) { return Get<"ChID">(*hit) % 2 != 0; });
             auto downSiPMNOpticalPhotonHit = hit.size() - upSiPMNOpticalPhotonHit;
             nHit[tileID].emplace_back(upSiPMNOpticalPhotonHit);
             nHit[tileID].emplace_back(downSiPMNOpticalPhotonHit);

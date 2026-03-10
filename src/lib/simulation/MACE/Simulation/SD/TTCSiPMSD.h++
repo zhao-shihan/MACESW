@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "MACE/Simulation/Hit/TTCSiPMHit.h++"
+#include "MACE/Simulation/Hit/PhotosensorHit.h++"
 
 #include "G4VSensitiveDetector.hh"
 
@@ -48,8 +48,8 @@ public:
 
 protected:
     Type fType;
-    muc::flat_hash_map<int, muc::unique_ptrvec<TTCSiPMHit>> fHit;
-    TTCSiPMHitCollection* fHitsCollection;
+    muc::flat_hash_map<int, muc::unique_ptrvec<PhotosensorHit>> fHit;
+    PhotosensorHitCollection* fHitsCollection;
 };
 
 } // namespace MACE::inline Simulation::inline SD
