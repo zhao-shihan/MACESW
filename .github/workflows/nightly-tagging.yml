@@ -1,0 +1,338 @@
+# Nightly tagging workflow
+#
+# This workflow runs nightly to create tag on the rc branch.
+#
+# The workflow performs the following steps:
+# 1. Checks if all required checks passed on main branch (waits for pending checks)
+# 2. Syncs main branch to rc branch (fast-forward only)
+# 3. Checks if there are new commits since the last nightly tag
+# 4. Creates a new tag only if changes exist
+
+name: Nightly tagging
+
+on:
+  schedule:
+    # Run nightly at 04:00 UTC+8 (20:00 UTC)
+    - cron: '0 20 * * *'
+  workflow_dispatch:  # Allow manual trigger for testing
+
+permissions:
+  contents: write
+  pull-requests: read
+  checks: read
+  statuses: read
+
+env:
+  TZ: UTC
+
+jobs:
+  nightly-tagging:
+    name: Nightly tagging
+    timeout-minutes: 180
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper comparison
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check if all required checks passed on main (with wait)
+        id: check_main_status
+        run: |
+          echo "::group::Checking main branch check status"
+
+          # Define this workflow name to avoid circular dependency
+          THIS_WORKFLOW_NAME="Nightly tagging"
+
+          # Get the latest commit SHA from main branch
+          MAIN_SHA=$(git rev-parse origin/main)
+          echo "Main branch HEAD commit: ${MAIN_SHA}"
+
+          MAX_WAIT_SECONDS=10800  # 180 minutes = 10800 seconds
+          POLL_INTERVAL=10        # Check every 10 seconds
+          ELAPSED=0
+          ALL_PENDING=""  # Initialize outside loop for timeout access
+
+          while [ ${ELAPSED} -lt ${MAX_WAIT_SECONDS} ]; do
+            echo ""
+            echo "Checking status at $(date --iso-8601=seconds) (elapsed: ${ELAPSED}s)"
+
+            # Get status checks using GitHub API
+            STATUS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/${MAIN_SHA}/status")
+            CURL_STATUS=$?
+            if [ $CURL_STATUS -ne 0 ] || [ -z "${STATUS_RESPONSE}" ]; then
+              echo "::error::Failed to fetch status from GitHub API (curl exit code: $CURL_STATUS)"
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+            # Validate JSON
+            echo "${STATUS_RESPONSE}" | jq empty 2>/dev/null || {
+              echo "::error::Invalid JSON received for status from GitHub API"
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            }
+
+            # Get check runs using GitHub API
+            CHECKS_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/${MAIN_SHA}/check-runs")
+            CURL_STATUS=$?
+            if [ $CURL_STATUS -ne 0 ] || [ -z "${CHECKS_RESPONSE}" ]; then
+              echo "::error::Failed to fetch check runs from GitHub API (curl exit code: $CURL_STATUS)"
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+            # Validate JSON
+            echo "${CHECKS_RESPONSE}" | jq empty 2>/dev/null || {
+              echo "::error::Invalid JSON received for check runs from GitHub API"
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            }
+
+            # Parse combined status
+            COMBINED_STATUS=$(echo "${STATUS_RESPONSE}" | jq -r '.state // "unknown"')
+            echo "Combined status state: ${COMBINED_STATUS}"
+
+            # Check for any failing status checks
+            FAILING_STATUSES=$(echo "${STATUS_RESPONSE}" | jq -r --arg workflow "${THIS_WORKFLOW_NAME}" '.statuses[] | select(.state == "failure" or .state == "error") | select(.context != $workflow) | .context')
+            if [ $? -ne 0 ]; then
+              echo "::error::Failed to parse STATUS_RESPONSE JSON for failing statuses."
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+            TRIMMED_FAILING_STATUSES=$(echo "${FAILING_STATUSES}" | awk 'NF')
+            if [ -n "${TRIMMED_FAILING_STATUSES}" ]; then
+              echo "::error::The following status checks have failed on main:"
+              echo "${TRIMMED_FAILING_STATUSES}" | while read -r context; do
+                echo "::error::  - ${context}"
+              done
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+
+            # Check for any failing, cancelled, or timed out check runs
+            FAILING_CHECKS=$(echo "${CHECKS_RESPONSE}" | jq -r --arg workflow "${THIS_WORKFLOW_NAME}" '.check_runs[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")) | select(.name != $workflow) | .name')
+            if [ $? -ne 0 ]; then
+              echo "::error::Failed to parse CHECKS_RESPONSE JSON for failing checks."
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+            TRIMMED_FAILING_CHECKS=$(echo "${FAILING_CHECKS}" | awk 'NF')
+            if [ -n "${TRIMMED_FAILING_CHECKS}" ]; then
+              echo "::error::The following check runs have failed on main:"
+              echo "${TRIMMED_FAILING_CHECKS}" | while read -r check; do
+                echo "::error::  - ${check}"
+              done
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+
+            # Check for pending status checks
+            PENDING_STATUSES=$(echo "${STATUS_RESPONSE}" | jq -r --arg workflow "${THIS_WORKFLOW_NAME}" '.statuses[] | select(.state == "pending") | select(.context != $workflow) | .context')
+            if [ $? -ne 0 ]; then
+              echo "::error::Failed to parse STATUS_RESPONSE JSON for pending statuses."
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+
+            # Check for in-progress or queued check runs
+            PENDING_CHECKS=$(echo "${CHECKS_RESPONSE}" | jq -r --arg workflow "${THIS_WORKFLOW_NAME}" '.check_runs[] | select(.status == "queued" or .status == "in_progress") | select(.name != $workflow) | .name')
+            if [ $? -ne 0 ]; then
+              echo "::error::Failed to parse CHECKS_RESPONSE JSON for pending checks."
+              echo "checks_passed=false" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 1
+            fi
+
+            # Combine pending checks
+            ALL_PENDING=""
+            if [ -n "${PENDING_STATUSES}" ]; then
+              ALL_PENDING="${PENDING_STATUSES}"
+            fi
+            if [ -n "${PENDING_CHECKS}" ]; then
+              if [ -n "${ALL_PENDING}" ]; then
+                ALL_PENDING="${ALL_PENDING}"$'\n'"${PENDING_CHECKS}"
+              else
+                ALL_PENDING="${PENDING_CHECKS}"
+              fi
+            fi
+
+            if [ -n "${ALL_PENDING}" ]; then
+              echo "The following checks are still pending:"
+              echo "${ALL_PENDING}" | while read -r check; do
+                echo "  - ${check}"
+              done
+              echo "Waiting ${POLL_INTERVAL} seconds before next check..."
+              sleep ${POLL_INTERVAL}
+              ELAPSED=$((ELAPSED + POLL_INTERVAL))
+            else
+              # All checks are complete and successful
+              echo "✅ All checks have passed on main branch!"
+              echo "checks_passed=true" >> $GITHUB_OUTPUT
+              echo "::endgroup::"
+              exit 0
+            fi
+          done
+
+          # Timeout reached
+          echo "::error::Timeout reached while waiting for checks to complete"
+          if [ -n "${ALL_PENDING}" ]; then
+            echo "::error::The following checks are still pending after ${MAX_WAIT_SECONDS}s:"
+            echo "${ALL_PENDING}" | while read -r check; do
+              echo "::error::  - ${check}"
+            done
+          else
+            echo "::error::Unable to determine pending checks status"
+          fi
+          echo "checks_passed=false" >> $GITHUB_OUTPUT
+          echo "::endgroup::"
+          exit 1
+
+      - name: Sync main to rc branch
+        if: steps.check_main_status.outputs.checks_passed == 'true'
+        run: |
+          echo "::group::Syncing main to rc branch"
+          git fetch origin main:main || git fetch origin main
+          git switch rc || git switch -c rc
+          git merge --ff-only main || {
+            echo "::error::Failed to fast-forward merge main into rc."
+            echo "::error::Manual intervention required."
+            exit 1
+          }
+          git push origin rc
+          echo "::endgroup::"
+
+      - name: Check for new commits and determine tagging necessity
+        if: steps.check_main_status.outputs.checks_passed == 'true'
+        id: check_commits
+        run: |
+          echo "::group::Checking for new commits"
+
+          # Generate today's tag name
+          CMAKELISTS_CONTENT=$(cat CMakeLists.txt)
+          VERSION_MAJOR=$(echo "$CMAKELISTS_CONTENT" | grep -E "set\(MACESW_VERSION_MAJOR [0-9]+\)" | tail -n 1 | sed -E 's/.*set\(MACESW_VERSION_MAJOR ([0-9]+)\).*/\1/')
+          VERSION_MINOR=$(echo "$CMAKELISTS_CONTENT" | grep -E "set\(MACESW_VERSION_MINOR [0-9]+\)" | tail -n 1 | sed -E 's/.*set\(MACESW_VERSION_MINOR ([0-9]+)\).*/\1/')
+          VERSION_PATCH=$(echo "$CMAKELISTS_CONTENT" | grep -E "set\(MACESW_VERSION_PATCH [0-9]+\)" | tail -n 1 | sed -E 's/.*set\(MACESW_VERSION_PATCH ([0-9]+)\).*/\1/')
+
+          if [ -z "$VERSION_MAJOR" ] || [ -z "$VERSION_MINOR" ] || [ -z "$VERSION_PATCH" ]; then
+            echo "::error::Failed to extract version from CMakeLists.txt"
+            exit 1
+          fi
+
+          BASE_VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+          COMMIT_SHA_SHORT=$(git rev-parse --short=7 rc)
+          TODAY_TAG="v${BASE_VERSION}-nightly@$(date +'%Y%m%d')+git@${COMMIT_SHA_SHORT}"
+          echo "today_tag=${TODAY_TAG}" >> $GITHUB_OUTPUT
+          echo "Today's tag would be: ${TODAY_TAG}"
+
+          # Check if today's tag already exists
+          if git rev-parse "${TODAY_TAG}" >/dev/null 2>&1; then
+            REASON="Tag ${TODAY_TAG} already exists for today"
+            echo "skip_reason=${REASON}" >> $GITHUB_OUTPUT
+            echo "should_tagging=false" >> $GITHUB_OUTPUT
+            echo "::warning::${REASON}. Skipping tagging."
+            echo "::endgroup::"
+            exit 0
+          fi
+
+          # Get the latest nightly tag (any tag matching 'v*-nightly*')
+          LATEST_NIGHTLY_TAG=$(git tag -l 'v*-nightly*' --sort=-version:refname | head -n 1)
+
+          if [ -z "${LATEST_NIGHTLY_TAG}" ]; then
+            echo "No previous nightly tag found."
+            echo "This will be the first nightly tag."
+            echo "skip_reason=" >> $GITHUB_OUTPUT
+            echo "should_tagging=true" >> $GITHUB_OUTPUT
+            echo "latest_nightly_tag=" >> $GITHUB_OUTPUT
+            echo "::endgroup::"
+            exit 0
+          fi
+
+          echo "Latest nightly tag: ${LATEST_NIGHTLY_TAG}"
+          echo "latest_nightly_tag=${LATEST_NIGHTLY_TAG}" >> $GITHUB_OUTPUT
+
+          # Get commit SHAs
+          LATEST_NIGHTLY_COMMIT=$(git rev-list -n 1 "${LATEST_NIGHTLY_TAG}")
+          RC_HEAD_COMMIT=$(git rev-parse rc)
+
+          echo "Latest tag commit: ${LATEST_NIGHTLY_COMMIT}"
+          echo "RC branch HEAD: ${RC_HEAD_COMMIT}"
+
+          # Compare commits
+          if [ "${LATEST_NIGHTLY_COMMIT}" = "${RC_HEAD_COMMIT}" ]; then
+            REASON="No new commits since ${LATEST_NIGHTLY_TAG}"
+            echo "skip_reason=${REASON}" >> $GITHUB_OUTPUT
+            echo "should_tagging=false" >> $GITHUB_OUTPUT
+            echo "::warning::${REASON}. Skipping tagging."
+          else
+            # Count new commits
+            COMMIT_RANGE="${LATEST_NIGHTLY_COMMIT}..${RC_HEAD_COMMIT}"
+            NEW_COMMIT_COUNT=$(git rev-list --count "${COMMIT_RANGE}")
+            echo "Found ${NEW_COMMIT_COUNT} new commit(s) since ${LATEST_NIGHTLY_TAG}"
+            echo "skip_reason=" >> $GITHUB_OUTPUT
+            echo "should_tagging=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "::endgroup::"
+
+      - name: Create tag
+        if: steps.check_main_status.outputs.checks_passed == 'true' && steps.check_commits.outputs.should_tagging == 'true'
+        run: |
+          TAG="${{ steps.check_commits.outputs.today_tag }}"
+          echo "::group::Creating tag ${TAG}"
+          git tag -a "${TAG}" -m "Nightly tag ${TAG}"
+          git push origin "${TAG}"
+          echo "::endgroup::"
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Nightly tagging summary" >> "${GITHUB_STEP_SUMMARY}"
+          echo "" >> "${GITHUB_STEP_SUMMARY}"
+
+          CHECK_MAIN_STATUS_OUTCOME="${{ steps.check_main_status.outcome }}"
+          CHECKS_PASSED="${{ steps.check_main_status.outputs.checks_passed }}"
+          CHECK_COMMITS_OUTCOME="${{ steps.check_commits.outcome }}"
+          SHOULD_TAGGING="${{ steps.check_commits.outputs.should_tagging }}"
+
+          # Check if main branch checks failed
+          if [ "${CHECK_MAIN_STATUS_OUTCOME}" = "failure" ] || [ "${CHECKS_PASSED}" = "false" ]; then
+            echo "❌ **Tagging skipped - checks failed**" >> "${GITHUB_STEP_SUMMARY}"
+            echo "- Required checks on main branch have not passed" >> "${GITHUB_STEP_SUMMARY}"
+            echo "- Please review the workflow logs for details" >> "${GITHUB_STEP_SUMMARY}"
+            echo "- The rc branch will not be updated until all checks pass" >> "${GITHUB_STEP_SUMMARY}"
+          elif [ "${CHECK_COMMITS_OUTCOME}" != "success" ]; then
+            echo "❌ **Failed to determine tagging necessity**" >> "${GITHUB_STEP_SUMMARY}"
+            echo "- The check for new commits step may have failed" >> "${GITHUB_STEP_SUMMARY}"
+            echo "- Please review the workflow logs for errors" >> "${GITHUB_STEP_SUMMARY}"
+          elif [ "${SHOULD_TAGGING}" = "true" ]; then
+            TAG="${{ steps.check_commits.outputs.today_tag }}"
+            echo "✅ **Tag created**: ${TAG}" >> "${GITHUB_STEP_SUMMARY}"
+            LATEST="${{ steps.check_commits.outputs.latest_nightly_tag }}"
+            if [ -n "${LATEST}" ]; then
+              echo "- Previous nightly tag: ${LATEST}" >> "${GITHUB_STEP_SUMMARY}"
+              echo "- New commits were found" >> "${GITHUB_STEP_SUMMARY}"
+            else
+              echo "- This is the first nightly tag" >> "${GITHUB_STEP_SUMMARY}"
+            fi
+          else
+            echo "⏭️ **Tagging skipped**" >> "${GITHUB_STEP_SUMMARY}"
+            REASON="${{ steps.check_commits.outputs.skip_reason }}"
+            echo "- Reason: ${REASON}" >> "${GITHUB_STEP_SUMMARY}"
+          fi

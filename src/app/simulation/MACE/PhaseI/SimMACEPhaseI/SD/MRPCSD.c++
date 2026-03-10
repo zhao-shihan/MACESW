@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/PhaseI/Detector/Description/MRPC.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Analysis.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/MRPCSD.h++"
@@ -5,7 +24,6 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 
-#include "G4DataInterpolation.hh"
 #include "G4Event.hh"
 #include "G4EventManager.hh"
 #include "G4HCofThisEvent.hh"
@@ -14,17 +32,15 @@
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4ThreeVector.hh"
 #include "G4TwoVector.hh"
 #include "G4VProcess.hh"
-#include "G4VTouchable.hh"
 
 #include "muc/algorithm"
 
-#include <cassert>
+#include "gsl/gsl"
+
 #include <cmath>
 #include <ranges>
-#include <stdexcept>
 #include <string_view>
 #include <tuple>
 
@@ -53,8 +69,8 @@ auto MRPCSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
     const auto eDep{step.GetTotalEnergyDeposit()};
 
-    assert(0 <= step.GetNonIonizingEnergyDeposit());
-    assert(step.GetNonIonizingEnergyDeposit() <= eDep);
+    Expects(0 <= step.GetNonIonizingEnergyDeposit());
+    Expects(step.GetNonIonizingEnergyDeposit() <= eDep);
     if (eDep - step.GetNonIonizingEnergyDeposit() < fIonizingEnergyDepositionThreshold) {
         return false;
     }
@@ -109,12 +125,12 @@ auto MRPCSD::EndOfEvent(G4HCofThisEvent*) -> void {
             muc::unreachable();
         case 1: {
             auto& hit{splitHit.front()};
-            assert(Get<"ModID">(*hit) == modID);
+            Ensures(Get<"ModID">(*hit) == modID);
             fHitsCollection->insert(hit.release());
         } break;
         default: {
             const auto timeResolutionFWHM{PhaseI::Detector::Description::MRPC::Instance().TimeResolutionFWHM()};
-            assert(timeResolutionFWHM >= 0);
+            Expects(timeResolutionFWHM >= 0);
             // sort hit by time
             muc::timsort(splitHit,
                          [](const auto& hit1, const auto& hit2) {
@@ -139,7 +155,7 @@ auto MRPCSD::EndOfEvent(G4HCofThisEvent*) -> void {
                                                            return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
                                                        })};
                 // construct real hit
-                assert(Get<"ModID">(*topHit) == modID);
+                Ensures(Get<"ModID">(*topHit) == modID);
                 for (const auto& hit : cluster) {
                     if (hit == topHit) {
                         continue;

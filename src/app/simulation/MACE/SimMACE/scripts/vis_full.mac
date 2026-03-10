@@ -6,7 +6,9 @@
 #/control/saveHistory
 /run/verbose 2
 
-#/Mustard/Detector/Description/Ixport SimMACE_geom.yaml
+#/Mustard/Detector/Description/Export SimMACE.yaml
+#/Mustard/Detector/Description/Import SimMACE.yaml
+#/Mustard/Detector/Description/Ixport SimMACE.yaml
 
 /run/initialize
 

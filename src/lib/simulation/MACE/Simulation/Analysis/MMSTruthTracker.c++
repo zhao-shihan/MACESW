@@ -1,11 +1,28 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Description/CDC.h++"
 #include "MACE/Detector/Description/TTC.h++"
 #include "MACE/Simulation/Analysis/MMSTruthTracker.h++"
 
-#include "muc/algorithm"
-#include "muc/hash_set"
+#include "gsl/gsl"
 
-#include <cassert>
 #include <utility>
 
 namespace MACE::inline Simulation::Analysis {
@@ -26,13 +43,13 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
         return {};
     }
 
-    constexpr auto ByTrackID{
+    constexpr auto byTrackID{
         [](const auto& hit1, const auto& hit2) {
             return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
         }};
 
-    assert(std::ranges::is_sorted(cdcHitHC, ByTrackID));
-    assert(std::ranges::is_sorted(ttcHitHC, ByTrackID));
+    Expects(std::ranges::is_sorted(cdcHitHC, byTrackID));
+    Expects(std::ranges::is_sorted(ttcHitHC, byTrackID));
 
     // find CDC hits coincidence with TTC hits
 
@@ -40,7 +57,7 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
     mmsTrackData.reserve(cdcHitHC.size() / fTrackFinder.MinNHit());
 
     std::ranges::subrange trackTTCHit{ttcHitHC.cbegin(), ttcHitHC.cbegin()};
-    const auto trackCDCHitFirst{std::ranges::lower_bound(cdcHitHC, ttcHitHC.front(), ByTrackID)};
+    const auto trackCDCHitFirst{std::ranges::lower_bound(cdcHitHC, ttcHitHC.front(), byTrackID)};
     std::ranges::subrange trackCDCHit{trackCDCHitFirst, trackCDCHitFirst};
 
     muc::flat_hash_set<short> tileHit;
@@ -48,12 +65,12 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
 
     while (trackTTCHit.end() != ttcHitHC.cend() and
            trackCDCHit.end() != cdcHitHC.cend()) {
-        trackTTCHit = {trackTTCHit.end(), std::ranges::upper_bound(trackTTCHit.end(), ttcHitHC.cend(), *trackTTCHit.end(), ByTrackID)};
-        trackCDCHit = {trackCDCHit.end(), std::ranges::upper_bound(trackCDCHit.end(), cdcHitHC.cend(), trackTTCHit.front(), ByTrackID)};
+        trackTTCHit = {trackTTCHit.end(), std::ranges::upper_bound(trackTTCHit.end(), ttcHitHC.cend(), *trackTTCHit.end(), byTrackID)};
+        trackCDCHit = {trackCDCHit.end(), std::ranges::upper_bound(trackCDCHit.end(), cdcHitHC.cend(), trackTTCHit.front(), byTrackID)};
 
         if (std::ranges::ssize(trackTTCHit) < fMinNTTCHitForQualifiedTrack or
             std::ranges::ssize(trackCDCHit) < fTrackFinder.MinNHit() or
-            GetAs<"x0", G4ThreeVector>(**trackCDCHit.begin()).perp2() > muc::pow(fTrackFinder.MaxVertexRxy(), 2)) {
+            Get<"x0", G4ThreeVector>(**trackCDCHit.begin()).perp2() > muc::pow(fTrackFinder.MaxVertexRxy(), 2)) {
             continue;
         }
 

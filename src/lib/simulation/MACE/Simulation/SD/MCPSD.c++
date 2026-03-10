@@ -1,8 +1,26 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Description/MCP.h++"
 #include "MACE/Simulation/SD/MCPSD.h++"
 
 #include "Mustard/IO/PrettyLog.h++"
-#include "Mustard/Utility/LiteralUnit.h++"
 
 #include "G4DataInterpolation.hh"
 #include "G4Event.hh"
@@ -13,15 +31,14 @@
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4ThreeVector.hh"
 #include "G4TwoVector.hh"
 #include "G4VProcess.hh"
-#include "G4VTouchable.hh"
 #include "Randomize.hh"
 
 #include "muc/algorithm"
 
-#include <cassert>
+#include "gsl/gsl"
+
 #include <cmath>
 #include <ranges>
 #include <stdexcept>
@@ -30,15 +47,11 @@
 
 namespace MACE::inline Simulation::inline SD {
 
-using namespace Mustard::LiteralUnit::Energy;
-
 MCPSD::MCPSD(const G4String& sdName) :
     G4VSensitiveDetector{sdName},
-    fIonizingEnergyDepositionThreshold{20_eV},
     fEfficiency{},
     fSplitHit{},
-    fHitsCollection{},
-    fMessengerRegister{this} {
+    fHitsCollection{} {
     collectionName.insert(sdName + "HC");
 
     const auto& mcp{Detector::Description::MCP::Instance()};
@@ -46,11 +59,13 @@ MCPSD::MCPSD(const G4String& sdName) :
         Mustard::Throw<std::runtime_error>("mcp.EfficiencyEnergy().size() != mcp.EfficiencyValue().size()");
     }
     const auto n{mcp.EfficiencyEnergy().size()};
+    // NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
     fEfficiency = std::make_unique<G4DataInterpolation>(const_cast<double*>(mcp.EfficiencyEnergy().data()), // stupid interface accepts non-const ptr only
                                                         const_cast<double*>(mcp.EfficiencyValue().data()),  // stupid interface accepts non-const ptr only
                                                         n,
                                                         (mcp.EfficiencyValue()[1] - mcp.EfficiencyValue()[0]) / (mcp.EfficiencyEnergy()[1] - mcp.EfficiencyEnergy()[0]),
                                                         (mcp.EfficiencyValue()[n - 1] - mcp.EfficiencyValue()[n - 2]) / (mcp.EfficiencyEnergy()[n - 1] - mcp.EfficiencyEnergy()[n - 2]));
+    // NOLINTEND(cppcoreguidelines-pro-type-const-cast)
 }
 
 MCPSD::~MCPSD() = default;
@@ -65,9 +80,9 @@ auto MCPSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     const auto& step{*theStep};
     const auto eDep{step.GetTotalEnergyDeposit()};
 
-    assert(0 <= step.GetNonIonizingEnergyDeposit());
-    assert(step.GetNonIonizingEnergyDeposit() <= eDep);
-    if (eDep - step.GetNonIonizingEnergyDeposit() < fIonizingEnergyDepositionThreshold) {
+    Expects(0 <= step.GetNonIonizingEnergyDeposit());
+    Expects(step.GetNonIonizingEnergyDeposit() <= eDep);
+    if (eDep == step.GetNonIonizingEnergyDeposit()) {
         return false;
     }
 
@@ -115,7 +130,7 @@ auto MCPSD::EndOfEvent(G4HCofThisEvent*) -> void {
     } break;
     default: {
         const auto timeResolutionFWHM{Detector::Description::MCP::Instance().TimeResolutionFWHM()};
-        assert(timeResolutionFWHM >= 0);
+        Expects(timeResolutionFWHM >= 0);
         // sort hit by time
         muc::timsort(fSplitHit,
                      [](const auto& hit1, const auto& hit2) {

@@ -1,9 +1,31 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file is deprecated and will be removed soon.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #pragma once
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Math/Norm.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
 
@@ -57,7 +79,7 @@ constexpr auto CalculateHelix(Mustard::Data::SuperTuple<Mustard::Data::Tuple<MMS
     const muc::array2d c0{x0[0] - x0Local[0],
                           x0[1] - x0Local[1]};
 
-    // const auto absDeltaPhi{std::acos(-c0 * x0Local) / std::sqrt(Mustard::Math::NormSq(c0) * Mustard::Math::NormSq(x0Local))};
+    // const auto absDeltaPhi{std::acos(-c0 * x0Local) / std::sqrt(Mustard::NormSq(c0) * Mustard::NormSq(x0Local))};
     // const auto deltaPhi{x0Local[0] * c0[1] - c0[0] * x0Local[1] > 0 ? absDeltaPhi : -absDeltaPhi};
     const auto theta0{std::atan2(pXY, p0[2])};
     // const auto z0{x0[3] - r0 * deltaPhi / std::tan(theta0)};

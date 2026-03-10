@@ -1,12 +1,32 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/SmearMACE/CLI.h++"
 
 #include "Mustard/IO/PrettyLog.h++"
 
 #include "muc/math"
 
+#include "gsl/gsl"
+
 #include "fmt/core.h"
 
-#include <cstdio>
 #include <cstdlib>
 
 namespace MACE::SmearMACE {
@@ -103,13 +123,12 @@ CLIModule::CLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli) :
 }
 
 auto CLIModule::DatasetIndexRange() const -> std::pair<gsl::index, gsl::index> {
-    auto var{TheCLI()->get<std::vector<gsl::index>>("-i")};
-    assert(var.size() == 1 or var.size() == 2);
+    const auto var{TheCLI()->get<std::vector<gsl::index>>("-i")};
+    Expects(var.size() == 1 or var.size() == 2);
     if (var.size() == 1) {
         return {0, var.front()};
-    } else {
-        return {var.front(), var.back()};
     }
+    return {var.front(), var.back()};
 }
 
 auto CLIModule::OutputFilePath() const -> std::filesystem::path {

@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Definition/Accelerator.h++"
 #include "MACE/Detector/Definition/AcceleratorField.h++"
 #include "MACE/Detector/Definition/BeamDegrader.h++"
@@ -19,7 +38,6 @@
 #include "MACE/Detector/Definition/MMSField.h++"
 #include "MACE/Detector/Definition/MMSMagnet.h++"
 #include "MACE/Detector/Definition/MMSShield.h++"
-#include "MACE/Detector/Definition/PDSVeto.h++"
 #include "MACE/Detector/Definition/ShieldingWall.h++"
 #include "MACE/Detector/Definition/SolenoidBeamPipeS1.h++"
 #include "MACE/Detector/Definition/SolenoidBeamPipeS2.h++"
@@ -93,18 +111,6 @@ DetectorConstruction::DetectorConstruction() :
     DetectorMessenger::EnsureInstantiation();
 }
 
-auto DetectorConstruction::ApplyProductionCutNearTarget(bool apply) const -> void {
-    const auto cut{G4RegionStore::GetInstance()->GetRegion("NearTargetDenseToThin")->GetProductionCuts()};
-    if (apply) {
-        auto defaultCut{G4ProductionCutsTable::GetProductionCutsTable()->GetDefaultProductionCuts()->GetProductionCuts()};
-        cut->SetProductionCuts(defaultCut);
-    } else {
-        cut->SetProductionCut(0, "e-");
-        cut->SetProductionCut(0, "e+");
-        cut->SetProductionCut(0, "proton");
-    }
-}
-
 auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     ////////////////////////////////////////////////////////////////
     // Construct volumes
@@ -126,7 +132,6 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     auto& solenoidFieldS3{fWorld->NewDaughter<Detector::Definition::SolenoidFieldS3>(fCheckOverlap)};
     auto& solenoidFieldT1{fWorld->NewDaughter<Detector::Definition::SolenoidFieldT1>(fCheckOverlap)};
     auto& solenoidFieldT2{fWorld->NewDaughter<Detector::Definition::SolenoidFieldT2>(fCheckOverlap)};
-    // auto& veto{fWorld->NewDaughter<Detector::Definition::PDSVeto>(fCheckOverlap)};
 
     // 2
 
@@ -240,7 +245,7 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
         const auto& ttcName{Detector::Description::TTC::Instance().Name()};
         mms.Get<Detector::Definition::TTC>().RegisterSD(ttcName + "Scintillator", new SD::TTCSD{ttcName, TTCSD::Type::MACE});
         const auto& mcpName{Detector::Description::MCP::Instance().Name()};
-        mcp.RegisterSD(mcpName + "Anode", new SD::MCPSD{mcpName});
+        mcp.RegisterSD(mcpName, new SD::MCPSD{mcpName});
         ecalCrystal.RegisterSD(new SD::ECALSD{Detector::Description::ECAL::Instance().Name()});
     }
 
@@ -249,7 +254,7 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     ////////////////////////////////////////////////////////////////
     {
         { // Magnetic fields
-            const auto RegisterField{
+            const auto registerField{
                 [this]<typename AField>(Mustard::Detector::Definition::DefinitionBase& detector, AField* field, bool forceToAllDaughters) {
                     using Equation = G4TMagFieldEquation<AField>;
                     using Stepper = G4TDormandPrince45<Equation, 6>;
@@ -261,13 +266,13 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
                     chordFinder->SetDeltaChord(fDeltaChord);
                     detector.RegisterField(std::make_unique<G4FieldManager>(field, chordFinder), forceToAllDaughters);
                 }};
-            RegisterField(mms.Get<Detector::Definition::MMSField>(), new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::MMSField>, false);
-            RegisterField(solenoidFieldS1, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldS1>, false);
-            RegisterField(solenoidFieldT1, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldT1>, false);
-            RegisterField(solenoidFieldS2, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldS2>, false);
-            RegisterField(solenoidFieldT2, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldT2>, false);
-            RegisterField(solenoidFieldS3, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldS3>, false);
-            RegisterField(ecalField, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::ECALField>, false);
+            registerField(mms.Get<Detector::Definition::MMSField>(), new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::MMSField>, false);
+            registerField(solenoidFieldS1, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldS1>, false);
+            registerField(solenoidFieldT1, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldT1>, false);
+            registerField(solenoidFieldS2, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldS2>, false);
+            registerField(solenoidFieldT2, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldT2>, false);
+            registerField(solenoidFieldS3, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::SolenoidFieldS3>, false);
+            registerField(ecalField, new Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::ECALField>, false);
         }
         { // Accelerator EM field, must be registered after MMS magnetic field
             using Field = Mustard::Detector::Field::AsG4Field<MACE::Detector::Field::AcceleratorField>;
@@ -285,6 +290,18 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     }
 
     return fWorld->PhysicalVolume();
+}
+
+auto DetectorConstruction::ApplyProductionCutNearTarget(bool apply) -> void {
+    const auto cut{G4RegionStore::GetInstance()->GetRegion("NearTargetDenseToThin")->GetProductionCuts()};
+    if (apply) {
+        auto defaultCut{G4ProductionCutsTable::GetProductionCutsTable()->GetDefaultProductionCuts()->GetProductionCuts()};
+        cut->SetProductionCuts(defaultCut);
+    } else {
+        cut->SetProductionCut(0, "e-");
+        cut->SetProductionCut(0, "e+");
+        cut->SetProductionCut(0, "proton");
+    }
 }
 
 } // namespace MACE::SimMACE::inline Action

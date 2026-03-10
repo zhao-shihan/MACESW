@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Description/CDC.h++"
 
 #include "Mustard/Utility/LiteralUnit.h++"
@@ -126,9 +145,8 @@ auto CDC::CalculateLayerConfiguration() const -> std::vector<SuperLayerConfigura
                 }
                 if ((fEvenSuperLayerIsAxial ? superLayerID + 3 : superLayerID) % 4 == 0) {
                     return +fMinStereoAngle;
-                } else {
-                    return -fMinStereoAngle;
                 }
+                return -fMinStereoAngle;
             }()};
         const auto firstSenseLayerID{static_cast<int>(superLayerID * fNSenseLayerPerSuper)};
         super.sense.reserve(fNSenseLayerPerSuper);
@@ -173,10 +191,10 @@ auto CDC::CalculateLayerConfiguration() const -> std::vector<SuperLayerConfigura
                 }();
             sense.stereoAzimuthAngle = 2 * std::atan(sense.halfLength / sense.innerRadius * tanInnerStereoZenithAngle);
 
-            const auto firstCellID{static_cast<int>((notFirstSuperLayer ?
-                                                         lastSuper.sense.back().cell.back().cellID + 1 :
-                                                         0) +
-                                                    senseLayerLocalID * super.nCellPerSenseLayer)};
+            const auto firstCellID{((notFirstSuperLayer ?
+                                         lastSuper.sense.back().cell.back().cellID + 1 :
+                                         0) +
+                                    senseLayerLocalID * super.nCellPerSenseLayer)};
             const auto firstCellAzimuth{muc::even(sense.senseLayerID) ?
                                             0 :
                                             halfPhiCell};
@@ -208,7 +226,7 @@ auto CDC::CalculateCellMap() const -> std::vector<CellInformation> {
     const auto rFieldWire{fFieldWireDiameter / 2};
 
     const auto& layerConfig{LayerConfiguration()};
-    cellMap.reserve(muc::ranges::transform_reduce(layerConfig, 0ull, std::plus{},
+    cellMap.reserve(muc::ranges::transform_reduce(layerConfig, 0ULL, std::plus{},
                                                   [this](const auto& super) {
                                                       return super.nCellPerSenseLayer * fNSenseLayerPerSuper;
                                                   }));

@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Definition/ShieldingWall.h++"
 #include "MACE/Detector/Description/ECALField.h++"
 #include "MACE/Detector/Description/ECALShield.h++"
@@ -7,11 +26,10 @@
 #include "MACE/Detector/Description/World.h++"
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
+#include "Mustard/Math/Transform.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/VectorCast.h++"
-
-#include "CLHEP/Vector/RotationY.h"
 
 #include "G4Box.hh"
 #include "G4NistManager.hh"
@@ -58,12 +76,12 @@ auto ShieldingWall::Construct(G4bool checkOverlaps) -> void {
             world.HalfXExtent(),
             0,
             2_pi)}; // clang-format off
-    const G4Transform3D wallTransform{CLHEP::HepRotationY{-wall.Rotation()}, wall1Displacement}; // clang-format on
+    const G4Transform3D wallTransform{Mustard::RotationY{-wall.Rotation()}, wall1Displacement}; // clang-format on
         const auto solid{Make<G4SubtractionSolid>(
             "_temp",
             box,
             cylinder,
-            wallTransform.inverse() * G4Transform3D{CLHEP::HepRotationY{0.5_pi}, Mustard::VectorCast<G4ThreeVector>(solenoid.S2Center())})};
+            wallTransform.inverse() * G4Transform3D{Mustard::RotationY{0.5_pi}, Mustard::VectorCast<G4ThreeVector>(solenoid.S2Center())})};
         const auto logic{Make<G4LogicalVolume>(
             solid,
             concrete,

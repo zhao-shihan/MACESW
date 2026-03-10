@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #pragma once
 
 #include "MACE/Data/SensorHit.h++"
@@ -6,16 +25,14 @@
 #include "MACE/SimECAL/Messenger/AnalysisMessenger.h++"
 
 #include "Mustard/Data/Output.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
-
-#include "G4Types.hh"
+#include "Mustard/Data/Tuple.h++"
+#include "Mustard/Simulation/AnalysisBase.h++"
 
 #include "muc/ptrvec"
 
 #include "gsl/gsl"
 
 #include <filesystem>
-#include <optional>
 #include <utility>
 #include <vector>
 
@@ -29,35 +46,29 @@ class MCPHit;
 
 namespace MACE::SimECAL {
 
-class Analysis final : public Mustard::Env::Memory::PassiveSingleton<Analysis> {
+class Analysis final : public Mustard::Simulation::AnalysisBase<Analysis, "SimECAL"> {
 public:
     Analysis();
 
-    auto FilePath(std::filesystem::path path) -> void { fFilePath = std::move(path); }
-    auto FileMode(std::string mode) -> void { fFileMode = std::move(mode); }
-    auto CoincidenceWithECAL(G4bool val) -> void { fCoincidenceWithECAL = val; }
-    auto CoincidenceWithMCP(G4bool val) -> void { fCoincidenceWithMCP = val; }
-
-    auto RunBegin(G4int runID) -> void;
+    auto CoincidenceWithECAL(bool val) -> void { fCoincidenceWithECAL = val; }
+    auto CoincidenceWithMCP(bool val) -> void { fCoincidenceWithMCP = val; }
 
     auto SubmitPrimaryVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimPrimaryVertex>>& data) -> void { fPrimaryVertex = &data; }
     auto SubmitDecayVertexData(const muc::unique_ptrvec<Mustard::Data::Tuple<Data::SimDecayVertex>>& data) -> void { fDecayVertex = &data; }
     auto SubmitECALHC(const std::vector<gsl::owner<ECALHit*>>& hc) -> void { fECALHit = &hc; }
     auto SubmitECALPMHC(const std::vector<gsl::owner<ECALPMHit*>>& hc) -> void { fECALPMHit = &hc; }
     auto SubmitMCPHC(const std::vector<gsl::owner<MCPHit*>>& hc) -> void { fMCPHit = &hc; }
-    auto EventEnd() -> void;
 
-    auto RunEnd(Option_t* option = {}) -> void;
+    auto RunBeginUserAction(int runID) -> void override;
+    auto EventEndUserAction() -> void override;
+    auto RunEndUserAction(int) -> void override;
 
 private:
-    std::filesystem::path fFilePath;
-    std::string fFileMode;
-    G4bool fCoincidenceWithECAL;
-    G4bool fCoincidenceWithMCP;
+    bool fCoincidenceWithECAL;
+    bool fCoincidenceWithMCP;
 
     std::filesystem::path fLastUsedFullFilePath;
 
-    gsl::owner<TFile*> fFile;
     std::optional<Mustard::Data::Output<Data::SimPrimaryVertex>> fPrimaryVertexOutput;
     std::optional<Mustard::Data::Output<Data::SimDecayVertex>> fDecayVertexOutput;
     std::optional<Mustard::Data::Output<Data::ECALSimHit>> fECALSimHitOutput;

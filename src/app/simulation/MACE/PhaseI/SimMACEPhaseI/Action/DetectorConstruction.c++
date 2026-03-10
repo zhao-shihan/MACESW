@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Detector/Definition/ECALCrystal.h++"
 #include "MACE/Detector/Definition/ECALPhotoSensor.h++"
 #include "MACE/Detector/Definition/Target.h++"
@@ -6,8 +25,8 @@
 #include "MACE/PhaseI/Detector/Definition/MRPC.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
 #include "MACE/PhaseI/Detector/Definition/TTC.h++"
-#include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/PhaseI/Detector/Definition/World.h++"
+#include "MACE/PhaseI/Detector/Description/TTC.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Action/DetectorConstruction.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Messenger/DetectorMessenger.h++"
@@ -74,7 +93,7 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     sciFiTracker.RegisterSD(scifiName + "SiPM", sciFiSiPMSD);
 
     const auto ttcSiPM(new SD::TTCSiPMSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name() + "SiPM", TTCSiPMSD::Type::MACEPhaseI});
-    ttc.RegisterSD("TTCScintillator", new SD::TTCSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name(),TTCSD::Type::MACEPhaseI});
+    ttc.RegisterSD("TTCScintillator", new SD::TTCSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name(), TTCSD::Type::MACEPhaseI, ttcSiPM});
     ttc.RegisterSD("TTCSilicone", ttcSiPM);
 
     return fWorld->PhysicalVolume();

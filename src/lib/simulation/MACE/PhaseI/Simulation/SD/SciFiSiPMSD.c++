@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/PhaseI/Simulation/SD/SciFiSiPMSD.h++"
 
 #include "G4Event.hh"
@@ -9,8 +28,6 @@
 #include "G4StepPoint.hh"
 #include "G4Track.hh"
 #include "G4VTouchable.hh"
-
-#include <cassert>
 
 namespace MACE::PhaseI::inline Simulation::inline SD {
 
@@ -24,7 +41,7 @@ SciFiSiPMSD::SciFiSiPMSD(const G4String& sdName) :
 auto SciFiSiPMSD::Initialize(G4HCofThisEvent* hitsCollectionOfThisEvent) -> void {
     fHit.clear(); // clear at the begin of event allows TTCSD to get optical photon counts at the end of event
 
-    fHitsCollection = new SciFiSiPMRawHitCollection(SensitiveDetectorName, collectionName[0]);
+    fHitsCollection = new SciFiSiPMHitCollection(SensitiveDetectorName, collectionName[0]);
     auto hitsCollectionID{G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection)};
     hitsCollectionOfThisEvent->AddHitsCollection(hitsCollectionID, fHitsCollection);
 }
@@ -42,15 +59,13 @@ auto SciFiSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
 
     const auto postStepPoint{*step.GetPostStepPoint()};
     const auto siPMID{postStepPoint.GetTouchable()->GetReplicaNumber()};
-    const auto epoxyID{postStepPoint.GetTouchable()->GetReplicaNumber(1)};
-    const auto trueSiPMID{siPMID + 64 * epoxyID};
     // new a hit
-    auto hit{std::make_unique_for_overwrite<SciFiSiPMRawHit>()};
+    auto hit{std::make_unique_for_overwrite<SciFiSiPMHit>()};
     Get<"EvtID">(*hit) = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
     Get<"HitID">(*hit) = -1; // to be determined
-    Get<"SiPMID">(*hit) = trueSiPMID;
+    Get<"SiPMID">(*hit) = siPMID;
     Get<"t">(*hit) = postStepPoint.GetGlobalTime();
-    fHit[trueSiPMID].emplace_back(std::move(hit));
+    fHit[siPMID].emplace_back(std::move(hit));
     return true;
 }
 
@@ -68,7 +83,7 @@ auto SciFiSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
 auto SciFiSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, int> {
     muc::flat_hash_map<int, int> nHit;
     for (auto&& [siPMID, hit] : fHit) {
-        if (hit.size() > 0) {
+        if (not hit.empty()) {
             nHit[siPMID] = hit.size();
         }
     }

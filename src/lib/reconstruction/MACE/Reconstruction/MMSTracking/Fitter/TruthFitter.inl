@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 namespace MACE::inline Reconstruction::MMSTracking::inline Fitter {
 
 template<Mustard::Data::SuperTupleModel<Data::CDCSimHit> AHit,
@@ -21,7 +40,7 @@ auto TruthFitter<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     Get<"x0">(*track) = Get<"x0">(firstHit);
     Get<"Ek0">(*track) = Get<"Ek0">(firstHit);
     Get<"p0">(*track) = Get<"p0">(firstHit);
-    Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().FastField());
+    Data::CalculateHelix(*track, Detector::Description::MMSField::Instance().NominalField());
     Get<"CreatProc">(*track) = Get<"CreatProc">(firstHit);
 
     if (not fCheckHitDataConsistency) {

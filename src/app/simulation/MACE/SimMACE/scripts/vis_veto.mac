@@ -6,7 +6,9 @@
 #/control/saveHistory
 /run/verbose 2
 
-#/Mustard/Detector/Description/Ixport SimMACE_geom.yaml
+#/Mustard/Detector/Description/Export SimMACE.yaml
+#/Mustard/Detector/Description/Import SimMACE.yaml
+#/Mustard/Detector/Description/Ixport SimMACE.yaml
 
 /run/initialize
 
@@ -53,49 +55,17 @@
 /vis/viewer/zoom 2.5
 
 # Visibility
-/vis/geometry/set/visibility CDCCell             -1 no
-/vis/geometry/set/visibility CDCSuperLayer        0 no
-/vis/geometry/set/visibility ECALField             0 no
-/vis/geometry/set/visibility ECALPMCathode        0 no
-/vis/geometry/set/visibility ECALPMTCoupler        0 no
-/vis/geometry/set/visibility MMSField             -1 no
-/vis/geometry/set/visibility SolenoidFieldS1      0 no
-/vis/geometry/set/visibility SolenoidFieldS2      0 no
-/vis/geometry/set/visibility SolenoidFieldS3      0 no
-/vis/geometry/set/visibility SolenoidFieldT1      0 no
-/vis/geometry/set/visibility SolenoidFieldT2      0 no
-#/vis/geometry/set/visibility cap2ModuleBox        0 no
-#/vis/geometry/set/visibility cap1ModuleBox        0 no
-#/vis/geometry/set/visibility topModuleBox         0 no
-#/vis/geometry/set/visibility sideModuleBox        0 no
-
-
-# Colors
-/vis/geometry/set/colour FiberHole                       0     1     1     1       0.
-/vis/geometry/set/colour Fiber                           0     1     1     1       0.4
-/vis/geometry/set/colour SiPMCoupler                     0     1     1     1       0.4
-/vis/geometry/set/colour SiPM                            0     1     1     1       0.3
-/vis/geometry/set/colour SiPMCathode                     0     1     1     1       0.6
-
-
-
-
-/vis/geometry/set/colour cap2ModuleBox                   0     0.7     0     0.3     0.1
-/vis/geometry/set/colour cap1ModuleBox                   0     0     1     0       0.1
-/vis/geometry/set/colour topModuleBox                    0     1     0     0       0.1
-/vis/geometry/set/colour sideModuleBox                   0     0     0     1       0.
-
-/vis/geometry/set/colour Cap2StripBox                   0     0.7     0     0.3     0.1
-/vis/geometry/set/colour Cap1StripBox                   0     0     1     0       0.1
-/vis/geometry/set/colour TopStripBox                    0     1     0     0       0.1
-/vis/geometry/set/colour SideStripBox                   0     0     0     1       0.1
-
-/vis/geometry/set/colour Cap2Strip                      0     0.7     0     0.3     0.2
-/vis/geometry/set/colour Cap1Strip                      0     0     1     0       0.2
-/vis/geometry/set/colour TopStrip                       0     1     0     0       0.2
-/vis/geometry/set/colour SideStrip                      0     0     0     1       0.2
-
-
+/vis/geometry/set/visibility CDCCell                      -1          no
+/vis/geometry/set/visibility CDCSuperLayer                 0          no
+/vis/geometry/set/visibility ECALField                     0          no
+/vis/geometry/set/visibility ECALPMCathode                 0          no
+/vis/geometry/set/visibility ECALPMTCoupler                0          no
+/vis/geometry/set/visibility MMSField                     -1          no
+/vis/geometry/set/visibility SolenoidFieldS1               0          no
+/vis/geometry/set/visibility SolenoidFieldS2               0          no
+/vis/geometry/set/visibility SolenoidFieldS3               0          no
+/vis/geometry/set/visibility SolenoidFieldT1               0          no
+/vis/geometry/set/visibility SolenoidFieldT2               0          no
 /vis/geometry/set/visibility Accelerator                   0          no
 /vis/geometry/set/visibility AcceleratorField              0          no
 /vis/geometry/set/visibility BeamDegrader                  0          no
@@ -112,55 +82,53 @@
 /vis/geometry/set/visibility ECALCrystal                   0          no
 /vis/geometry/set/visibility ECALField                     0          no
 /vis/geometry/set/visibility ECALMagnet                    0          no
-#/vis/geometry/set/visibility ECALShield                    0          no
-
-/vis/geometry/set/visibility ECALPMTCoupler                0     no
-/vis/geometry/set/visibility ECALPMTShell                  0     no
-/vis/geometry/set/visibility ECALPMTVacuum                 0     no
-/vis/geometry/set/visibility ECALMPPCWindow                0     no
-/vis/geometry/set/visibility ECALMPPCCoupler               0     no
-/vis/geometry/set/visibility ECALPMCathode                 0     no
-
-/vis/geometry/set/visibility MCP                           0     no
-/vis/geometry/set/visibility MCPAnode                      0     no
-/vis/geometry/set/visibility MCPChamber                    0     no
-/vis/geometry/set/visibility MCPChamberPipe                0     no
-/vis/geometry/set/visibility MCPChamberPipeVacuum          0     no
-/vis/geometry/set/visibility MCPChamberVacuum              0     no
-/vis/geometry/set/visibility MMSBeamPipe                   0     no
-/vis/geometry/set/visibility MMSBeamPipeVacuum             0     no
-/vis/geometry/set/visibility MMSField                      0     no
-/vis/geometry/set/visibility MMSMagnet                     0     no
-/vis/geometry/set/visibility MMSShield                     0     no
-/vis/geometry/set/visibility ShieldingWall                 0     no
-/vis/geometry/set/visibility SolenoidBeamPipeS1            0     no
-/vis/geometry/set/visibility SolenoidBeamPipeS1Vacuum      0     no
-/vis/geometry/set/visibility SolenoidBeamPipeS2            0     no
-/vis/geometry/set/visibility SolenoidBeamPipeS2Vacuum      0     no
-/vis/geometry/set/visibility SolenoidBeamPipeS3            0     no
-/vis/geometry/set/visibility SolenoidBeamPipeS3Vacuum      0     no
-/vis/geometry/set/visibility SolenoidBeamPipeT1            0     no
-/vis/geometry/set/visibility SolenoidBeamPipeT1Vacuum      0     no
-/vis/geometry/set/visibility SolenoidBeamPipeT2            0     no
-/vis/geometry/set/visibility SolenoidBeamPipeT2Vacuum      0     no
-/vis/geometry/set/visibility SolenoidFieldS1               0     no
-/vis/geometry/set/visibility SolenoidFieldS2               0     no
-/vis/geometry/set/visibility SolenoidFieldS3               0     no
-/vis/geometry/set/visibility SolenoidFieldT1               0     no
-/vis/geometry/set/visibility SolenoidFieldT2               0     no
-/vis/geometry/set/visibility SolenoidS1                    0     no
-/vis/geometry/set/visibility SolenoidS2                    0     no
-/vis/geometry/set/visibility SolenoidS3                    0     no
-/vis/geometry/set/visibility SolenoidShieldS1              0     no
-/vis/geometry/set/visibility SolenoidShieldS2              0     no
-/vis/geometry/set/visibility SolenoidShieldS3              0     no
-/vis/geometry/set/visibility SolenoidShieldT1              0     no
-/vis/geometry/set/visibility SolenoidShieldT2              0     no
-/vis/geometry/set/visibility SolenoidT1                    0     no
-/vis/geometry/set/visibility SolenoidT2                    0     no
-/vis/geometry/set/visibility Target                        0     no
-/vis/geometry/set/visibility TTC                           0     no
-/vis/geometry/set/visibility World                         0     no
+#/vis/geometry/set/visibility ECALShield                   0          no
+/vis/geometry/set/visibility ECALPMTCoupler                0          no
+/vis/geometry/set/visibility ECALPMTShell                  0          no
+/vis/geometry/set/visibility ECALPMTVacuum                 0          no
+/vis/geometry/set/visibility ECALMPPCWindow                0          no
+/vis/geometry/set/visibility ECALMPPCCoupler               0          no
+/vis/geometry/set/visibility ECALPMCathode                 0          no
+/vis/geometry/set/visibility MCP                           0          no
+/vis/geometry/set/visibility MCPAnode                      0          no
+/vis/geometry/set/visibility MCPChamber                    0          no
+/vis/geometry/set/visibility MCPChamberPipe                0          no
+/vis/geometry/set/visibility MCPChamberPipeVacuum          0          no
+/vis/geometry/set/visibility MCPChamberVacuum              0          no
+/vis/geometry/set/visibility MMSBeamPipe                   0          no
+/vis/geometry/set/visibility MMSBeamPipeVacuum             0          no
+/vis/geometry/set/visibility MMSField                      0          no
+/vis/geometry/set/visibility MMSMagnet                     0          no
+/vis/geometry/set/visibility MMSShield                     0          no
+/vis/geometry/set/visibility ShieldingWall                 0          no
+/vis/geometry/set/visibility SolenoidBeamPipeS1            0          no
+/vis/geometry/set/visibility SolenoidBeamPipeS1Vacuum      0          no
+/vis/geometry/set/visibility SolenoidBeamPipeS2            0          no
+/vis/geometry/set/visibility SolenoidBeamPipeS2Vacuum      0          no
+/vis/geometry/set/visibility SolenoidBeamPipeS3            0          no
+/vis/geometry/set/visibility SolenoidBeamPipeS3Vacuum      0          no
+/vis/geometry/set/visibility SolenoidBeamPipeT1            0          no
+/vis/geometry/set/visibility SolenoidBeamPipeT1Vacuum      0          no
+/vis/geometry/set/visibility SolenoidBeamPipeT2            0          no
+/vis/geometry/set/visibility SolenoidBeamPipeT2Vacuum      0          no
+/vis/geometry/set/visibility SolenoidFieldS1               0          no
+/vis/geometry/set/visibility SolenoidFieldS2               0          no
+/vis/geometry/set/visibility SolenoidFieldS3               0          no
+/vis/geometry/set/visibility SolenoidFieldT1               0          no
+/vis/geometry/set/visibility SolenoidFieldT2               0          no
+/vis/geometry/set/visibility SolenoidS1                    0          no
+/vis/geometry/set/visibility SolenoidS2                    0          no
+/vis/geometry/set/visibility SolenoidS3                    0          no
+/vis/geometry/set/visibility SolenoidShieldS1              0          no
+/vis/geometry/set/visibility SolenoidShieldS2              0          no
+/vis/geometry/set/visibility SolenoidShieldS3              0          no
+/vis/geometry/set/visibility SolenoidShieldT1              0          no
+/vis/geometry/set/visibility SolenoidShieldT2              0          no
+/vis/geometry/set/visibility SolenoidT1                    0          no
+/vis/geometry/set/visibility SolenoidT2                    0          no
+/vis/geometry/set/visibility Target                        0          no
+/vis/geometry/set/visibility TTC                           0          no
+/vis/geometry/set/visibility World                         0          no
 
 /vis/scene/add/date
 /vis/scene/add/axes 0 0 0 10 cm
