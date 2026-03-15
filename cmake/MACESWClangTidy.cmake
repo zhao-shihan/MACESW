@@ -15,17 +15,6 @@
 # You should have received a copy of the GNU General Public License along with
 # MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-if(MACESW_CLANG_TIDY)
-    find_program(CLANG_TIDY_EXE clang-tidy)
-    if(NOT CLANG_TIDY_EXE)
-        set(MACESW_CLANG_TIDY OFF)
-        message(NOTICE "***Notice: clang-tidy not found. Temporarily turning off MACESW_CLANG_TIDY")
-    elseif(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
-        set(MACESW_CLANG_TIDY OFF)
-        message(NOTICE "***Notice: Not using GCC or LLVM Clang. Temporarily turning off MACESW_CLANG_TIDY")
-    endif()
-endif()
-
 set(MACESW_CLANG_TIDY_FIX_OPTION_1 "- -readability-redundant-declaration")
 configure_file(${MACESW_PROJECT_TOOL_DIR}/clang-tidy.in
                ${MACESW_PROJECT_TOOL_DIR}/clang-tidy-fix-unity-build.yml
@@ -34,6 +23,26 @@ set(MACESW_CLANG_TIDY_FIX_OPTION_1 "")
 configure_file(${MACESW_PROJECT_TOOL_DIR}/clang-tidy.in
                ${MACESW_PROJECT_ROOT_DIR}/.clang-tidy
                @ONLY)
+
+if(MACESW_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXE clang-tidy)
+    if(NOT CLANG_TIDY_EXE)
+        set(MACESW_CLANG_TIDY OFF)
+        message(WARNING "clang-tidy not found. Temporarily turning off MACESW_CLANG_TIDY")
+    elseif(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+        set(MACESW_CLANG_TIDY OFF)
+        message(WARNING "Not using GCC or LLVM Clang. Temporarily turning off MACESW_CLANG_TIDY")
+    else()
+        execute_process(COMMAND ${CLANG_TIDY_EXE} --version
+                        OUTPUT_VARIABLE clang_tidy_version_output
+                        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(TOLOWER "${clang_tidy_version_output}" clang_tidy_version_output)
+        if(clang_tidy_version_output MATCHES "amd" OR clang_tidy_version_output MATCHES "aocc")
+            set(MACESW_CLANG_TIDY OFF)
+            message(WARNING "AMD AOCC clang-tidy is not supported. Temporarily turning off MACESW_CLANG_TIDY")
+        endif()
+    endif()
+endif()
 
 if(MACESW_CLANG_TIDY)
     set(MACESW_CLANG_TIDY_FULL_COMMAND
@@ -51,10 +60,10 @@ if(MACESW_CLANG_TIDY)
     endif()
     set(CMAKE_CXX_CLANG_TIDY ${MACESW_CLANG_TIDY_FULL_COMMAND})
     if(MACESW_CLANG_TIDY_WERROR)
-        message(STATUS "MACESW source code will be analysed by ${CLANG_TIDY_EXE} (warnings as errors)")
+        message(STATUS "MACESW source code will be analyzed by ${CLANG_TIDY_EXE} (warnings as errors)")
     else()
-        message(STATUS "MACESW source code will be analysed by ${CLANG_TIDY_EXE}")
+        message(STATUS "MACESW source code will be analyzed by ${CLANG_TIDY_EXE}")
     endif()
 else()
-    message(NOTICE "***Notice: MACESW source code will not be analysed by clang-tidy")
+    message(NOTICE "***Notice: MACESW source code will not be analyzed by clang-tidy")
 endif()

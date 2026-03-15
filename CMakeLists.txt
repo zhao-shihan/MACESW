@@ -67,7 +67,7 @@ option(MACESW_BUILTIN_MUSTARD "Use built-in Mustard (network or pre-downloaded s
 option(MACESW_BUILTIN_PMP "Use built-in pmp (network or pre-downloaded source is required)." OFF)
 option(MACESW_CLANG_FORMAT "Requires source code format to be checked by clang-format (requires clang-format)" ON)
 option(MACESW_CLANG_FORMAT_WERROR "Let clang-format treat warnings as errors (only takes effect when MACESW_CLANG_FORMAT=ON)" OFF)
-option(MACESW_CLANG_TIDY "Requires source code to be analysed by clang-tidy (requires clang-tidy)" OFF)
+option(MACESW_CLANG_TIDY "Requires source code to be analyzed by clang-tidy (requires clang-tidy)" OFF)
 option(MACESW_CLANG_TIDY_AMEND_UNITY_BUILD "Amend unity-build-missed clang-tidy checks in normal build (only takes effect when both MACESW_CLANG_TIDY=ON and MACESW_UNITY_BUILD=OFF)" OFF)
 option(MACESW_CLANG_TIDY_WERROR "Let clang-tidy treat warnings as errors (only takes effect when MACESW_CLANG_TIDY=ON)" OFF)
 option(MACESW_ENABLE_ASAN_IN_DEBUG_BUILD "Enable AddressSanitizer in debug build" OFF)

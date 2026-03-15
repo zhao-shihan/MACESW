@@ -15,10 +15,21 @@
 # You should have received a copy of the GNU General Public License along with
 # MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-find_program(CLANG_FORMAT_EXE clang-format)
-if(NOT CLANG_FORMAT_EXE)
-    set(MACESW_CLANG_FORMAT OFF)
-    message(NOTICE "***Notice: clang-format not found. Temporarily turning off MACESW_CLANG_FORMAT")
+if(MACESW_CLANG_FORMAT)
+    find_program(CLANG_FORMAT_EXE clang-format)
+    if(NOT CLANG_FORMAT_EXE)
+        set(MACESW_CLANG_FORMAT OFF)
+        message(WARNING "clang-format not found. Temporarily turning off MACESW_CLANG_FORMAT")
+    else()
+        execute_process(COMMAND ${CLANG_FORMAT_EXE} --version
+                        OUTPUT_VARIABLE clang_format_version_output
+                        ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(TOLOWER "${clang_format_version_output}" clang_format_version_output)
+        if(clang_format_version_output MATCHES "amd" OR clang_format_version_output MATCHES "aocc")
+            set(MACESW_CLANG_FORMAT OFF)
+            message(WARNING "AMD AOCC clang-format is not supported. Temporarily turning off MACESW_CLANG_FORMAT")
+        endif()
+    endif()
 endif()
 
 if(MACESW_CLANG_FORMAT)
@@ -42,5 +53,5 @@ if(MACESW_CLANG_FORMAT)
         message(STATUS "MACESW source code format will be checked by ${CLANG_FORMAT_EXE}")
     endif()
 else()
-    message(WARNING "MACESW source code format will not be checked by clang-format")
+    message(NOTICE "***Notice: MACESW source code format will not be checked by clang-format")
 endif()
