@@ -26,8 +26,9 @@
 #include "CLHEP/Geometry/Point3D.h"
 #include "CLHEP/Geometry/Transform3D.h"
 
+#include "gtl/phmap.hpp"
+
 #include "muc/array"
-#include "muc/hash_map"
 
 #include "gsl/gsl"
 

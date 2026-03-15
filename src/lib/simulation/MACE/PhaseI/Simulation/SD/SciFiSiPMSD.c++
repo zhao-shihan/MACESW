@@ -80,8 +80,8 @@ auto SciFiSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
     }
 }
 
-auto SciFiSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, int> {
-    muc::flat_hash_map<int, int> nHit;
+auto SciFiSiPMSD::NOpticalPhotonHit() const -> gtl::flat_hash_map<int, int> {
+    gtl::flat_hash_map<int, int> nHit;
     for (auto&& [siPMID, hit] : fHit) {
         if (not hit.empty()) {
             nHit[siPMID] = hit.size();

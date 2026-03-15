@@ -89,7 +89,7 @@ auto GenFitDAFFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& h
     r.good.reserve(nTrackForReserve);
     r.garbage.reserve(hitData.size());
 
-    muc::flat_hash_set<AHitPointer> goodHit;
+    gtl::flat_hash_set<AHitPointer> goodHit;
     goodHit.reserve(hitData.size());
     for (auto&& segment : segmentInFirstSuperLayer) {
         const auto seed{std::make_shared_for_overwrite<Mustard::Data::Tuple<ATrack>>()};

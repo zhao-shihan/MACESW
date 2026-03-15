@@ -78,7 +78,7 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
 auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed)
     -> std::pair<std::shared_ptr<genfit::Track>,
-                 muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>> {
+                 gtl::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>> {
     if (Get<"p0", Mustard::Vector3D>(*seed).mag2() < muc::pow(fLowestMomentum, 2)) {
         return {};
     }
@@ -91,7 +91,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                                         Mustard::ToG3<"Length">(this->ToTVector3(*Get<"x0">(*seed))),
                                         Mustard::ToG3<"Energy">(this->ToTVector3(*Get<"p0">(*seed))))};
 
-    muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
+    gtl::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
     measurementHitMap.reserve(hitData.size());
 
     const auto& cdc{Detector::Description::CDC::Instance()};
@@ -148,7 +148,7 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
     requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
              Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
 auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Track> genfitTrack, const ASeedPointer& seed,
-                                                    const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
+                                                    const gtl::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
     const auto& status{*genfitTrack->getFitStatus()};
     if (not status.isFitConvergedPartially()) {

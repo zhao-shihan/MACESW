@@ -49,7 +49,7 @@ auto TruthFinder<AHit, ATrack>::operator()(const std::vector<AHitPointer>& hitDa
     const auto collectGarbage{
         [&] { r.garbage.insert(r.garbage.end(), track.begin(), track.end()); }};
 
-    muc::flat_hash_set<short> cellHit;
+    gtl::flat_hash_set<short> cellHit;
     cellHit.reserve(this->MinNHit());
 
     while (track.end() != hitData.end()) {

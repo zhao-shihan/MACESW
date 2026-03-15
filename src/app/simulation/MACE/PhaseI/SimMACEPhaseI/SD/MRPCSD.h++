@@ -24,7 +24,8 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/ptrvec"
 
 #include <algorithm>
@@ -47,7 +48,7 @@ public:
 protected:
     double fIonizingEnergyDepositionThreshold;
 
-    muc::flat_hash_map<int, muc::unique_ptrvec<MRPCHit>> fSplitHit;
+    gtl::flat_hash_map<int, muc::unique_ptrvec<MRPCHit>> fSplitHit;
     MRPCHitCollection* fHitsCollection;
 
     MRPCSDMessenger::Register<MRPCSD> fMessengerRegister;

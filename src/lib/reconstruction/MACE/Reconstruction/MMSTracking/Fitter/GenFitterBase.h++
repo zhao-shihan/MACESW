@@ -61,9 +61,10 @@
 #include "TVector3.h"
 #include "TVectorD.h"
 
+#include "gtl/phmap.hpp"
+
 #include "mplr/mplr.hpp"
 
-#include "muc/hash_map"
 #include "muc/math"
 #include "muc/numeric"
 #include "muc/ptrvec"
@@ -110,12 +111,12 @@ protected:
                  Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
     auto Initialize(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed)
         -> std::pair<std::shared_ptr<genfit::Track>,
-                     muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>>;
+                     gtl::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>>;
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
                  Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
     auto Finalize(std::shared_ptr<genfit::Track> genfitTrack, const ASeedPointer& seed,
-                  const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
+                  const gtl::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
         -> Base::template Result<AHitPointer>;
 
     template<Mustard::Concept::NumericVector3FloatingPoint T>

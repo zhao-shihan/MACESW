@@ -21,10 +21,11 @@
 
 #include "Mustard/Detector/Description/DescriptionWithCacheBase.h++"
 
+#include "gtl/phmap.hpp"
+
 #include "Eigen/Core"
 
 #include "muc/array"
-#include "muc/hash_map"
 #include "muc/math"
 
 #include "gsl/gsl"
@@ -167,7 +168,7 @@ private:
     };
 
 public:
-    using CellMapFromSenseLayerIDAndLocalCellIDType = muc::flat_hash_map<muc::array2i32, CellInformation, HashArray2i32>;
+    using CellMapFromSenseLayerIDAndLocalCellIDType = gtl::flat_hash_map<muc::array2i32, CellInformation, HashArray2i32>;
 
 private:
     auto CalculateLayerConfiguration() const -> std::vector<SuperLayerConfiguration>;

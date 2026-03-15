@@ -60,7 +60,7 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
     const auto trackCDCHitFirst{std::ranges::lower_bound(cdcHitHC, ttcHitHC.front(), byTrackID)};
     std::ranges::subrange trackCDCHit{trackCDCHitFirst, trackCDCHitFirst};
 
-    muc::flat_hash_set<short> tileHit;
+    gtl::flat_hash_set<short> tileHit;
     tileHit.reserve(2 * fMinNTTCHitForQualifiedTrack);
 
     while (trackTTCHit.end() != ttcHitHC.cend() and

@@ -149,13 +149,13 @@ auto CLIModule::OutputFilePath() const -> std::filesystem::path {
     return input.replace_extension().concat("_smeared").replace_extension(extension);
 }
 
-auto CLIModule::ParseSmearingConfig(std::string_view arg) const -> muc::flat_hash_map<std::string, std::string> {
+auto CLIModule::ParseSmearingConfig(std::string_view arg) const -> gtl::flat_hash_map<std::string, std::string> {
     auto var{TheCLI()->present<std::vector<std::string>>(arg)};
     if (not var.has_value()) {
         return {};
     }
     Ensures(muc::even(var->size()));
-    muc::flat_hash_map<std::string, std::string> config;
+    gtl::flat_hash_map<std::string, std::string> config;
     for (gsl::index i{}; i < ssize(*var); i += 2) {
         auto [_, inserted]{config.try_emplace(std::move(var->at(i)), std::move(var->at(i + 1)))};
         if (not inserted) {

@@ -97,8 +97,8 @@ auto TTCSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
     }
 }
 
-auto TTCSiPMSD::NOpticalPhotonHit() const -> muc::flat_hash_map<int, std::vector<int>> {
-    muc::flat_hash_map<int, std::vector<int>> nHit;
+auto TTCSiPMSD::NOpticalPhotonHit() const -> gtl::flat_hash_map<int, std::vector<int>> {
+    gtl::flat_hash_map<int, std::vector<int>> nHit;
     for (auto&& [tileID, hit] : fHit) {
         if (not hit.empty()) {
             auto upSiPMNOpticalPhotonHit = std::ranges::count_if(hit, [](const auto& hit) { return Get<"SiPMID">(*hit) % 2 != 0; });

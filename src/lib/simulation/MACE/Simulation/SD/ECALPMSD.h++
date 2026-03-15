@@ -23,7 +23,8 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/ptrvec"
 
 namespace MACE::inline Simulation::inline SD {
@@ -36,10 +37,10 @@ public:
     auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
     auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
-    auto NOpticalPhotonHit() const -> muc::flat_hash_map<int, int>;
+    auto NOpticalPhotonHit() const -> gtl::flat_hash_map<int, int>;
 
 protected:
-    muc::flat_hash_map<int, muc::unique_ptrvec<ECALPMHit>> fHit;
+    gtl::flat_hash_map<int, muc::unique_ptrvec<ECALPMHit>> fHit;
     ECALPMHitCollection* fHitsCollection;
 };
 

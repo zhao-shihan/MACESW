@@ -23,7 +23,8 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/ptrvec"
 
 #include <vector>
@@ -44,11 +45,11 @@ public:
     auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
     auto EndOfEvent(G4HCofThisEvent*) -> void override;
 
-    auto NOpticalPhotonHit() const -> muc::flat_hash_map<int, std::vector<int>>;
+    auto NOpticalPhotonHit() const -> gtl::flat_hash_map<int, std::vector<int>>;
 
 protected:
     Type fType;
-    muc::flat_hash_map<int, muc::unique_ptrvec<TTCSiPMHit>> fHit;
+    gtl::flat_hash_map<int, muc::unique_ptrvec<TTCSiPMHit>> fHit;
     TTCSiPMHitCollection* fHitsCollection;
 };
 

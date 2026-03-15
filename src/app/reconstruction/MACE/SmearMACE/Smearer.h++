@@ -26,8 +26,9 @@
 #include "ROOT/RDataFrame.hxx"
 #include "TF1.h"
 
+#include "gtl/phmap.hpp"
+
 #include "muc/concepts"
-#include "muc/hash_map"
 
 #include "fmt/core.h"
 
@@ -41,7 +42,7 @@ public:
     Smearer(std::vector<std::string> inputFile, Mustard::Data::Processor<>& processor);
 
     template<Mustard::Data::TupleModelizable... Ts>
-    auto Smear(std::string_view treeName, const muc::flat_hash_map<std::string, std::string>& smearingConfig) const -> void;
+    auto Smear(std::string_view treeName, const gtl::flat_hash_map<std::string, std::string>& smearingConfig) const -> void;
 
 private:
     std::vector<std::string> fInputFile;

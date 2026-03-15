@@ -28,7 +28,8 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/ptrvec"
 
 #include <algorithm>
@@ -52,7 +53,7 @@ protected:
     double fMeanDriftVelocity;
     const std::vector<Detector::Description::CDC::CellInformation>* fCellMap;
 
-    muc::flat_hash_map<int, muc::unique_ptrvec<CDCHit>> fSplitHit;
+    gtl::flat_hash_map<int, muc::unique_ptrvec<CDCHit>> fSplitHit;
     CDCHitCollection* fHitsCollection;
 
     CDCSDMessenger::Register<CDCSD> fMessengerRegister;

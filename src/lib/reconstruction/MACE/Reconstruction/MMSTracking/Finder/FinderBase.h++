@@ -27,8 +27,7 @@
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/IO/PrettyLog.h++"
 
-#include "muc/hash_map"
-#include "muc/hash_set"
+#include "gtl/phmap.hpp"
 
 #include "fmt/core.h"
 #include "fmt/ranges.h"
@@ -61,7 +60,7 @@ protected:
             std::vector<AHitPointer> hitData;
             std::shared_ptr<Mustard::Data::Tuple<ATrack>> seed;
         };
-        muc::flat_hash_map<int, GoodTrack> good;
+        gtl::flat_hash_map<int, GoodTrack> good;
         std::vector<AHitPointer> garbage;
     };
 

@@ -24,7 +24,8 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
+
 #include "muc/ptrvec"
 
 namespace MACE::PhaseI::inline Simulation::inline SD {
@@ -39,7 +40,7 @@ public:
 
 protected:
     const SciFiSiPMSD* fSciFiSiPMSD;
-    muc::flat_hash_map<int, muc::unique_ptrvec<SciFiSimHit>> fSplitHit;
+    gtl::flat_hash_map<int, muc::unique_ptrvec<SciFiSimHit>> fSplitHit;
     SciFiHitCollection* fHitsCollection;
 };
 

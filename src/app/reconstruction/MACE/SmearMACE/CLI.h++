@@ -24,7 +24,7 @@
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/CLI/Module/MonteCarloModule.h++"
 
-#include "muc/hash_map"
+#include "gtl/phmap.hpp"
 
 #include "gsl/gsl"
 
@@ -65,7 +65,7 @@ public:
     auto ECALSimHitNameFormat() const -> auto { return TheCLI()->present("--ecal-hit-name").value_or("G4Run{}/ECALSimHit"); }
 
 private:
-    auto ParseSmearingConfig(std::string_view arg) const -> muc::flat_hash_map<std::string, std::string>;
+    auto ParseSmearingConfig(std::string_view arg) const -> gtl::flat_hash_map<std::string, std::string>;
 };
 
 using CLI = Mustard::CLI::CLI<Mustard::CLI::BasicModule,

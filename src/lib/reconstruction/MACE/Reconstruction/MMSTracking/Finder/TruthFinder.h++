@@ -30,8 +30,9 @@
 #include "Mustard/Math/GeometryRepresentation.h++"
 #include "Mustard/Math/Vector.h++"
 
+#include "gtl/phmap.hpp"
+
 #include "muc/algorithm"
-#include "muc/hash_set"
 
 #include <algorithm>
 #include <iterator>
