@@ -58,11 +58,11 @@ auto MakeGeometry::Main(int argc, char* argv[]) const -> int {
 
     // 1
 
-    auto& ecalCrystal{fWorld->NewDaughter<MACE::Detector::Definition::ECALCrystal>(fCheckOverlap)};
-    auto& ecalPhotoSensor{fWorld->NewDaughter<MACE::Detector::Definition::ECALPhotoSensor>(fCheckOverlap)};
-    auto& centralBeamPipe{fWorld->NewDaughter<PhaseI::Detector::Definition::CentralBeamPipe>(fCheckOverlap)};
-    auto& ttc{fWorld->NewDaughter<MACE::PhaseI::Detector::Definition::TTC>(fCheckOverlap)};
-    auto& sciFiTracker{fWorld->NewDaughter<PhaseI::Detector::Definition::SciFiTracker>(fCheckOverlap)};
+    [[maybe_unused]] auto& ecalCrystal{fWorld->NewDaughter<MACE::Detector::Definition::ECALCrystal>(fCheckOverlap)};
+    [[maybe_unused]] auto& ecalPhotoSensor{fWorld->NewDaughter<MACE::Detector::Definition::ECALPhotoSensor>(fCheckOverlap)};
+    [[maybe_unused]] auto& centralBeamPipe{fWorld->NewDaughter<PhaseI::Detector::Definition::CentralBeamPipe>(fCheckOverlap)};
+    [[maybe_unused]] auto& ttc{fWorld->NewDaughter<MACE::PhaseI::Detector::Definition::TTC>(fCheckOverlap)};
+    [[maybe_unused]] auto& sciFiTracker{fWorld->NewDaughter<PhaseI::Detector::Definition::SciFiTracker>(fCheckOverlap)};
 
     centralBeamPipe.NewDaughter<MACE::Detector::Definition::Target>(fCheckOverlap);
 
