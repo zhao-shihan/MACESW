@@ -36,7 +36,6 @@
 #include <EventDisplay.h>
 #include <Exception.h>
 #include <FieldManager.h>
-#include <HelixMeasurement.h>
 #include <KalmanFitterRefTrack.h>
 #include <MaterialEffects.h>
 #include <PlanarMeasurement.h>
