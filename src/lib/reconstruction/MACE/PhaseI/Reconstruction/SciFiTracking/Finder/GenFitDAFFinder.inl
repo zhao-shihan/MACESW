@@ -17,11 +17,46 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
     Result r;
     auto clusterLists{this->ClusterHits(hitData)};
     auto hitLists{this->FindCompatibleClusterCombinations(this->DivideHits(clusterLists))};
+
+    // Step 1: 初始无方向修正计算（与原来完全一致）
     auto coordinateMap{this->CalCoordinates(hitLists, muc::array3d{})};
     auto dividedPointMap{this->DividePoints(coordinateMap)};
-    for (auto&& hitCluster : dividedPointMap) {
-        auto initialResult = this->EstimateInitialDirection(hitCluster);
+
+    // 保存初始分组，用于严格 per-track 处理（避免重分组后丢失对应关系）
+    auto initialDivided = dividedPointMap;
+
+    for (const auto& initialCluster : initialDivided) {
+        // 对当前这条径迹独立进行击中点迭代（使用它自己的 initialResult 方向）
+        auto initialResult = this->EstimateInitialDirection(initialCluster);
+        muc::array3d prev_dir = std::get<0>(initialResult);
+
+        constexpr int nIter = 10;
+        for (int iter = 0; iter < nIter; ++iter) {
+            // 用这条径迹自己的方向重新计算整个事件的击中点坐标
+            coordinateMap = this->CalCoordinates(hitLists, prev_dir);
+
+            // 重新分组（全局重分组，但我们只关心当前这条径迹的更新版本）
+            dividedPointMap = this->DividePoints(coordinateMap);
+
+            // 用质心距离匹配找到更新后与 originalCluster 对应的 group
+            muc::array3d initialCentroid = std::get<1>(initialResult);
+
+            auto bestIt = std::ranges::min_element(dividedPointMap,
+                                                   std::ranges::less{},
+                                                   [&](const auto& group) -> double {
+                                                       auto [_, c, __] = this->EstimateInitialDirection(group);
+                                                       return (c[0] - initialCentroid[0]) * (c[0] - initialCentroid[0]) + (c[1] - initialCentroid[1]) * (c[1] - initialCentroid[1]) + (c[2] - initialCentroid[2]) * (c[2] - initialCentroid[2]);
+                                                   });
+
+            if (bestIt != dividedPointMap.end()) {
+                initialResult = this->EstimateInitialDirection(*bestIt); // 更新用于下一次迭代
+                prev_dir = std::get<0>(initialResult);
+            }
+        }
+
+        // 迭代完成后，用最终更新后的 initialResult 做拟合（结构与原来完全一致）
         auto result{this->TrackFit(initialResult)};
+
         std::vector<AHitPointer> resultData;
         for (auto&& cluster : std::get<2>(initialResult)) {
             resultData.insert(resultData.end(), cluster.begin(), cluster.end());
@@ -53,7 +88,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::ClusterHits(std::vector<AHitPointer>& h
             clusterList,
             [&](auto&& cluster) {
                 return std::ranges::any_of(cluster, [&](auto&& element) {
-                    return std::abs(Get<"t">(*hit) - Get<"t">(*element)) < sciFiTracker.SiPMDeadTime() and
+                    return std::abs(Get<"t">(*hit) - Get<"t">(*element)) < sciFiTracker.ThresholdTime() and
                            fiberMap[Get<"FiberID">(*hit)].layerID / 2 == fiberMap[Get<"FiberID">(*element)].layerID / 2 and
                            std::abs(fiberMap[Get<"FiberID">(*hit)].localID -
                                     fiberMap[Get<"FiberID">(*element)].localID) <= sciFiTracker.ClusterLength();

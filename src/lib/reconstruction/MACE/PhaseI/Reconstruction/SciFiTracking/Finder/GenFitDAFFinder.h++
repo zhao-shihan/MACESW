@@ -4,7 +4,6 @@
 #include "MACE/PhaseI/Data/SensorHit.h++"
 #include "MACE/PhaseI/Data/SimHit.h++"
 #include "MACE/PhaseI/Data/Track.h++"
-// #include "MACE/PhaseI/ReconSciFi/Algorithm.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/FinderBase.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitDAFFitter.h++"
 

@@ -8,6 +8,7 @@
 #include "MACE/PhaseI/Detector/Assembly/TrackerSystem.h++"
 #include "MACE/PhaseI/Detector/Definition/SciFiTracker.h++"
 #include "MACE/PhaseI/Detector/Definition/World.h++"
+#include "MACE/PhaseI/Reconstruction/GenFitExtension/HelixMeasurement.h"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/FitterBase.h++"
 
 #include "Mustard/Concept/NumericVector.h++"
@@ -24,7 +25,6 @@
 #include "EventDisplay.h"
 #include "FieldManager.h"
 #include "FitStatus.h"
-#include "HelixMeasurement.h"
 #include "MaterialEffects.h"
 #include "MeasuredStateOnPlane.h"
 #include "RKTrackRep.h"
