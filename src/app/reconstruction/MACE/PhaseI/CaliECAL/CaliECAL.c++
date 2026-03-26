@@ -33,22 +33,22 @@
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/IO/File.h++"
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 
-#include "CLHEP/Vector/ThreeVector.h"
-
 #include "ROOT/RDataFrame.hxx"
 #include "TFile.h"
 #include "TTree.h"
+
+#include "gtl/phmap.hpp"
 
 #include "fmt/format.h"
 
 #include <algorithm>
 #include <optional>
 #include <stdexcept>
-#include <unordered_map>
 
 namespace MACE::PhaseI::CaliECAL {
 
@@ -75,9 +75,6 @@ auto CaliECAL::Main(int argc, char* argv[]) const -> int {
     Detector::Description::UsePhaseIDefault();
     cli.DetectorDescriptionIOIfFlagged();
 
-    const auto& ecal{MACE::Detector::Description::ECAL::Instance()};
-    const auto& moduleList{ecal.Array().moduleList};
-
     using ECALEnergy = Mustard::Data::TupleModel<
         Mustard::Data::Value<double, "Edep", "Energy deposition of the cluster">,
         Mustard::Data::Value<int, "PE", "Photoelectron counts of the cluster">,
@@ -86,9 +83,9 @@ auto CaliECAL::Main(int argc, char* argv[]) const -> int {
         Mustard::Data::Value<double, "cosTheta", "Cosine of angle between the tracks">,
         Mustard::Data::Value<double, "theta", "Angle between the tracks">>;
 
-    auto createEnergyTuple = [&](const std::vector<int>& potentialSeedModule,
-                                 const std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict,
-                                 const CLHEP::Hep3Vector& truthHitMomentum) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
+    const auto createEnergyTuple{[&](const std::vector<int>& potentialSeedModule,
+                                     const gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict,
+                                     Mustard::Vector3D truthHitMomentum) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
         Mustard::Data::Tuple<ECALEnergy> energyTuple;
 
         if (potentialSeedModule.empty()) {
@@ -99,7 +96,7 @@ auto CaliECAL::Main(int argc, char* argv[]) const -> int {
         const auto peCountThreshold{cli->get<int>("--pe-count-threshold")};
         const auto seedModule{potentialSeedModule.begin()};
 
-        const auto cluster{ECALClustering::Reconstructing(*seedModule, moduleList, hitDict, energyThreshold, cli["--optics"] == true, peCountThreshold)};
+        const auto cluster{ECALClustering::Reconstructing(*seedModule, hitDict, energyThreshold, cli["--optics"] == true, peCountThreshold)};
 
         Get<"Edep">(energyTuple) = cluster.energy;
         Get<"PE">(energyTuple) = cluster.peCount;
@@ -108,7 +105,7 @@ auto CaliECAL::Main(int argc, char* argv[]) const -> int {
         Get<"theta">(energyTuple) = cluster.position.theta(truthHitMomentum);
 
         return energyTuple;
-    };
+    }};
 
     ROOT::RDataFrame primaryData{cli->get("--input-primary-vertex-tree"), cli->get<std::vector<std::string>>("input")};
     ROOT::RDataFrame inputData{cli->get("--input-ecal-hit-tree"), cli->get<std::vector<std::string>>("input")};
@@ -124,10 +121,10 @@ auto CaliECAL::Main(int argc, char* argv[]) const -> int {
                              return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
                          });
 
-            std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
+            gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
             std::vector<int> potentialSeedModule;
             muc::array3f primaryMomentum{};
-            CLHEP::Hep3Vector truthHitMomentum{};
+            Mustard::Vector3D truthHitMomentum{};
 
             for (auto&& hit : event) {
                 hitDict.try_emplace(Get<"ModID">(*hit), hit);

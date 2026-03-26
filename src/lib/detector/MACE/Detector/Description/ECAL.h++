@@ -32,7 +32,6 @@
 
 #include "gsl/gsl"
 
-#include <unordered_set>
 #include <vector>
 
 namespace MACE::Detector::Description {
@@ -101,10 +100,11 @@ public:
 
     auto WaveformIntegralTime(double val) { fWaveformIntegralTime = val; }
 
+private:
     struct ArrayInformation {
         struct Module {
             int moduleID{};
-            std::unordered_set<int> neighborModuleID{};
+            gtl::flat_hash_set<int> neighborModuleID{};
             int typeID{};
             Mustard::Point3D centroid{};
             Mustard::Vector3D normal{};

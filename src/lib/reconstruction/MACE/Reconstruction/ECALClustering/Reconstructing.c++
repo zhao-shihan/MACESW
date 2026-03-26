@@ -18,20 +18,23 @@
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
 #include "MACE/Data/SimHit.h++"
-
-#include "Mustard/Data/Tuple.h++"
+#include "MACE/Detector/Description/ECAL.h++"
+#include "MACE/Reconstruction/ECALClustering/ClusteringBySeed.h++"
+#include "MACE/Reconstruction/ECALClustering/Reconstructing.h++"
 
 namespace MACE::inline Reconstruction::ECALClustering {
 
-inline auto Reconstructing(int seedID,
-                           const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList,
-                           const std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict,
-                           double energyThreshold,
-                           bool useOpticalResponse,
-                           int peCountThreshold) -> ClusterTuple {
-    ClusterTuple result;
+auto Reconstructing(int seedID,
+                    const gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict,
+                    double energyThreshold,
+                    bool useOpticalResponse,
+                    int peCountThreshold) -> ClusterResult {
+    ClusterResult result;
 
-    auto cluster{ClusteringBySeed(seedID, moduleList)};
+    const auto& ecal{MACE::Detector::Description::ECAL::Instance()};
+    const auto& moduleList{ecal.Array().moduleList};
+
+    const auto cluster{ClusteringBySeed(seedID)};
     for (auto&& module : cluster) {
         const auto hitIt{hitDict.find(module)};
         if (hitIt == hitDict.end()) {

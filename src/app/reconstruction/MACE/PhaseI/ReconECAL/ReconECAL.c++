@@ -39,9 +39,10 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "gtl/phmap.hpp"
+
 #include <algorithm>
 #include <optional>
-#include <unordered_map>
 
 namespace MACE::PhaseI::ReconECAL {
 
@@ -87,7 +88,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
         Mustard::Data::Value<double, "theta", "Angle between the tracks">>;
 
     const auto createEnergyTuple1{[&](const std::vector<int>& potentialSeedModule,
-                                      const std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
+                                      const gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
         Mustard::Data::Tuple<ECALEnergy> energyTuple;
 
         if (potentialSeedModule.empty()) {
@@ -96,18 +97,18 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
 
         const auto energyThreshold{cli->get<double>("--energy-threshold")};
         const auto seedModule{potentialSeedModule.begin()};
-        const auto cluster{ECALClustering::Reconstructing(*seedModule, moduleList, hitDict, energyThreshold)};
+        const auto cluster{ECALClustering::Reconstructing(*seedModule, hitDict, energyThreshold)};
 
         Get<"Edep1">(energyTuple) = cluster.energy;
         Get<"Position1">(energyTuple) = cluster.position;
         Get<"TotalEdep">(energyTuple) = cluster.energy;
-        Get<"theta">(energyTuple) = cluster.position.theta(CLHEP::Hep3Vector{0, 0, 1});
+        Get<"theta">(energyTuple) = cluster.position.theta({0, 0, 1});
 
         return energyTuple;
     }};
 
     const auto createEnergyTuple2{[&](const std::vector<int>& potentialSeedModule,
-                                      const std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
+                                      const gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
         Mustard::Data::Tuple<ECALEnergy> energyTuple;
 
         if (std::ssize(potentialSeedModule) < 2) {
@@ -126,8 +127,8 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
         if (secondSeedModule == potentialSeedModule.end()) {
             return std::nullopt;
         }
-        const auto firstCluster{ECALClustering::Reconstructing(*firstSeedModule, moduleList, hitDict, energyThreshold)};
-        const auto secondCluster{ECALClustering::Reconstructing(*secondSeedModule, moduleList, hitDict, energyThreshold)};
+        const auto firstCluster{ECALClustering::Reconstructing(*firstSeedModule, hitDict, energyThreshold)};
+        const auto secondCluster{ECALClustering::Reconstructing(*secondSeedModule, hitDict, energyThreshold)};
 
         Get<"Edep1">(energyTuple) = firstCluster.energy;
         Get<"Edep2">(energyTuple) = secondCluster.energy;
@@ -156,7 +157,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                              return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
                          });
 
-            std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
+            gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
             std::vector<int> potentialSeedModule;
 
             for (auto&& hit : event) {

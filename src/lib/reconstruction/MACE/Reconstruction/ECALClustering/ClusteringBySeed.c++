@@ -17,21 +17,29 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
+#include "MACE/Data/SimHit.h++"
+#include "MACE/Detector/Description/ECAL.h++"
+#include "MACE/Reconstruction/ECALClustering/ClusteringBySeed.h++"
+
+#include "Mustard/Data/Tuple.h++"
+
 namespace MACE::inline Reconstruction::ECALClustering {
 
-inline auto ClusteringBySeed(int seedID,
-                             const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList) -> std::unordered_set<int> {
-    std::unordered_set<int> modulesInCluster;
+auto ClusteringBySeed(int seedID) -> gtl::flat_hash_set<int> {
+    gtl::flat_hash_set<int> cluster;
 
-    modulesInCluster.insert(seedID);
+    const auto& ecal{MACE::Detector::Description::ECAL::Instance()};
+    const auto& moduleList{ecal.Array().moduleList};
+
+    cluster.insert(seedID);
     for (auto&& neighbor : moduleList.at(seedID).neighborModuleID) {
-        modulesInCluster.insert(neighbor);
-        modulesInCluster.insert(
+        cluster.insert(neighbor);
+        cluster.insert(
             moduleList.at(neighbor).neighborModuleID.begin(),
             moduleList.at(neighbor).neighborModuleID.end());
     }
 
-    return modulesInCluster;
+    return cluster;
 }
 
 } // namespace MACE::inline Reconstruction::ECALClustering

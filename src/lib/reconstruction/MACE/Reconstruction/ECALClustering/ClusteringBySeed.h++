@@ -19,21 +19,10 @@
 
 #pragma once
 
-#include "MACE/Data/SimHit.h++"
-#include "MACE/Detector/Description/ECAL.h++"
-
-#include "Mustard/Data/Tuple.h++"
-
-#include "CLHEP/Vector/ThreeVector.h"
-
-#include <unordered_map>
-#include <unordered_set>
+#include "gtl/phmap.hpp"
 
 namespace MACE::inline Reconstruction::ECALClustering {
 
-inline auto ClusteringBySeed(int seedID,
-                             const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList) -> std::unordered_set<int>;
+auto ClusteringBySeed(int seedID) -> gtl::flat_hash_set<int>;
 
 } // namespace MACE::inline Reconstruction::ECALClustering
-
-#include "MACE/Reconstruction/ECALClustering/ClusteringBySeed.inl"

@@ -234,7 +234,7 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
 
     // map from pmp face index to moduleID
     using ModuleID = int;
-    muc::flat_hash_map<pmp::IndexType, ModuleID> indexMap;
+    gtl::flat_hash_map<pmp::IndexType, ModuleID> indexMap;
     for (int moduleID{};
          auto&& pmpFace : pmpMesh.faces()) {
         const auto centroid{Mustard::VectorCast<Mustard::Point3D>(pmp::centroid(pmpMesh, pmpFace))};
@@ -353,7 +353,7 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
         it = range.second;
     }
     if (not fModuleSelection->empty()) {
-        std::unordered_set<int> neighborModuleSet;
+        gtl::flat_hash_set<int> neighborModuleSet;
         Mustard::MasterPrintLn<'I'>("### Selected Module Clustering ");
         for (auto&& m : *fModuleSelection) {
             neighborModuleSet.insert(m);

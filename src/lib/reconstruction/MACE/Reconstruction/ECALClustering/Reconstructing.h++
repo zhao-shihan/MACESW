@@ -19,33 +19,26 @@
 
 #pragma once
 
-#include "MACE/Data/SimHit.h++"
-#include "MACE/Detector/Description/ECAL.h++"
-#include "MACE/Reconstruction/ECALClustering/ClusteringBySeed.h++"
-
 #include "Mustard/Data/Tuple.h++"
+#include "Mustard/Math/Vector.h++"
 
-#include "CLHEP/Vector/ThreeVector.h"
+#include "gtl/phmap.hpp"
 
 #include <memory>
-#include <unordered_map>
 
 namespace MACE::inline Reconstruction::ECALClustering {
 
-struct ClusterTuple {
+struct ClusterResult {
     double energy{};
     int peCount{};
     Mustard::Vector3D weightedPosition{};
     Mustard::Vector3D position{};
 };
 
-inline auto Reconstructing(int seedID,
-                           const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList,
-                           const std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict,
-                           double energyThreshold,
-                           bool useOpticalResponse = false,
-                           int peCountThreshold = 0) -> ClusterTuple;
+auto Reconstructing(int seedID,
+                    const gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict,
+                    double energyThreshold,
+                    bool useOpticalResponse = false,
+                    int peCountThreshold = 0) -> ClusterResult;
 
 } // namespace MACE::inline Reconstruction::ECALClustering
-
-#include "MACE/Reconstruction/ECALClustering/Reconstructing.inl"

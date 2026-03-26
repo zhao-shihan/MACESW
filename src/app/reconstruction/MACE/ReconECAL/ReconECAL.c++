@@ -36,9 +36,10 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#include "gtl/phmap.hpp"
+
 #include <algorithm>
 #include <optional>
-#include <unordered_map>
 
 namespace MACE::ReconECAL {
 
@@ -76,7 +77,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
         Mustard::Data::Value<double, "theta", "Angle between the tracks">>;
 
     const auto createEnergyTuple2{[&](const std::vector<int>& potentialSeedModule,
-                                      const std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
+                                      const gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>>& hitDict) -> std::optional<Mustard::Data::Tuple<ECALEnergy>> {
         Mustard::Data::Tuple<ECALEnergy> energyTuple;
 
         if (std::ssize(potentialSeedModule) < 2) {
@@ -95,8 +96,8 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
         if (secondSeedModule == potentialSeedModule.end()) {
             return std::nullopt;
         }
-        const auto firstCluster{ECALClustering::Reconstructing(*firstSeedModule, moduleList, hitDict, energyThreshold)};
-        const auto secondCluster{ECALClustering::Reconstructing(*secondSeedModule, moduleList, hitDict, energyThreshold)};
+        const auto firstCluster{ECALClustering::Reconstructing(*firstSeedModule, hitDict, energyThreshold)};
+        const auto secondCluster{ECALClustering::Reconstructing(*secondSeedModule, hitDict, energyThreshold)};
 
         Get<"Edep1">(energyTuple) = firstCluster.energy;
         Get<"Edep2">(energyTuple) = secondCluster.energy;
@@ -124,7 +125,7 @@ auto ReconECAL::Main(int argc, char* argv[]) const -> int {
                          [](auto&& hit1, auto&& hit2) {
                              return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
                          });
-            std::unordered_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
+            gtl::flat_hash_map<int, std::shared_ptr<Mustard::Data::Tuple<Data::ECALSimHit>>> hitDict;
             std::vector<int> potentialSeedModule;
 
             for (auto&& hit : event) {
