@@ -43,16 +43,6 @@ AnalysisMessenger::AnalysisMessenger() :
     fDirectory = std::make_unique<G4UIdirectory>("/MACE/Analysis/");
     fDirectory->SetGuidance("MACE::SimMACEPhaseI::Analysis controller.");
 
-    fFilePath = std::make_unique<G4UIcmdWithAString>("/MACE/Analysis/FilePath", this);
-    fFilePath->SetGuidance("Set file path.");
-    fFilePath->SetParameterName("path", false);
-    fFilePath->AvailableForStates(G4State_Idle);
-
-    fFileMode = std::make_unique<G4UIcmdWithAString>("/MACE/Analysis/FileMode", this);
-    fFileMode->SetGuidance("Set mode (NEW, RECREATE, or UPDATE) for opening ROOT file(s).");
-    fFileMode->SetParameterName("mode", false);
-    fFileMode->AvailableForStates(G4State_Idle);
-
     fSavePrimaryVertexData = std::make_unique<G4UIcmdWithABool>("/MACE/Analysis/SavePrimaryVertexData", this);
     fSavePrimaryVertexData->SetGuidance("Save primary vertex data if enabled.");
     fSavePrimaryVertexData->SetParameterName("mode", false);

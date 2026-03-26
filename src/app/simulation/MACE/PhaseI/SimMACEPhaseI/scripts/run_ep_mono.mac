@@ -18,8 +18,8 @@
 
 /MACE/Analysis/CoincidenceWithECAL    no
 
-/MACE/Analysis/FilePath SimMACEPhaseI_ep_mono.root
-/MACE/Analysis/FileMode RECREATE
+/Mustard/Analysis/FilePath SimMACEPhaseI_ep_mono.root
+/Mustard/Analysis/FileMode RECREATE
 
 /run/beamOn 1000000
 /Mustard/Run/PrintRunSummary

@@ -19,8 +19,8 @@
 /MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
-/MACE/Analysis/FilePath SimMACEPhaseI_gamma
-/MACE/Analysis/FileMode RECREATE
+/Mustard/Analysis/FilePath SimMACEPhaseI_gamma
+/Mustard/Analysis/FileMode RECREATE
 
 /run/beamOn 1000000
 /Mustard/Run/PrintRunSummary

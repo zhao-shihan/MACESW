@@ -37,7 +37,7 @@
 # Run
 #############################################################################
 
-/MACE/Analysis/FilePath SimMACEPhaseI_mu2egg
-/MACE/Analysis/FileMode RECREATE
+/Mustard/Analysis/FilePath SimMACEPhaseI_mu2egg
+/Mustard/Analysis/FileMode RECREATE
 /run/beamOn 10000
 /Mustard/Run/PrintRunSummary

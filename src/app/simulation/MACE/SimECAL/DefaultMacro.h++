@@ -40,8 +40,8 @@ constexpr auto defaultMacro = {
     "#/MACE/Generator/SwitchToEcoMug",
     "/MACE/Generator/SwitchToGPSX",
     "",
-    "/MACE/Analysis/FilePath SimECAL_vis.root",
-    "/MACE/Analysis/FileMode RECREATE",
+    "/Mustard/Analysis/FilePath SimECAL_vis.root",
+    "/Mustard/Analysis/FileMode RECREATE",
     "",
 
 #if MUSTARD_USE_G4VIS

@@ -10,8 +10,8 @@
 
 /MACE/Generator/SwitchToEcoMug
 
-/MACE/Analysis/FilePath SimECAL_crmu.root
-/MACE/Analysis/FileMode NEW
+/Mustard/Analysis/FilePath SimECAL_crmu.root
+/Mustard/Analysis/FileMode NEW
 
 /run/beamOn 19350000
 /Mustard/Run/PrintRunSummary

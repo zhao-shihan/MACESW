@@ -23,8 +23,8 @@
 /MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
-/MACE/Analysis/FilePath SimMACEPhaseI_ep_flat
-/MACE/Analysis/FileMode RECREATE
+/Mustard/Analysis/FilePath SimMACEPhaseI_ep_flat
+/Mustard/Analysis/FileMode RECREATE
 
 /run/beamOn 5000000
 /Mustard/Run/PrintRunSummary

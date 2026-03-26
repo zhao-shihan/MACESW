@@ -57,8 +57,8 @@ constexpr auto defaultMacro = {
     "/Mustard/Physics/MuonDecay/NeutrinolessDoubleRadiativeDecay/BR 1",
     "/Mustard/Physics/MuonDecay/UpdateDecayBR",
     "",
-    "/MACE/Analysis/FilePath SimMACEPhaseI_vis.root",
-    "/MACE/Analysis/FileMode RECREATE",
+    "/Mustard/Analysis/FilePath SimMACEPhaseI_vis.root",
+    "/Mustard/Analysis/FileMode RECREATE",
     "",
 
 #if MUSTARD_USE_G4VIS

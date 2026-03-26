@@ -14,7 +14,7 @@
 /gps/pos/centre 0. 0. 0. cm
 /gps/ang/type iso
 
-/MACE/Analysis/FilePath SimECAL_sig.root
-/MACE/Analysis/FileMode NEW
+/Mustard/Analysis/FilePath SimECAL_sig.root
+/Mustard/Analysis/FileMode NEW
 /run/beamOn 1000
 /Mustard/Run/PrintRunSummary
