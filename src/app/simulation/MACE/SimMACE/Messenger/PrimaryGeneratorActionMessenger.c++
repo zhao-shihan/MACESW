@@ -34,7 +34,7 @@ PrimaryGeneratorActionMessenger::PrimaryGeneratorActionMessenger() :
     fSwitchToGPSX->AvailableForStates(G4State_Idle);
 
     fSwitchToFromDataPrimaryGenerator = std::make_unique<G4UIcmdWithoutParameter>("/MACE/Generator/SwitchToFromDataPrimaryGenerator", this);
-    fSwitchToFromDataPrimaryGenerator->SetGuidance("If set then the EcoMug generator will be used.");
+    fSwitchToFromDataPrimaryGenerator->SetGuidance("If set then the generator from data will be used.");
     fSwitchToFromDataPrimaryGenerator->AvailableForStates(G4State_Idle);
 }
 

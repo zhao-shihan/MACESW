@@ -52,12 +52,4 @@ using SciFiSimHit = Mustard::Data::TupleModel<
     Mustard::Data::Value<double, "Ek", "Kinetic energy in hit position">,
     internal::SimHitVertexTruth>;
 
-using MRPCSimHit = Mustard::Data::TupleModel<
-    MRPCHit,
-    Mustard::Data::Value<bool, "Trig", "Trigger flag">,
-    Mustard::Data::Value<float, "Edep", "Energy deposition">,
-    Mustard::Data::Value<float, "Ek", "Hit kinetic energy (MC truth)">,
-    Mustard::Data::Value<muc::array3f, "p", "Hit momentum (MC truth)">,
-    internal::SimHitVertexTruth>;
-
 } // namespace MACE::PhaseI::Data

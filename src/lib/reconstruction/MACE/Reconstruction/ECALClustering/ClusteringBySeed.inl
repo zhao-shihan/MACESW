@@ -17,22 +17,21 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+namespace MACE::inline Reconstruction::ECALClustering {
 
-#include "MACE/PhaseI/Data/SimHit.h++"
+inline auto ClusteringBySeed(int seedID,
+                             const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList) -> std::unordered_set<int> {
+    std::unordered_set<int> modulesInCluster;
 
-#include "Mustard/Data/Tuple.h++"
-#include "Mustard/Geant4X/Memory/UseG4Allocator.h++"
+    modulesInCluster.insert(seedID);
+    for (auto&& neighbor : moduleList.at(seedID).neighborModuleID) {
+        modulesInCluster.insert(neighbor);
+        modulesInCluster.insert(
+            moduleList.at(neighbor).neighborModuleID.begin(),
+            moduleList.at(neighbor).neighborModuleID.end());
+    }
 
-#include "G4THitsCollection.hh"
-#include "G4VHit.hh"
+    return modulesInCluster;
+}
 
-namespace MACE::PhaseI::inline Simulation::inline Hit {
-
-class MRPCHit final : public Mustard::Geant4X::UseG4Allocator<MRPCHit>,
-                      public G4VHit,
-                      public Mustard::Data::Tuple<Data::MRPCSimHit> {};
-
-using MRPCHitCollection = G4THitsCollection<MRPCHit>;
-
-} // namespace MACE::PhaseI::inline Simulation::inline Hit
+} // namespace MACE::inline Reconstruction::ECALClustering

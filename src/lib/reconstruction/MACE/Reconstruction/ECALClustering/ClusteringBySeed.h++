@@ -19,13 +19,21 @@
 
 #pragma once
 
-#include "Mustard/Detector/Definition/DefinitionBase.h++"
+#include "MACE/Data/SimHit.h++"
+#include "MACE/Detector/Description/ECAL.h++"
 
-namespace MACE::PhaseI::Detector::Definition {
+#include "Mustard/Data/Tuple.h++"
 
-class MRPC final : public Mustard::Detector::Definition::DefinitionBase {
-private:
-    auto Construct(bool checkOverlaps) -> void override;
-};
+#include "CLHEP/Vector/ThreeVector.h"
 
-} // namespace MACE::PhaseI::Detector::Definition
+#include <unordered_map>
+#include <unordered_set>
+
+namespace MACE::inline Reconstruction::ECALClustering {
+
+inline auto ClusteringBySeed(int seedID,
+                             const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList) -> std::unordered_set<int>;
+
+} // namespace MACE::inline Reconstruction::ECALClustering
+
+#include "MACE/Reconstruction/ECALClustering/ClusteringBySeed.inl"

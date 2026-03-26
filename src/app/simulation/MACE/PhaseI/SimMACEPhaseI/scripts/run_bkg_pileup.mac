@@ -1,0 +1,37 @@
+#############################################################################
+# Initialization settings
+#############################################################################
+
+/control/verbose 0
+/run/verbose 0
+
+#/MACE/Physics/UseRadioactiveDecayPhysics
+#/MACE/Physics/UseOpticalPhysics
+
+/run/initialize
+
+/MACE/Generator/SwitchToGPSX
+/gps/particle             mu+
+/gps/direction            0 0 1        # 0 deg
+/gps/pos/centre           0 0 -50 cm   # 0 deg
+/gps/pos/type             Beam
+/gps/pos/shape            Circle
+/gps/pos/radius           0 mm
+/gps/pos/sigma_r          5 mm
+/gps/ene/type             Gauss
+/gps/ene/mono             3.224 MeV    # momentum 26.3 MeV
+/gps/ene/sigma            0.459 MeV    # momentum spreading 1.9 MeV
+/GPSX/NVertex             1
+/GPSX/PulseWidth          0 ns
+
+/Mustard/Physics/MuonDecay/Biasing/EnergyCut 45 MeV
+/Mustard/Physics/MuonDecay/Biasing/MaxTheta 4 deg
+
+#############################################################################
+# Run
+#############################################################################
+
+/MACE/Analysis/FilePath SimMACEPhaseI_bkg.root
+/MACE/Analysis/FileMode RECREATE
+/run/beamOn 10000
+/Mustard/Run/PrintRunSummary

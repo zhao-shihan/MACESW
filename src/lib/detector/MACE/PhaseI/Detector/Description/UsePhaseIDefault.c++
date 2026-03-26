@@ -22,13 +22,17 @@
 #include "MACE/Detector/Description/Target.h++"
 #include "MACE/PhaseI/Detector/Description/UsePhaseIDefault.h++"
 
+#include "Mustard/IO/Print.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 
 namespace MACE::PhaseI::Detector::Description {
 
 auto UsePhaseIDefault() -> void {
     using namespace Mustard::LiteralUnit::Length;
+    using namespace Mustard::LiteralUnit::Time;
+    using namespace Mustard::LiteralUnit::Energy;
     namespace MACE = MACE::Detector::Description;
+
     { // set accelerator up/downstream length to a random equal value
         auto& accelerator{MACE::Accelerator::Instance()};
         accelerator.MaxPotentialPosition(0);
@@ -38,13 +42,16 @@ auto UsePhaseIDefault() -> void {
     { // Use cylinder target
         auto& target{MACE::Target::Instance()};
         target.ShapeType(MACE::Target::TargetShapeType::Cylinder);
+        target.FormationProbability(0);
     }
     { // bigger windows for ECAL
         auto& ecal{MACE::ECAL::Instance()};
+        ecal.InnerRadius(260_mm);
+        ecal.CrystalHypotenuse(280_mm);
         ecal.UpstreamWindowRadius(104_mm);
         ecal.DownstreamWindowRadius(104_mm);
-        ecal.InnerRadius(260_mm);
     }
+    Mustard::MasterPrintLn("Default detector description settings for Phase-I applied.");
 }
 
 } // namespace MACE::PhaseI::Detector::Description

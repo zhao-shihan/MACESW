@@ -30,7 +30,6 @@
 /Mustard/Physics/MuoniumDecay/AnnihilativeDecay/BR 1
 /Mustard/Physics/MuonDecay/UpdateDecayBR
 
-/MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
 #############################################################################

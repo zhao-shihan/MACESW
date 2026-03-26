@@ -17,18 +17,15 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-namespace MACE::Detector::Description {
+#pragma once
 
-inline auto ECAL::MeshManager::Get(const ECAL* ecal) -> const MeshInformation& {
-    if (fOutdated) {
-        fMesh = ecal->CalculateMeshInformation();
-        fOutdated = false;
-    }
-    return fMesh;
-}
+#include "Mustard/Detector/Definition/DefinitionBase.h++"
 
-inline void ECAL::SetGeometryOutdated() const {
-    fMeshManager.SetOutdated();
-}
+namespace MACE::PhaseI::Detector::Definition {
 
-} // namespace MACE::Detector::Description
+class Target final : public Mustard::Detector::Definition::DefinitionBase {
+private:
+    auto Construct(bool checkOverlaps) -> void override;
+};
+
+} // namespace MACE::PhaseI::Detector::Definition

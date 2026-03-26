@@ -19,31 +19,14 @@
 
 #pragma once
 
-#include "Mustard/Geant4X/Interface/SingletonMessenger.h++"
+#include "Mustard/Application/Subprogram.h++"
 
-#include <memory>
+namespace MACE::PhaseI::CaliECAL {
 
-class G4UIcmdWithADoubleAndUnit;
-class G4UIdirectory;
-
-namespace MACE::PhaseI::SimMACEPhaseI::inline SD {
-
-class MRPCSD;
-
-class MRPCSDMessenger final : public Mustard::Geant4X::SingletonMessenger<MRPCSDMessenger,
-                                                                          MRPCSD> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
-
-private:
-    MRPCSDMessenger();
-    ~MRPCSDMessenger() override;
-
+class CaliECAL : public Mustard::Application::Subprogram {
 public:
-    auto SetNewValue(G4UIcommand* command, G4String value) -> void override;
-
-private:
-    std::unique_ptr<G4UIdirectory> fDirectory;
-    std::unique_ptr<G4UIcmdWithADoubleAndUnit> fIonizingEnergyDepositionThreshold;
+    CaliECAL();
+    auto Main(int argc, char* argv[]) const -> int override;
 };
 
-} // namespace MACE::PhaseI::SimMACEPhaseI::inline SD
+} // namespace MACE::PhaseI::CaliECAL

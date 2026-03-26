@@ -42,8 +42,4 @@ using SciFiHit = Mustard::Data::TupleModel<
     internal::HitEventIDHitID,
     SciFiRawHit>;
 
-using MRPCHit = Mustard::Data::TupleModel<
-    internal::HitEventIDHitID,
-    MRPCRawHit>;
-
 } // namespace MACE::PhaseI::Data

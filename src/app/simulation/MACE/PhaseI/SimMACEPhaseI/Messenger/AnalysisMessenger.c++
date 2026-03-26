@@ -38,7 +38,6 @@ AnalysisMessenger::AnalysisMessenger() :
     fFileMode{},
     fSavePrimaryVertexData{},
     fSaveDecayVertexData{},
-    fCoincidenceWithMRPC{},
     fCoincidenceWithECAL{} {
 
     fDirectory = std::make_unique<G4UIdirectory>("/MACE/Analysis/");
@@ -64,11 +63,6 @@ AnalysisMessenger::AnalysisMessenger() :
     fSaveDecayVertexData->SetParameterName("mode", false);
     fSaveDecayVertexData->AvailableForStates(G4State_Idle);
 
-    fCoincidenceWithMRPC = std::make_unique<G4UIcmdWithABool>("/MACE/Analysis/CoincidenceWithMRPC", this);
-    fCoincidenceWithMRPC->SetGuidance("Enable MRPC for coincident detection.");
-    fCoincidenceWithMRPC->SetParameterName("mode", false);
-    fCoincidenceWithMRPC->AvailableForStates(G4State_Idle);
-
     fCoincidenceWithECAL = std::make_unique<G4UIcmdWithABool>("/MACE/Analysis/CoincidenceWithECAL", this);
     fCoincidenceWithECAL->SetGuidance("Enable ECAL for coincident detection.");
     fCoincidenceWithECAL->SetParameterName("mode", false);
@@ -93,10 +87,6 @@ auto AnalysisMessenger::SetNewValue(G4UIcommand* command, G4String value) -> voi
     } else if (command == fSaveDecayVertexData.get()) {
         Deliver<TrackingAction>([&](auto&& r) {
             r.SaveDecayVertexData(fSaveDecayVertexData->GetNewBoolValue(value));
-        });
-    } else if (command == fCoincidenceWithMRPC.get()) {
-        Deliver<Analysis>([&](auto&& r) {
-            r.CoincidenceWithMRPC(fCoincidenceWithMRPC->GetNewBoolValue(value));
         });
     } else if (command == fCoincidenceWithECAL.get()) {
         Deliver<Analysis>([&](auto&& r) {
