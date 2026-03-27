@@ -21,8 +21,7 @@
 
 #include "Mustard/CLI/CLI.h++"
 #include "Mustard/CLI/Module/ModuleBase.h++"
-
-#include "CLHEP/Vector/ThreeVector.h"
+#include "Mustard/Math/Vector.h++"
 
 #include "muc/ceta_string"
 
@@ -40,17 +39,17 @@ class InitialStateCLIModule : public Mustard::CLI::ModuleBase {
 public:
     explicit InitialStateCLIModule(gsl::not_null<Mustard::CLI::CLI<>*> cli);
 
-    auto Momentum() const -> CLHEP::Hep3Vector
+    auto Momentum() const -> Mustard::Vector3D
         requires(sizeof...(Ms) == 1);
-    auto Momentum() const -> std::array<CLHEP::Hep3Vector, sizeof...(Ms)>
+    auto Momentum() const -> std::array<Mustard::Vector3D, sizeof...(Ms)>
         requires(sizeof...(Ms) >= 2);
-    auto Polarization() const -> CLHEP::Hep3Vector
+    auto Polarization() const -> Mustard::Vector3D
         requires(P == "polarized" and sizeof...(Ms) == 1);
-    auto Polarization() const -> std::array<CLHEP::Hep3Vector, sizeof...(Ms)>
+    auto Polarization() const -> std::array<Mustard::Vector3D, sizeof...(Ms)>
         requires(P == "polarized" and sizeof...(Ms) >= 2);
 
 public:
-    auto To3Vector(std::string_view option) const -> CLHEP::Hep3Vector;
+    auto To3Vector(std::string_view option) const -> Mustard::Vector3D;
 };
 
 } // namespace MACE::Generator

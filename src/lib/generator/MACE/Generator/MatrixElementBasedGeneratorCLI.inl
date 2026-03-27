@@ -21,8 +21,8 @@ namespace MACE::Generator {
 
 template<int M, int N, typename A>
 auto MatrixElementBasedGeneratorCLIModule::PhaseSpaceIntegral(Mustard::Executor<unsigned long long>& executor,
-                                                              Mustard::MatrixElementBasedGenerator<M, N, A>& generator) const -> std::tuple<Mustard::Math::Estimate, double, Mustard::Math::MCIntegrationState> {
-    std::tuple<Mustard::Math::Estimate, double, Mustard::Math::MCIntegrationState> result;
+                                                              Mustard::MatrixElementBasedGenerator<M, N, A>& generator) const -> std::tuple<Mustard::Estimate, double, Mustard::MCIntegrationState> {
+    std::tuple<Mustard::Estimate, double, Mustard::MCIntegrationState> result;
     auto& [integral, nEff, integrationState]{result};
     if (TheCLI()->is_used("--phase-space-integral")) {
         const auto integralFromConsole{TheCLI()->get<double>("--phase-space-integral")};
@@ -32,14 +32,14 @@ auto MatrixElementBasedGeneratorCLIModule::PhaseSpaceIntegral(Mustard::Executor<
         Mustard::MasterPrintLn("Using pre-computed phase-space integral {}.", integralFromConsole);
     } else {
         const auto precisionGoal{TheCLI()->get<double>("--integral-precision-goal")};
-        Mustard::Math::MCIntegrationState _{};
+        Mustard::MCIntegrationState _{};
         if (const auto integrationState{ContinueIntegration()}) {
             result = generator.PhaseSpaceIntegral(executor, precisionGoal, *integrationState);
         } else {
             result = generator.PhaseSpaceIntegral(executor, precisionGoal);
         }
-        Mustard::MasterPrintLn("You can save the above phase-space integral and integration state for future use "
-                               "as long as initial state properties and acceptance function does not change "
+        Mustard::MasterPrintLn("You can save the above phase-space integral and integration state for future use, "
+                               "as long as initial state properties, acceptance function, and IR cutoffs (if any) do not change "
                                "(see option -i or --phase-space-integral and --continue-integration)."
                                "\n");
     }

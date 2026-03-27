@@ -20,9 +20,8 @@
 #include "MACE/Detector/Definition/CDCCell.h++"
 #include "MACE/Detector/Description/CDC.h++"
 
+#include "Mustard/Math/Transform.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
-
-#include "CLHEP/Vector/RotationZ.h"
 
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
@@ -90,7 +89,7 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
             for (auto&& cell : sense.cell) {
                 // G4PVReplica seems buggy here
                 Make<G4PVPlacement>(
-                    G4Transform3D{CLHEP::HepRotationZ{cell.centerAzimuth - phiFWFront}, {}},
+                    G4Transform3D{Mustard::RotationZ{cell.centerAzimuth - phiFWFront}, {}},
                     logicalCell,
                     fmt::format("{}_{}", cellName, cell.cellID),
                     Mother().LogicalVolume(sense.senseLayerID),
@@ -130,7 +129,7 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
                 cdc.GasMaterial(),
                 svName)};
             Make<G4PVPlacement>(
-                G4Transform3D{CLHEP::HepRotationZ{(phiFWBack - phiFWFront) / 2 + phiFWFront}, {}},
+                G4Transform3D{Mustard::RotationZ{(phiFWBack - phiFWFront) / 2 + phiFWFront}, {}},
                 logicalSV,
                 svName,
                 logicalCell,
@@ -157,8 +156,8 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
             const auto placeFW{
                 [&](int copyNo, double r, double phi0) {
                     return Make<G4PVPlacement>( // clang-format off
-                        G4Transform3D{CLHEP::HepRotationZ{phi0 + phiFWFront}, {}} * // clang-format on
-                            G4Transform3D{CLHEP::HepRotationX{-sense.StereoZenithAngle(r)}, {r, 0, 0}},
+                        G4Transform3D{Mustard::RotationZ{phi0 + phiFWFront}, {}} * // clang-format on
+                            G4Transform3D{Mustard::RotationX{-sense.StereoZenithAngle(r)}, {r, 0, 0}},
                         logicalFW,
                         fwName,
                         logicalCell,
@@ -194,7 +193,7 @@ auto CDCCell::Construct(G4bool checkOverlaps) -> void {
                 nist->FindOrBuildMaterial("G4_W"),
                 swName)};
             Make<G4PVPlacement>( // clang-format off
-                G4Transform3D{CLHEP::HepRotationX{-sense.StereoZenithAngle(rCenterWire)}, {rCenterWire, 0, 0}}, // clang-format on
+                G4Transform3D{Mustard::RotationX{-sense.StereoZenithAngle(rCenterWire)}, {rCenterWire, 0, 0}}, // clang-format on
                 logicalSW,
                 swName,
                 logicalSV,

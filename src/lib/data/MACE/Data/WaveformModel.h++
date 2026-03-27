@@ -17,18 +17,22 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-namespace MACE::Detector::Description {
+#pragma once
 
-inline auto ECAL::ArrayManager::Get(const ECAL* ecal) -> const ArrayInformation& {
-    if (fOutdated) {
-        fArray = ecal->CalculateArrayInformation();
-        fOutdated = false;
-    }
-    return fArray;
-}
+#include "Mustard/Data/Tuple.h++"
+#include "Mustard/Data/TupleModel.h++"
+#include "Mustard/Data/Value.h++"
 
-inline void ECAL::SetGeometryOutdated() const {
-    fArrayManager.SetOutdated();
-}
+#include <vector>
 
-} // namespace MACE::Detector::Description
+namespace MACE::Data {
+
+/// @brief Waveform model
+/// @note Shared between many digit models. Lossless up to 24-bit ADC and TDC
+using WaveformModel = Mustard::Data::TupleModel<
+    Mustard::Data::Value<double, "tF0", "[ns] Frame begin time">,
+    Mustard::Data::Value<float, "dtF", "[ns] Sampling interval">,
+    Mustard::Data::Value<std::vector<float>, "amp", "[a.u.] Waveform samples">>;
+using Waveform = Mustard::Data::Tuple<WaveformModel>;
+
+} // namespace MACE::Data

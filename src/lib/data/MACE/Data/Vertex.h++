@@ -17,6 +17,10 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file is deprecated and will be removed soon.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #pragma once
 
 #include "Mustard/Data/TupleModel.h++"
@@ -32,7 +36,6 @@ using DecayVertex = Mustard::Data::TupleModel<
     Mustard::Data::Value<int, "EvtID", "Event ID">,
     Mustard::Data::Value<int, "PDGID", "Parent PDG ID">,
     Mustard::Data::Value<std::vector<int>, "SecPDGID", "PDG ID of decay products">,
-    Mustard::Data::Value<std::vector<float>, "SecEtotal", "Total energy of each decay products">,
     Mustard::Data::Value<double, "t", "Decay time">,
     Mustard::Data::Value<muc::array3f, "x", "Decay position">>;
 

@@ -26,11 +26,10 @@
 #include "MACE/Detector/Description/World.h++"
 
 #include "Mustard/Detector/Definition/DefinitionBase.h++"
+#include "Mustard/Math/Transform.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/VectorCast.h++"
-
-#include "CLHEP/Vector/RotationY.h"
 
 #include "G4Box.hh"
 #include "G4NistManager.hh"
@@ -77,12 +76,12 @@ auto ShieldingWall::Construct(G4bool checkOverlaps) -> void {
             world.HalfXExtent(),
             0,
             2_pi)}; // clang-format off
-    const G4Transform3D wallTransform{CLHEP::HepRotationY{-wall.Rotation()}, wall1Displacement}; // clang-format on
+    const G4Transform3D wallTransform{Mustard::RotationY{-wall.Rotation()}, wall1Displacement}; // clang-format on
         const auto solid{Make<G4SubtractionSolid>(
             "_temp",
             box,
             cylinder,
-            wallTransform.inverse() * G4Transform3D{CLHEP::HepRotationY{0.5_pi}, Mustard::VectorCast<G4ThreeVector>(solenoid.S2Center())})};
+            wallTransform.inverse() * G4Transform3D{Mustard::RotationY{0.5_pi}, Mustard::VectorCast<G4ThreeVector>(solenoid.S2Center())})};
         const auto logic{Make<G4LogicalVolume>(
             solid,
             concrete,

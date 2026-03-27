@@ -22,7 +22,6 @@
 #include "Mustard/CLI/Module/ModuleBase.h++"
 #include "Mustard/CLI/MonteCarloCLI.h++"
 
-#include <optional>
 #include <string>
 
 namespace MACE::Generator {
@@ -34,7 +33,7 @@ public:
     auto DefaultOutput(std::string path) -> void;
     auto DefaultOutputTree(std::string name) -> void;
 
-    auto GenerateOrExit() const -> std::optional<unsigned long long>;
+    auto NEvent() const -> unsigned long long;
 };
 
 template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>

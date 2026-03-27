@@ -17,6 +17,7 @@
 // You should have received a copy of the GNU General Public License along with
 // MACESW. If not, see <https://www.gnu.org/licenses/>.
 
+#include "MACE/PhaseI/CaliECAL/CaliECAL.h++"
 #include "MACE/PhaseI/MakeGeometry/MakeGeometry.h++"
 #include "MACE/PhaseI/PhaseI.h++"
 #include "MACE/PhaseI/ReconECAL/ReconECAL.h++"
@@ -33,6 +34,7 @@ PhaseI::PhaseI() :
 
 auto PhaseI::Main(int argc, char* argv[]) const -> int {
     Mustard::Application::SubprogramLauncher launcher;
+    launcher.AddSubprogram<MACE::PhaseI::CaliECAL::CaliECAL>();
     launcher.AddSubprogram<MACE::PhaseI::ReconECAL::ReconECAL>();
     launcher.AddSubprogram<MACE::PhaseI::ReconSciFi::ReconSciFi>();
     launcher.AddSubprogram<MACE::PhaseI::ReconSciFi::GenFitTest>();

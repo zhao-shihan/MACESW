@@ -30,8 +30,8 @@ EventGeneratorCLIModule::EventGeneratorCLIModule(gsl::not_null<Mustard::CLI::CLI
     ModuleBase{cli} {
     using namespace std::string_literals;
     TheCLI()
-        ->add_argument("-g", "--generate")
-        .help("Number of events to generate. Program will skip event generation if not set.")
+        ->add_argument("n")
+        .help("Number of events to generate. Program will skip event generation if n is 0 (but could still compute the phase-space integral).")
         .nargs(1)
         .scan<'i', unsigned long long>();
     TheCLI()
@@ -60,14 +60,14 @@ auto EventGeneratorCLIModule::DefaultOutputTree(std::string name) -> void {
     TheCLI()["--output-tree"].default_value(std::move(name));
 }
 
-auto EventGeneratorCLIModule::GenerateOrExit() const -> std::optional<unsigned long long> {
-    const auto nGenerate{TheCLI()->present<unsigned long long>("--generate")};
-    if (not nGenerate) {
-        Mustard::MasterPrintLn("Option -g or --generate not set, skipping event generation.");
+auto EventGeneratorCLIModule::NEvent() const -> unsigned long long {
+    const auto nEvent{TheCLI()->get<unsigned long long>("n")};
+    if (nEvent == 0) {
+        Mustard::MasterPrintLn("No events to generate.");
     } else {
-        Mustard::MasterPrintLn("Generating {} events...", *nGenerate);
+        Mustard::MasterPrintLn("Generating {} events...", nEvent);
     }
-    return nGenerate;
+    return nEvent;
 }
 
 } // namespace MACE::Generator

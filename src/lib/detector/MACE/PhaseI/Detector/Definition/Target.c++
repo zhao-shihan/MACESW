@@ -8,6 +8,8 @@
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 
+#include <cmath>
+
 namespace MACE::PhaseI::Detector::Definition {
 
 using namespace Mustard::LiteralUnit;
@@ -15,11 +17,12 @@ using namespace Mustard::PhysicalConstant;
 
 auto Target::Construct(G4bool checkOverlaps) -> void {
     const auto& target{Description::Target::Instance()};
+    const auto semiMajorAxis{target.ProjectionRadius() / std::cos(target.InclinationAngle())};
 
     const auto solid{Make<G4EllipticalTube>(
         target.Name(),
-        target.MinorAxisLength() / 2,
-        target.MajorAxisLength() / 2,
+        target.ProjectionRadius(),
+        semiMajorAxis,
         target.Thickness() / 2)};
     const auto logic{Make<G4LogicalVolume>(
         solid,

@@ -22,8 +22,6 @@
 #include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 
-#include "CLHEP/Vector/Rotation.h"
-
 #include "muc/utility"
 
 #include <string>

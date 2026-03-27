@@ -33,7 +33,7 @@
 #include "Mustard/Data/TupleModel.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/IO/CreateTemporaryFile.h++"
-#include "Mustard/Math/Norm.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Utility/ConvertG3G4Unit.h++"
 #include "Mustard/Utility/FunctionAttribute.h++"
 

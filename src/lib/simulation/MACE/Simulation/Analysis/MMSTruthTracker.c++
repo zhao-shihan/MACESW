@@ -70,7 +70,7 @@ auto MMSTruthTracker::operator()(const std::vector<gsl::owner<CDCHit*>>& cdcHitH
 
         if (std::ranges::ssize(trackTTCHit) < fMinNTTCHitForQualifiedTrack or
             std::ranges::ssize(trackCDCHit) < fTrackFinder.MinNHit() or
-            GetAs<"x0", G4ThreeVector>(**trackCDCHit.begin()).perp2() > muc::pow(fTrackFinder.MaxVertexRxy(), 2)) {
+            Get<"x0", G4ThreeVector>(**trackCDCHit.begin()).perp2() > muc::pow(fTrackFinder.MaxVertexRxy(), 2)) {
             continue;
         }
 

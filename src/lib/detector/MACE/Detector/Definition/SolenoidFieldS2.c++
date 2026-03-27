@@ -20,10 +20,9 @@
 #include "MACE/Detector/Definition/SolenoidFieldS2.h++"
 #include "MACE/Detector/Description/Solenoid.h++"
 
+#include "Mustard/Math/Transform.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/VectorCast.h++"
-
-#include "CLHEP/Vector/RotationY.h"
 
 #include "G4PVPlacement.hh"
 #include "G4ThreeVector.hh"
@@ -50,7 +49,7 @@ auto SolenoidFieldS2::Construct(G4bool checkOverlaps) -> void {
         mother->GetMaterial(),
         name)};
     Make<G4PVPlacement>(
-        G4Transform3D{CLHEP::HepRotationY{0.5_pi}, Mustard::VectorCast<G4ThreeVector>(solenoid.S2Center())},
+        G4Transform3D{Mustard::RotationY{0.5_pi}, Mustard::VectorCast<G4ThreeVector>(solenoid.S2Center())},
         logic,
         name,
         mother,

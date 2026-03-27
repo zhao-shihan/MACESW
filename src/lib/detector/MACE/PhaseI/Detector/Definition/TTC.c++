@@ -124,8 +124,7 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
     for (int i{}; i < nCircle; ++i) {
         auto deltaPhi{2 * pi / ttc.NAlongPhi()[i]};
         // set the position of air mother box
-        const auto transform{/*G4RotateZ3D{Mustard::Math::IsEven(i) ? 0 : deltaPhi / 2} **/
-                             G4Translate3D{G4ThreeVector(ttc.Radius()[i], 0, ttc.ZPosition()[i])} *
+        const auto transform{G4Translate3D{G4ThreeVector(ttc.Radius()[i], 0, ttc.ZPosition()[i])} *
                              G4RotateZ3D{ttc.SlantAngle()}};
         for (int j{}; j < ttc.NAlongPhi()[i]; ++j, ++tileID) {
             Make<G4PVPlacement>(

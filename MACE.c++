@@ -19,6 +19,7 @@
 
 #include "MACE/GenBkgM2ENNE/GenBkgM2ENNE.h++"
 #include "MACE/GenM2ENNEE/GenM2ENNEE.h++"
+#include "MACE/GenM2ENNG/GenM2ENNG.h++"
 #include "MACE/GenM2ENNGG/GenM2ENNGG.h++"
 #include "MACE/MakeGeometry/MakeGeometry.h++"
 #include "MACE/PhaseI/PhaseI.h++"
@@ -39,6 +40,7 @@ auto main(int argc, char* argv[]) -> int {
     Mustard::Application::SubprogramLauncher launcher;
     launcher.AddSubprogram<MACE::GenBkgM2ENNE::GenBkgM2ENNE>();
     launcher.AddSubprogram<MACE::GenM2ENNEE::GenM2ENNEE>();
+    launcher.AddSubprogram<MACE::GenM2ENNG::GenM2ENNG>();
     launcher.AddSubprogram<MACE::GenM2ENNGG::GenM2ENNGG>();
     launcher.AddSubprogram<MACE::MakeGeometry::MakeGeometry>();
     launcher.AddSubprogram<MACE::PhaseI::PhaseI>();

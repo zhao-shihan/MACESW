@@ -28,9 +28,8 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
+#include "Mustard/Math/Vector.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "Eigen/Core"
 

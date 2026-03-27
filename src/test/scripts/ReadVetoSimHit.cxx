@@ -4,11 +4,11 @@
 #include "TH1.h"
 
 #include <algorithm>
+#include <any>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <any>
 
 const auto nBinsValueType{100};
 auto DataTupleName{"VetoSimHit"};
@@ -47,14 +47,14 @@ auto ReadVetoSimHit(auto moduleName, auto srcFileName, auto dstFileName) -> int 
                 .Define("p0_2", "p0[2]")};
 
     std::vector<std::tuple<std::string, std::any, std::any>> histParameterList{
-        {"HitID",   0.,                                                                                   10.                                                                                 },
+        {"HitID", 0., 10.                                                                                 },
         // {"StripID", 0.,                                                                                   200.                                                                                },
         // {"x0_0",     -2100.,                                                                               2100.                                                                               },
         // {"x0_1",     -2100.,                                                                               2100.                                                                               },
         // {"x0_2",     -2100.,                                                                               2100.                                                                               },
         // {"Ek",      0.,                                                                                   std::function([&]() -> double { return *df.Mean("Ek") + 0.5 * *df.StdDev("Ek"); })    },
         // {"Ek0",     0.,                                                                                   std::function([&]() -> double { return *df.Mean("Ek0") + 0.5 * *df.StdDev("Ek0"); })  },
-        {"Edep",    0.,                                                                                   std::function([&]() -> double { return *df.Mean("Edep") + 2 * *df.StdDev("Edep"); })},
+        {"Edep",  0., std::function([&]() -> double { return *df.Mean("Edep") + 2 * *df.StdDev("Edep"); })},
         // {"x_0",      std::function([&]() -> double { return *df.Mean("x_0") - 0.5 * *df.StdDev("x_0"); }),   std::function([&]() -> double { return *df.Mean("x_0") + 0.5 * *df.StdDev("x_0"); })  },
         // {"x_1",      std::function([&]() -> double { return *df.Mean("x_1") - 0.5 * *df.StdDev("x_1"); }),   std::function([&]() -> double { return *df.Mean("x_1") + 0.5 * *df.StdDev("x_1"); })  },
         // {"x_2",      std::function([&]() -> double { return *df.Mean("x_2") - 0.5 * *df.StdDev("x_2"); }),   std::function([&]() -> double { return *df.Mean("x_2") + 0.5 * *df.StdDev("x_2"); })  },

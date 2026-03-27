@@ -81,18 +81,14 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
     crystalPropertiesTable->AddConstProperty("SCINTILLATIONTIMECONSTANT1", ecal.ScintillationTimeConstant1());
     crystalPropertiesTable->AddConstProperty("RESOLUTIONSCALE", ecal.ResolutionScale());
     if (ecal.UseOptics()) {
-        if (ecal.UsePhaseICrystal()) {
-            crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.95, 1.95});
-            cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
-        } else {
-            crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.79, 1.79});
-            cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
-        }
+        crystalPropertiesTable->AddProperty("RINDEX", {minPhotonEnergy, maxPhotonEnergy}, {1.95, 1.95});
+        cesiumIodide->SetMaterialPropertiesTable(crystalPropertiesTable);
 
         if (Mustard::Env::VerboseLevelReach<'V'>()) {
             crystalPropertiesTable->DumpTable();
         }
     }
+
     const auto reflectorSurfacePropertiesTable{new G4MaterialPropertiesTable};
     reflectorSurfacePropertiesTable->AddProperty("REFLECTIVITY", {minPhotonEnergy, maxPhotonEnergy}, {0.99, 0.99});
 
@@ -114,10 +110,9 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
         }
         if (not moduleSelection.empty() and
             moduleID == moduleSelection.front() and Mustard::Env::VerboseLevelReach<'I'>()) {
-            Mustard::MasterPrint("\n===========================");
-            Mustard::MasterPrint("Centroid of Selected Seed Module:");
-            Mustard::MasterPrint("{} {} {}", centroid.x(), centroid.y(), centroid.z());
-            Mustard::MasterPrint("===========================\n");
+            Mustard::MasterPrintLn("Centroid of Selected Seed Module: ");
+            Mustard::MasterPrintLn("{} {} {}", centroid.x(), centroid.y(), centroid.z());
+            Mustard::MasterPrintLn<'I'>("======================================================\n");
         }
 
         const auto solidCrystal{
@@ -138,8 +133,8 @@ auto ECALCrystal::Construct(G4bool checkOverlaps) -> void {
                                        [&](const auto& aVertex) { return outerCentroid + (aVertex - outerCentroid).unit() * ((aVertex - outerCentroid).mag() - ecal.CrystalPackageThickness()); });
                 // inner face scaled from outer face
                 const auto innerCentroid{innerRadius * centroid};
-                if (Mustard::Env::VerboseLevelReach<'V'>()) {
-                    Mustard::MasterPrintLn("{}\t{}\t{}\t{}", moduleID, innerCentroid.x(), innerCentroid.y(), innerCentroid.z());
+                if (Mustard::Env::VerboseLevelReach<'I'>()) {
+                    Mustard::MasterPrintLn("Module {} {} {} {}", moduleID, innerCentroid.x(), innerCentroid.y(), innerCentroid.z());
                 }
                 const auto innerVertexScaleFactor{innerRadius / outerRadius};
                 std::vector<G4ThreeVector> innerVertexes(vertexIndex.size());

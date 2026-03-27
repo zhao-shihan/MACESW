@@ -174,7 +174,7 @@ CheckOptions:
   - key: modernize-use-auto.RemoveStars
     value: true
   - key: performance-unnecessary-value-param.AllowedTypes
-    value: CLHEP::Hep2Vector;G4TwoVector;CLHEP::Hep3Vector;G4ThreeVector;CLHEP::HepLorentzVector;G4LorentzVector;Eigen::Vector2.*$;Eigen::Vector3.*$;Eigen::Vector4.*$;Eigen::RowVector2.*$;Eigen::RowVector3.*$;Eigen::RowVector4.*$;Eigen::Matrix2.*$
+    value: CLHEP::Hep2Vector;Mustard::Vector2D;Mustard::Point2D;G4TwoVector;CLHEP::Hep3Vector;Mustard::Vector3D;Mustard::Point3D;G4ThreeVector;CLHEP::HepLorentzVector;Mustard::VectorLor;G4LorentzVector;Eigen::Vector2.*$;Eigen::Vector3.*$;Eigen::Vector4.*$;Eigen::RowVector2.*$;Eigen::RowVector3.*$;Eigen::RowVector4.*$;Eigen::Matrix2.*$
   - key: readability-function-cognitive-complexity.Threshold
     value: 50
   - key: readability-identifier-naming.ClassCase

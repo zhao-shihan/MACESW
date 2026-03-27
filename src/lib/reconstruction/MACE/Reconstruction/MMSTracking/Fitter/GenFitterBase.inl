@@ -79,7 +79,7 @@ template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPoi
 auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPointer>& hitData, const ASeedPointer& seed)
     -> std::pair<std::shared_ptr<genfit::Track>,
                  muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>> {
-    if (Mustard::Math::NormSq(*Get<"p0">(*seed)) < muc::pow(fLowestMomentum, 2)) {
+    if (Get<"p0", Mustard::Vector3D>(*seed).mag2() < muc::pow(fLowestMomentum, 2)) {
         return {};
     }
     if (TDatabasePDG::Instance()->GetParticle(Get<"PDGID">(*seed)) == nullptr) {

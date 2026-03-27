@@ -19,9 +19,8 @@
 
 namespace MACE::inline Reconstruction::ECALClustering {
 
-auto Clusterer(int seedID,
-               const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList) -> std::unordered_set<int> {
-    // ECALCluster cluster;
+inline auto ClusteringBySeed(int seedID,
+                             const std::vector<MACE::Detector::Description::ECAL::ArrayInformation::Module>& moduleList) -> std::unordered_set<int> {
     std::unordered_set<int> modulesInCluster;
 
     modulesInCluster.insert(seedID);
@@ -31,34 +30,6 @@ auto Clusterer(int seedID,
             moduleList.at(neighbor).neighborModuleID.begin(),
             moduleList.at(neighbor).neighborModuleID.end());
     }
-
-    // CLHEP::Hep3Vector weightedPosition{};
-
-    // for (const auto& module : modulesInCluster) {
-    //     auto hitIt = hitDict.find(module);
-    //     if (hitIt == hitDict.end()) {
-    //         continue;
-    //     }
-
-    // const auto& hit = hitIt->second;
-    // auto energy = Get<"Edep">(hit);
-    // auto pe = Get<"nOptPho">(hit);
-
-    // if (energy < cfg.energyThreshold) {
-    //     continue;
-    // }
-    // if (cfg.useOpticalPhysics and pe < cfg.peThreshold) {
-    //     continue;
-    // }
-
-    // cluster.energy += energy;
-    // cluster.pe += pe;
-    // weightedPosition += energy * moduleList.at(module).centroid;
-    // }
-
-    // if (cluster.energy > 0) {
-    //     cluster.position = weightedPosition / cluster.energy;
-    // }
 
     return modulesInCluster;
 }

@@ -2,9 +2,6 @@
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
 
-#include <string>
-#include <utility>
-
 namespace MACE::PhaseI::Detector::Description {
 
 class Target final : public Mustard::Detector::Description::DescriptionBase<Target> {
@@ -15,13 +12,11 @@ private:
     ~Target() override = default;
 
 public:
-    auto MajorAxisLength() const -> auto { return fMajorAxisLength; }
-    auto MinorAxisLength() const -> auto { return fMinorAxisLength; }
+    auto ProjectionRadius() const -> auto { return fProjectionRadius; }
     auto Thickness() const -> auto { return fThickness; }
     auto InclinationAngle() const -> auto { return fInclinationAngle; }
 
-    auto MajorAxisLength(double val) -> void { fMajorAxisLength = val; }
-    auto MinorAxisLength(double val) -> void { fMinorAxisLength = val; }
+    auto ProjectionRadius(double val) -> void { fProjectionRadius = val; }
     auto Thickness(double val) -> void { fThickness = val; }
     auto InclinationAngle(double val) -> void { fInclinationAngle = val; }
 
@@ -30,8 +25,7 @@ private:
     auto ExportAllValue(YAML::Node& node) const -> void override;
 
 private:
-    double fMajorAxisLength;
-    double fMinorAxisLength;
+    double fProjectionRadius;
     double fThickness;
     double fInclinationAngle;
 };

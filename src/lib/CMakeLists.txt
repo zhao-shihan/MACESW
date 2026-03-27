@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # MACESW. If not, see <https://www.gnu.org/licenses/>.
 
+add_subdirectory(algorithm)
 add_subdirectory(analysis)
 add_subdirectory(data)
 add_subdirectory(detector)

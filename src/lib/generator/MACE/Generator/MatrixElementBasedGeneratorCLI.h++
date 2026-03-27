@@ -47,10 +47,10 @@ public:
 
     template<int M, int N, typename A>
     auto PhaseSpaceIntegral(Mustard::Executor<unsigned long long>& executor,
-                            Mustard::MatrixElementBasedGenerator<M, N, A>& generator) const -> std::tuple<Mustard::Math::Estimate, double, Mustard::Math::MCIntegrationState>;
+                            Mustard::MatrixElementBasedGenerator<M, N, A>& generator) const -> std::tuple<Mustard::Estimate, double, Mustard::MCIntegrationState>;
 
 private:
-    auto ContinueIntegration() const -> std::optional<Mustard::Math::MCIntegrationState>;
+    auto ContinueIntegration() const -> std::optional<Mustard::MCIntegrationState>;
 };
 
 template<std::derived_from<Mustard::CLI::ModuleBase>... AExtraModules>

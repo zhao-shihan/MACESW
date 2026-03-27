@@ -23,8 +23,6 @@
 
 #include "Mustard/Utility/LiteralUnit.h++"
 
-#include "CLHEP/Vector/RotationZ.h"
-
 #include "G4Box.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"

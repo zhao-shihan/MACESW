@@ -43,6 +43,7 @@
 
 namespace MACE::GenM2ENNGG {
 
+using namespace Mustard::LiteralUnit::Angle;
 using namespace Mustard::LiteralUnit::Energy;
 using namespace Mustard::MathConstant;
 using namespace Mustard::PhysicalConstant;
@@ -56,21 +57,23 @@ auto GenM2ENNGG::Main(int argc, char* argv[]) const -> int {
     cli.DefaultOutput("m2enngg.root");
     cli.DefaultOutputTree("m2enngg");
     cli.AddMCMCStepSizeOption();
-    cli->add_argument("--ir-cut").help("IR cut for final-state photons.").default_value(electron_mass_c2).required().nargs(1).scan<'g', double>();
+    cli->add_argument("--soft-cutoff").help("Low-energy cutoff in c.m. frame for final-state photons.").default_value(5_MeV).required().nargs(1).scan<'g', double>();
+    cli->add_argument("--collinear-cutoff").help("Collinear cutoff in c.m. frame for final-state photons.").default_value(0.1_rad).required().nargs(1).scan<'g', double>();
     auto& biasCLI{cli->add_mutually_exclusive_group()};
     biasCLI.add_argument("--emiss-bias").help("Apply soft upper bound for missing energy.").flag();
     cli->add_argument("--emiss-soft-upper-bound").help("Soft upper bound for missing energy in --emiss-bias.").default_value(0_MeV).required().nargs(1).scan<'g', double>();
-    cli->add_argument("--emiss-softening-factor").help("Softening factor for missing energy upper bound in --emiss-bias.").default_value(1_MeV).required().nargs(1).scan<'g', double>();
+    cli->add_argument("--emiss-softening-scale").help("Softening scale for missing energy upper bound in --emiss-bias.").default_value(1_MeV).required().nargs(1).scan<'g', double>();
     Mustard::Env::MPIEnv env{argc, argv, cli};
     Mustard::UseXoshiro<256> random{cli};
 
-    Mustard::M2ENNGGGenerator generator("mu+", cli.Momentum(), cli.Polarization(), cli->get<double>("--ir-cut"),
+    Mustard::M2ENNGGGenerator generator("mu+", cli.Momentum(), cli.Polarization(),
+                                        cli->get<double>("--soft-cutoff"), cli->get<double>("--collinear-cutoff"),
                                         cli->present<double>("--thinning-ratio"), cli->present<unsigned>("--acf-sample-size"),
                                         cli->present<double>("--mcmc-step-size"));
 
     if (cli["--emiss-bias"] == true) {
         generator.Acceptance([eMissCut = cli->get<double>("--emiss-soft-upper-bound"),
-                              scEMiss = muc::soft_cmp{cli->get<double>("--emiss-softening-factor")}](auto&& momenta) {
+                              scEMiss = muc::soft_cmp{cli->get<double>("--emiss-softening-scale")}](auto&& momenta) {
             //.          e+  n   n   g   g
             const auto& [q1, _1, _2, q4, q5]{momenta};
             const auto eMiss{muon_mass_c2 - (q1.e() + q4.e() + q5.e())};
@@ -90,8 +93,8 @@ auto GenM2ENNGG::Main(int argc, char* argv[]) const -> int {
                          branchingRatio.uncertainty / branchingRatio.value * 100, nEff);
 
     // Return if nothing to be generated
-    const auto nEvent{cli.GenerateOrExit()};
-    if (not nEvent.has_value()) {
+    const auto nEvent{cli.NEvent()};
+    if (nEvent == 0) {
         return EXIT_SUCCESS;
     }
 
@@ -102,11 +105,8 @@ auto GenM2ENNGG::Main(int argc, char* argv[]) const -> int {
     Generator::WriteAutocorrelationFunction(autocorrelationFunction);
 
     // Generate events
-    if (*nEvent == 0) {
-        return EXIT_SUCCESS;
-    }
     Mustard::Data::Output<Mustard::Data::GeneratedKinematics> writer{cli->get("--output-tree")};
-    executor(*nEvent, [&](auto) {
+    executor(nEvent, [&](auto) {
         const auto [weight, pdgID, p]{generator(rng)};
         Mustard::Data::Tuple<Mustard::Data::GeneratedKinematics> event;
         // 0: e+, 3: g, 4: g
