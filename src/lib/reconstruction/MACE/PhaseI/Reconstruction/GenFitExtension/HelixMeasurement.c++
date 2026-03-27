@@ -1,5 +1,5 @@
 /* HelixMeasurement.cpp */
-#include "HelixMeasurement.h"
+#include "HelixMeasurement.h++"
 
 #include "DetPlane.h"
 #include "Exception.h"
