@@ -98,12 +98,12 @@ auto Analysis::EventEndUserAction() -> void {
         if (fSciFiSiPMHit) {
             fSciFiSiPMHitOutput->Fill(*fSciFiSiPMHit);
         }
-        // if (fTTCSimHitOutput) {
-        //     fTTCSimHitOutput->Fill(*fTTCHit);
-        // }
-        // if (fTTCSiPMHitOutput) {
-        //     fTTCSiPMHitOutput->Fill(*fTTCSiPMHit);
-        // }
+        if (fTTCSimHitOutput) {
+            fTTCSimHitOutput->Fill(*fTTCHit);
+        }
+        if (fTTCSiPMHitOutput) {
+            fTTCSiPMHitOutput->Fill(*fTTCSiPMHit);
+        }
     }
     fPrimaryVertex = {};
     fDecayVertex = {};

@@ -85,7 +85,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("-c", "--description").help("Description YAML file path.").nargs(1);
     Mustard::Env::MPIEnv env{argc, argv, {}};
     std::string fileName{argv[1]};
-    TFile file{Mustard::Parallel::ProcessSpecificPath("output1.root").generic_string().c_str(), "RECREATE"};
+    TFile file{Mustard::Parallel::ProcessSpecificPath("SciFiOutput.root").generic_string().c_str(), "RECREATE"};
     Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
 
     MACE::PhaseI::SciFiTracking::GenFitDAFFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder;
