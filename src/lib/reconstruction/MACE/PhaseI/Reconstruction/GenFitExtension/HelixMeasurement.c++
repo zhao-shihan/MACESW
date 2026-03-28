@@ -19,6 +19,8 @@
 #include <stdexcept>
 #include <vector>
 
+ClassImp(genfit::HelixMeasurement);
+
 namespace genfit {
 
 HelixMeasurement::HelixMeasurement(int nDim) :
