@@ -11,6 +11,7 @@
 
 #include "TMath.h"
 
+#include <TBuffer.h>
 #include <TClass.h>
 #include <cassert>
 #include <cmath>
@@ -18,8 +19,6 @@
 #include <gsl/gsl_vector.h>
 #include <stdexcept>
 #include <vector>
-
-ClassImp(genfit::HelixMeasurement);
 
 namespace genfit {
 

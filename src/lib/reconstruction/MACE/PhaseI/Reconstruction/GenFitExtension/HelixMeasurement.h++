@@ -18,8 +18,7 @@
  * @{
  */
 
-#ifndef genfit_HelixMeasurement_h
-#define genfit_HelixMeasurement_h
+#pragma once
 
 #include "AbsHMatrix.h"
 #include "AbsMeasurement.h"
@@ -79,11 +78,10 @@ protected:
     };
     ClosestPointResult findClosestPointOnHelix(const TVector3& point) const;
 
-public:
-    ClassDefOverride(HelixMeasurement, 1);
+// public:
+//     ClassDefOverride(genfit::HelixMeasurement, 1);
 };
 
 } /* End of namespace genfit */
-/** @} */
+// genfit_HelixMeasurement_h
 
-#endif // genfit_HelixMeasurement_h
