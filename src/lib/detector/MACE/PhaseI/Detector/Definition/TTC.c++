@@ -68,7 +68,6 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
 
     // Construct Detector
     int tileID{};
-    const auto nCircle{ssize(ttc.NAlongPhi())};
 
     // set up the PCB
     const auto ttcPCBSolid{Make<G4Box>(
@@ -121,12 +120,13 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         ttcVirtualBoxSolid,
         ttcVirtualBoxMaterial,
         "TTCVirtualBox")};
-    for (int i{}; i < nCircle; ++i) {
-        auto deltaPhi{2 * pi / ttc.NAlongPhi()[i]};
+    for (int i{}; i < ttc.NCircles(); ++i) {
+        auto deltaPhi{2 * pi / ttc.NAlongPhi()};
+        auto zPos = (ttc.Width()+ttc.Gap())*((ttc.NCircles()-1)/2-i);
         // set the position of air mother box
-        const auto transform{G4Translate3D{G4ThreeVector(ttc.Radius()[i], 0, ttc.ZPosition()[i])} *
+        const auto transform{G4Translate3D{G4ThreeVector(ttc.Radius(), 0, zPos)} *
                              G4RotateZ3D{ttc.SlantAngle()}};
-        for (int j{}; j < ttc.NAlongPhi()[i]; ++j, ++tileID) {
+        for (int j{}; j < ttc.NAlongPhi(); ++j, ++tileID) {
             Make<G4PVPlacement>(
                 G4RotateZ3D{j * deltaPhi} * transform,
                 ttcVirtualBoxLogic,

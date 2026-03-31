@@ -44,8 +44,8 @@ public:
     auto Radius() const -> const auto& { return *fRadius; }
     auto SlantAngle() const -> auto { return *fSlantAngle; }
     auto NAlongPhi() const -> const auto& { return *fNAlongPhi; }
-    auto ZPosition() const -> auto { return *fZPosition; }
-    auto BarrelLength() const -> auto { return *fBarrelLength; }
+    auto Gap() const -> auto { return *fGap; }
+    auto NCircles() const -> auto { return *fNCircles; }
     auto PCBLength() const -> auto { return *fPCBLength; }
     auto PCBWidth() const -> auto { return *fPCBWidth; }
     auto PCBThickness() const -> auto { return *fPCBThickness; }
@@ -63,11 +63,11 @@ public:
     auto Length(double val) -> void { fLength = val; }
     auto Width(double val) -> void { fWidth = val; }
     auto Thickness(double val) -> void { fThickness = val; }
-    auto Radius(std::vector<double> val) -> void { fRadius = std::move(val); }
+    auto Radius(double val) -> void { fRadius = val; }
     auto SlantAngle(double val) -> void { fSlantAngle = val; }
-    auto NAlongPhi(std::vector<int> val) -> void { fNAlongPhi = std::move(val); }
-    auto ZPosition(std::vector<double> val) -> void { fZPosition = std::move(val); }
-    auto BarrelLength(int val) -> void { fBarrelLength = val; }
+    auto NAlongPhi(int val) -> void { fNAlongPhi = val; }
+    auto Gap(double val) -> void { fGap = val; }
+    auto NCircles(int val) -> void { fNCircles = val; }
     auto PCBLength(double val) -> void { fPCBLength = val; }
     auto PCBWidth(double val) -> void { fPCBWidth = val; }
     auto PCBThickness(double val) -> void { fPCBThickness = val; }
@@ -81,6 +81,13 @@ public:
     auto SiliconeWidth(double val) -> void { fSiliconeWidth = val; }
     auto SiliconeThickness(double val) -> void { fSiliconeThickness = val; }
     auto NSiPM(int val) -> void { fNSiPM = val; }
+
+    auto DetIDToPos(int detID) const -> std::pair<muc::array3d, double> {
+        auto xPoz = std::cos((detID % fNCircles)  * 2 * pi / fNAlongPhi);
+        auto yPoz = std::sin((detID % fNCircles)  * 2 * pi / fNAlongPhi);
+        auto zPos = ((fNCircles-1)/2-std::floor(detID/fNCircles)) * (fWidth+fGap);
+        return {muc::array3d{xPoz, yPoz, zPos}, fSlantAngle};
+    }
 
     // Material
 
@@ -156,11 +163,11 @@ private:
     Simple<double> fLength;
     Simple<double> fWidth;
     Simple<double> fThickness;
-    Simple<std::vector<double>> fRadius;
+    Simple<double> fRadius;
     Simple<double> fSlantAngle;
-    Simple<std::vector<int>> fNAlongPhi;
-    Simple<std::vector<double>> fZPosition;
-    Simple<double> fBarrelLength;
+    Simple<int> fNAlongPhi;
+    Simple<double> fGap;
+    Simple<int> fNCircles;
     Simple<double> fPCBLength;
     Simple<double> fPCBWidth;
     Simple<double> fPCBThickness;

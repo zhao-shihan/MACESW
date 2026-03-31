@@ -41,11 +41,11 @@ TTC::TTC() : // clang-format off
     fLength{this, 5.2_cm},
     fWidth{this, 5_cm},
     fThickness{this, 0.5_cm},
-    fRadius{this, {8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm, 8.5_cm}},
+    fRadius{this, 8.5_cm},
     fSlantAngle{this, 17_deg},
-    fNAlongPhi{this, {12, 12, 12, 12, 12, 12, 12, 12, 12}},
-    fZPosition{this, {-20.6_cm, -15.45_cm, -10.3_cm, -5.15_cm, 0_cm, 5.15_cm, 10.3_cm, 15.45_cm, 20.6_cm}},
-    fBarrelLength{this, 30_cm},
+    fNAlongPhi{this, 12},
+    fGap{this, 0.15_cm},
+    fNCircles{this, 9},
 
     fPCBLength{this, 3_cm},
     fPCBWidth{this, 1_cm},
@@ -121,8 +121,8 @@ auto TTC::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fRadius, "DistanceToCDC");
     ImportValue(node, fSlantAngle, "SlantAngle");
     ImportValue(node, fNAlongPhi, "NAlongPhi");
-    ImportValue(node, fZPosition, "ZPosition");
-    ImportValue(node, fBarrelLength, "BarrelLength");
+    ImportValue(node, fGap, "Gap");
+    ImportValue(node, fNCircles, "NCircles");
     ImportValue(node, fPCBLength, "PCBLength");
     ImportValue(node, fPCBWidth, "PCBWidth");
     ImportValue(node, fPCBThickness, "PCBThickness");
@@ -178,8 +178,8 @@ auto TTC::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fRadius, "DistanceToCDC");
     ExportValue(node, fSlantAngle, "SlantAngle");
     ExportValue(node, fNAlongPhi, "NAlongPhi");
-    ExportValue(node, fZPosition, "ZPosition");
-    ExportValue(node, fBarrelLength, "BarrelLength");
+    ExportValue(node, fGap, "Gap");
+    ExportValue(node, fNCircles, "NCircles");
     ExportValue(node, fPCBLength, "PCBLength");
     ExportValue(node, fPCBWidth, "PCBWidth");
     ExportValue(node, fPCBThickness, "PCBThickness");
