@@ -85,8 +85,8 @@ auto TTCSiPMSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
 }
 
 auto TTCSiPMSD::EndOfEvent(G4HCofThisEvent*) -> void {
-    for (int hitID{};
-         auto&& [tileID, hitOfDetector] : fHit) {
+    for (
+        auto&& [tileID, hitOfDetector] : fHit) {
         for (auto&& hit : hitOfDetector) {
             fHitsCollection->insert(hit.release());
         }
