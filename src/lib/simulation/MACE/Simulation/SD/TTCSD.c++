@@ -84,7 +84,7 @@ TTCSD::TTCSD(const G4String& sdName, const Type type, const TTCSiPMSD* ttcSiPMSD
     } else {
         const auto& ttc{PhaseI::Detector::Description::TTC::Instance()};
         fEnergyDepositionThreshold = energyThreshold(ttc);
-        fSplitHit.reserve(muc::ranges::reduce(ttc.NAlongPhi()));
+        fSplitHit.reserve(ttc.NCircles() * ttc.NAlongPhi());
     }
 }
 

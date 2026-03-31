@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Mustard/Detector/Description/DescriptionWithCacheBase.h++"
+#include "Mustard/Utility/MathConstant.h++"
 
 #include "muc/array"
 
@@ -27,6 +28,7 @@
 #include <vector>
 
 namespace MACE::PhaseI::Detector::Description {
+using namespace Mustard::MathConstant;
 
 class TTC final : public Mustard::Detector::Description::DescriptionWithCacheBase<TTC> {
     friend Mustard::Env::Memory::SingletonInstantiator;
@@ -83,8 +85,8 @@ public:
     auto NSiPM(int val) -> void { fNSiPM = val; }
 
     auto DetIDToPos(int detID) const -> std::pair<muc::array3d, double> {
-        auto xPoz = std::cos((detID % fNCircles)  * 2 * pi / fNAlongPhi);
-        auto yPoz = std::sin((detID % fNCircles)  * 2 * pi / fNAlongPhi);
+        auto xPoz = fRadius * std::cos((detID % fNCircles)  * 2 * pi / fNAlongPhi);
+        auto yPoz = fRadius * std::sin((detID % fNCircles)  * 2 * pi / fNAlongPhi);
         auto zPos = ((fNCircles-1)/2-std::floor(detID/fNCircles)) * (fWidth+fGap);
         return {muc::array3d{xPoz, yPoz, zPos}, fSlantAngle};
     }
