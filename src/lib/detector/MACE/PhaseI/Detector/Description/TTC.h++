@@ -87,8 +87,8 @@ public:
     auto DetIDToPos(int detID) const -> std::pair<muc::array3d, double> {
         auto xPoz = fRadius * std::cos((detID % fNCircles) * 2 * pi / fNAlongPhi);
         auto yPoz = fRadius * std::sin((detID % fNCircles) * 2 * pi / fNAlongPhi);
-        auto zPos = ((fNCircles - 1) / 2 - std::floor(detID / fNCircles)) * (fWidth + fGap);
-        return std::pair<muc::array3d{xPoz, yPoz, zPos}, fSlantAngle>;
+        auto zPos = static_cast<double>((fNCircles - 1) / 2 - std::floor(detID / fNCircles)) * (fWidth + fGap);
+        return {muc::array3d{xPoz, yPoz, zPos}, fSlantAngle};
     }
 
     // Material
