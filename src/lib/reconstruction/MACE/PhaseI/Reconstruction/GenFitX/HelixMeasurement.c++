@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace genfit {
+namespace MACE::PhaseI::Reconstruction::GenFitX {
 
 HelixMeasurement::HelixMeasurement(int nDim) :
     AbsMeasurement(nDim) {
@@ -28,17 +28,17 @@ HelixMeasurement::HelixMeasurement(int nDim) :
 }
 
 HelixMeasurement::HelixMeasurement(const TVectorD& rawHitCoords, const TMatrixDSym& rawHitCov,
-                                   int detId, int hitId, TrackPoint* trackPoint) :
+                                   int detId, int hitId, genfit::TrackPoint* trackPoint) :
     AbsMeasurement(rawHitCoords, rawHitCov, detId, hitId, trackPoint) {
     if (rawHitCoords_.GetNrows() != 8) {
-        throw Exception("HelixMeasurement requires 8-dimensional rawHitCoords", __LINE__, __FILE__);
+        throw genfit::Exception("HelixMeasurement requires 8-dimensional rawHitCoords", __LINE__, __FILE__);
     }
 }
 
-SharedPlanePtr HelixMeasurement::constructPlane(const StateOnPlane& state) const {
+genfit::SharedPlanePtr HelixMeasurement::constructPlane(const genfit::StateOnPlane& state) const {
 
-    const AbsTrackRep* rep = state.getRep();
-    StateOnPlane st(state);
+    const genfit::AbsTrackRep* rep = state.getRep();
+    genfit::StateOnPlane st(state);
     rep->extrapolateToCylinder(st, rawHitCoords_(3));
     TVector3 currentPos = rep->getPos(st);
 
@@ -51,7 +51,7 @@ SharedPlanePtr HelixMeasurement::constructPlane(const StateOnPlane& state) const
     dirInPoca.SetMag(1.0);
 
     if (std::fabs(tangent.Angle(dirInPoca)) < 0.01) {
-        throw Exception(
+        throw genfit::Exception(
             "HelixMeasurement::constructPlane: Direction is parallel to helix tangent",
             __LINE__, __FILE__);
     }
@@ -64,15 +64,15 @@ SharedPlanePtr HelixMeasurement::constructPlane(const StateOnPlane& state) const
         }
     }
     U.SetMag(1.0);
-    auto plane = new DetPlane(pocaOnHelix, U, tangent);
+    auto plane = new genfit::DetPlane(pocaOnHelix, U, tangent);
 
-    return SharedPlanePtr(plane);
+    return genfit::SharedPlanePtr(plane);
 }
 
-std::vector<MeasurementOnPlane*> HelixMeasurement::constructMeasurementsOnPlane(const StateOnPlane& state) const {
+std::vector<genfit::MeasurementOnPlane*> HelixMeasurement::constructMeasurementsOnPlane(const genfit::StateOnPlane& state) const {
     double d{};
     double V{rawHitCov_(7, 7)};
-    return {new MeasurementOnPlane(
+    return {new genfit::MeasurementOnPlane(
         TVectorD(1, &d),
         TMatrixDSym(1, &V),
         state.getPlane(),
@@ -80,12 +80,12 @@ std::vector<MeasurementOnPlane*> HelixMeasurement::constructMeasurementsOnPlane(
         constructHMatrix(state.getRep()))};
 }
 
-const AbsHMatrix* HelixMeasurement::constructHMatrix(const AbsTrackRep* rep) const {
-    if (dynamic_cast<const RKTrackRep*>(rep) == nullptr) {
-        throw Exception("HelixMeasurement can only handle state vectors of type RKTrackRep!",
-                        __LINE__, __FILE__);
+const genfit::AbsHMatrix* HelixMeasurement::constructHMatrix(const genfit::AbsTrackRep* rep) const {
+    if (dynamic_cast<const genfit::RKTrackRep*>(rep) == nullptr) {
+        throw genfit::Exception("HelixMeasurement can only handle state vectors of type RKTrackRep!",
+                                __LINE__, __FILE__);
     }
-    return new HMatrixU();
+    return new genfit::HMatrixU();
 }
 
 HelixMeasurement::ClosestPointResult
@@ -170,7 +170,7 @@ HelixMeasurement::findClosestPointOnHelix(const TVector3& point) const {
     constexpr double tolerance = 1e-10;
     double u = bestU;
 
-    for (int i = 0; i < maxIterations; ++i) {
+    for (int i{}; i < maxIterations; ++i) {
         const double d1 = derivative(u);
         const double d2 = secondDerivative(u);
 
@@ -198,4 +198,4 @@ HelixMeasurement::findClosestPointOnHelix(const TVector3& point) const {
     return result;
 }
 
-} // namespace genfit
+} // namespace MACE::PhaseI::Reconstruction::GenFitX

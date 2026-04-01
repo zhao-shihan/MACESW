@@ -26,7 +26,7 @@
 
 #include "TVector3.h"
 
-namespace genfit {
+namespace MACE::PhaseI::Reconstruction::GenFitX {
 
 /** @brief Class for measurements in helical detectors (like helical trackers or detectors)
  *  which measure the drift distance from a helical wire.
@@ -44,18 +44,18 @@ namespace genfit {
  * The measurement plane is dynamically constructed at the point of closest approach
  * to the helix, with the V-axis tangent to the helix and the U-axis perpendicular.
  */
-class HelixMeasurement : public AbsMeasurement {
+class HelixMeasurement : public genfit::AbsMeasurement {
 
 public:
     HelixMeasurement(int nDim = 8);
     HelixMeasurement(const TVectorD& rawHitCoords, const TMatrixDSym& rawHitCov,
-                     int detId, int hitId, TrackPoint* trackPoint);
+                     int detId, int hitId, genfit::TrackPoint* trackPoint);
 
     virtual ~HelixMeasurement() { ; }
 
-    virtual AbsMeasurement* clone() const override { return new HelixMeasurement(*this); }
+    virtual genfit::AbsMeasurement* clone() const override { return new HelixMeasurement(*this); }
 
-    virtual SharedPlanePtr constructPlane(const StateOnPlane& state) const override;
+    virtual genfit::SharedPlanePtr constructPlane(const genfit::StateOnPlane& state) const override;
 
     /**  Hits with a small drift distance get a higher weight, whereas hits with
      * big drift distances become weighted down.
@@ -67,9 +67,9 @@ public:
      * trajectory, whereas the wire position for hits with large drift radii is further away
      * from the trajectory and will therefore bias the fit if not weighted down.
      */
-    virtual std::vector<MeasurementOnPlane*> constructMeasurementsOnPlane(const StateOnPlane& state) const override;
+    virtual std::vector<genfit::MeasurementOnPlane*> constructMeasurementsOnPlane(const genfit::StateOnPlane& state) const override;
 
-    virtual const AbsHMatrix* constructHMatrix(const AbsTrackRep*) const override;
+    virtual const genfit::AbsHMatrix* constructHMatrix(const genfit::AbsTrackRep*) const override;
 
 protected:
     struct ClosestPointResult {
@@ -77,11 +77,6 @@ protected:
         TVector3 tangent; ///< 该点的切线方向
     };
     ClosestPointResult findClosestPointOnHelix(const TVector3& point) const;
-
-// public:
-//     ClassDefOverride(genfit::HelixMeasurement, 1);
 };
 
-} /* End of namespace genfit */
-// genfit_HelixMeasurement_h
-
+} // namespace MACE::PhaseI::Reconstruction::GenFitX

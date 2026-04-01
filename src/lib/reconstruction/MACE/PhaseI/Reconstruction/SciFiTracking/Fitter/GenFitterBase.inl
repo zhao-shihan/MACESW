@@ -130,7 +130,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                     rawHitCov(5, 5) = 0.0;
                     rawHitCov(6, 6) = 0.0;
                     rawHitCov(7, 7) = 0.0289 * 0.0289;
-                    return new genfit::HelixMeasurement(rawHitCoords, rawHitCov, *Get<"FiberID">(*hit), Get<"HitID">(*hit), nullptr);
+                    return new MACE::PhaseI::Reconstruction::GenFitX::HelixMeasurement(rawHitCoords, rawHitCov, *Get<"FiberID">(*hit), Get<"HitID">(*hit), nullptr);
                 }
             }()};
         genfitTrack->insertPoint(new genfit::TrackPoint{measurement, genfitTrack.get()});
