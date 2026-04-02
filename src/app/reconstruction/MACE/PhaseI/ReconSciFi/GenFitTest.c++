@@ -1,3 +1,4 @@
+#include "MACE/Data/Hit.h++"
 #include "MACE/PhaseI/Data/Hit.h++"
 #include "MACE/PhaseI/Data/SensorHit.h++"
 #include "MACE/PhaseI/Data/SensorRawHit.h++"
@@ -10,7 +11,7 @@
 
 #include "Mustard/CLI/BasicCLI.h++"
 #include "Mustard/Data/Output.h++"
-#include "Mustard/Data/Processor.h++"
+#include "Mustard/Data/SeqProcessor.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
@@ -92,29 +93,44 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     // MACE::PhaseI::SciFiTracking::GenFitReferenceKalmanFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     MACE::PhaseI::SciFiTracking::GenFitDAFFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     fitter.EnableEventDisplay(false);
-    int count1{0};
 
-    Mustard::Data::Processor processor;
-    processor.Process<PhaseI::Data::SciFiSimHit>(
-        ROOT::RDataFrame{"G4Run0/SciFiSimHit", fileName}, int{}, "EvtID",
-        [&](bool byPass, auto&& event) {
-            if (byPass) {
-                return;
-            }
-            muc::timsort(event,
+    Mustard::Data::SeqProcessor processor;
+
+    auto ecalData{
+        ROOT::RDataFrame{"G4Run0/ECALSimHit", fileName}
+    };
+    auto sciFiData{
+        ROOT::RDataFrame{"G4Run0/SciFiSimHit", fileName}
+    };
+    auto ttcData{
+        ROOT::RDataFrame{"G4Run0/TTCSimHit", fileName}
+    };
+    processor.Process<MACE::Data::ECALHit, PhaseI::Data::SciFiHit, MACE::Data::TTCHit>(
+        {ecalData, sciFiData, ttcData}, int{}, "EvtID",
+        [&](auto&& ecalEvent, auto&& sciFiEvent, auto&& ttcEvent) {
+            muc::timsort(ecalEvent,
+                         [](auto&& hit1, auto&& hit2) {
+                             return Get<"Edep">(*hit1) > Get<"Edep">(*hit2);
+                         });
+            muc::timsort(sciFiEvent,
                          [](auto&& hit1, auto&& hit2) {
                              return std::tie(Get<"FiberID">(*hit1), Get<"t">(*hit1)) < std::tie(Get<"FiberID">(*hit2), Get<"t">(*hit2));
                          });
+            muc::timsort(ttcEvent,
+                         [](auto&& hit1, auto&& hit2) {
+                             return Get<"t">(*hit1) > Get<"t">(*hit2);
+                         });
 
+            const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
             std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
-            for (auto&& hit : event) {
-                if (*Get<"nOptPho">(*hit) <= 1) {
+            for (auto&& hit : sciFiEvent) {
+                if (*Get<"Edep">(*hit) <= sciFiTracker.EnergyDepositionThreshold()) {
                     continue;
                 }
                 auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
                 *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*hit);
                 *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*hit);
-                *Get<"nOptPho">(*sciFiHit) = *Get<"nOptPho">(*hit);
+                *Get<"Edep">(*sciFiHit) = *Get<"Edep">(*hit);
                 *Get<"t">(*sciFiHit) = *Get<"t">(*hit);
                 sciFiHitData.emplace_back(std::move(sciFiHit));
             }
@@ -126,15 +142,13 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                     if (track == nullptr) {
                         continue;
                     }
-                    count1++;
-                    std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
-                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
-                    std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
+                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
+                    //  std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
+                    // std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
                     reconTrack.Fill(*track);
                 }
             }
         });
-    std::cout << count1 << std::endl;
     reconTrack.Write();
     // fitter.OpenEventDisplay();
     return EXIT_SUCCESS;

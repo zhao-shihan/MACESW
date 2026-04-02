@@ -109,7 +109,7 @@ SciFiTracker::SciFiTracker() : // clang-format off
                            0.129670093, 0.120230653, 0.108280609, 0.091831406, 0.098424138, 0.083937488, 0.073056832, 0.060399447, 0.047887957,
                            0.034501313}, // S13360
     // reconstruction
-    fSiPMOpticalPhotonCountThreshold{2},
+    fEnergyDepositionThreshold{0.01},
     fClusterLength{3},
     fThresholdTime{10},
     fTimeWindow{10},
@@ -203,7 +203,7 @@ auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fScintillationYield, "ScintillationYield");
     ImportValue(node, fScintillationTimeConstant1, "ScintillationTimeConstant1");
     // Reconstruction
-    ImportValue(node, fSiPMOpticalPhotonCountThreshold, "SiPMOpticalPhotonCountThreshold");
+    ImportValue(node, fEnergyDepositionThreshold, "EnergyDepositionThreshold");
     ImportValue(node, fClusterLength, "ClusterLength");
     ImportValue(node, fThresholdTime, "SiPMOptPhoThresholdTime");
     ImportValue(node, fTimeWindow, "SiPMTimeWindow");
@@ -241,7 +241,7 @@ auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fScintillationYield, "ScintillationYield");
     ExportValue(node, fScintillationTimeConstant1, "ScintillationTimeConstant1");
     // Reconstruction
-    ExportValue(node, fSiPMOpticalPhotonCountThreshold, "SiPMOpticalPhotonCountThreshold");
+    ExportValue(node, fEnergyDepositionThreshold, "EnergyDepositionThreshold");
     ExportValue(node, fClusterLength, "ClusterLength");
     ExportValue(node, fThresholdTime, "SiPMOptPhoThresholdTime");
     ExportValue(node, fTimeWindow, "SiPMTimeWindow");
