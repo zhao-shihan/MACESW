@@ -24,7 +24,7 @@ NeutrinoKillerSteppingAction<ADerived>::NeutrinoKillerSteppingAction(ADerived* d
     Mustard::Env::Memory::PassiveSingleton<ADerived>{derived},
     G4UserSteppingAction{},
     fEnableNeutrinoKiller{true},
-    fMessengerRegister{static_cast<ADerived*>(this)} {}
+    fMessengerRegister{derived} {}
 
 template<typename ADerived>
 auto NeutrinoKillerSteppingAction<ADerived>::EnableNeutrinoKiller(bool val) -> void {
