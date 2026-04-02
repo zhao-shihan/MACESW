@@ -29,11 +29,11 @@
 namespace MACE::PhaseI::Detector::Description {
 
 class SciFiTracker final : public Mustard::Detector::Description::DescriptionWithCacheBase<SciFiTracker> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     SciFiTracker();
-    ~SciFiTracker() override = default;
+    ~SciFiTracker() = default;
 
 public:
     // Geometry

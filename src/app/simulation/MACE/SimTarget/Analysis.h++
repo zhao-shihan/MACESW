@@ -23,7 +23,7 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "muc/array"
 #include "muc/ptrvec"
@@ -51,7 +51,7 @@ using MuoniumTrack = Mustard::Data::TupleModel<Mustard::Data::Value<int, "EvtID"
                                                Mustard::Data::Value<float, "Ek", "Kinetic energy just before decay">,
                                                Mustard::Data::Value<muc::array3f, "p", "Momentum just before decay">>;
 
-class Analysis final : public Mustard::Env::Memory::PassiveSingleton<Analysis> {
+class Analysis final : public Mustard::Env::PassiveSingleton<Analysis> {
 public:
     Analysis();
     ~Analysis();

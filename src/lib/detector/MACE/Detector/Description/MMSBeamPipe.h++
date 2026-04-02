@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class MMSBeamPipe final : public Mustard::Detector::Description::DescriptionBase<MMSBeamPipe> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MMSBeamPipe();
-    ~MMSBeamPipe() override = default;
+    ~MMSBeamPipe() = default;
 
 public:
     auto InnerRadius() const -> auto { return fInnerRadius; }

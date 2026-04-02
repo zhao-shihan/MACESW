@@ -31,7 +31,7 @@ class StandardPhysicsListBase;
 
 class StandardPhysicsListMessenger final : public Mustard::Geant4X::SingletonMessenger<StandardPhysicsListMessenger,
                                                                                        StandardPhysicsListBase> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     StandardPhysicsListMessenger();

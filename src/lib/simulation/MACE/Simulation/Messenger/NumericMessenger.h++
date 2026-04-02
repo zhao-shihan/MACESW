@@ -31,11 +31,11 @@ namespace MACE::inline Simulation::inline Messenger {
 template<typename AReceiver>
 class NumericMessenger final : public Mustard::Geant4X::SingletonMessenger<NumericMessenger<AReceiver>,
                                                                            AReceiver> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     NumericMessenger();
-    ~NumericMessenger() override = default;
+    ~NumericMessenger() = default;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class SolenoidBeamPipe final : public Mustard::Detector::Description::DescriptionBase<SolenoidBeamPipe> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     SolenoidBeamPipe();
-    ~SolenoidBeamPipe() override = default;
+    ~SolenoidBeamPipe() = default;
 
 public:
     // Geometry

@@ -24,11 +24,11 @@
 namespace MACE::SimPTS::Detector::Description {
 
 class VirtualDetectorC final : public Mustard::Detector::Description::DescriptionBase<VirtualDetectorC> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     VirtualDetectorC();
-    ~VirtualDetectorC() override = default;
+    ~VirtualDetectorC() = default;
 
 public:
     auto Thickness() const -> auto { return fThickness; }

@@ -29,11 +29,11 @@
 namespace MACE::Detector::Description {
 
 class FieldOption final : public Mustard::Detector::Description::DescriptionBase<FieldOption> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     FieldOption();
-    ~FieldOption() override = default;
+    ~FieldOption() = default;
 
 public:
     auto UseFast() const -> auto { return fUseFast; }

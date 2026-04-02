@@ -29,7 +29,7 @@
 #include "MACE/PhaseI/SimMACEPhaseI/SD/ECALPMSD.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SD/ECALSD.h++"
 
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4VUserDetectorConstruction.hh"
 
@@ -42,7 +42,7 @@ class DefinitionBase;
 
 namespace MACE::PhaseI::SimMACEPhaseI::inline Action {
 
-class DetectorConstruction final : public Mustard::Env::Memory::PassiveSingleton<DetectorConstruction>,
+class DetectorConstruction final : public Mustard::Env::PassiveSingleton<DetectorConstruction>,
                                    public G4VUserDetectorConstruction {
 public:
     DetectorConstruction();

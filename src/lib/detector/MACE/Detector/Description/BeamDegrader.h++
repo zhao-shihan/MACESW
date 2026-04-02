@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class BeamDegrader final : public Mustard::Detector::Description::DescriptionBase<BeamDegrader> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     BeamDegrader();
-    ~BeamDegrader() override = default;
+    ~BeamDegrader() = default;
 
 public:
     auto Enabled() const -> auto { return fEnabled; }

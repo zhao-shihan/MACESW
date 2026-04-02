@@ -24,11 +24,11 @@
 namespace MACE::Detector::Description {
 
 class MCPChamber final : public Mustard::Detector::Description::DescriptionBase<MCPChamber> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MCPChamber();
-    ~MCPChamber() override = default;
+    ~MCPChamber() = default;
 
 public:
     auto InnerRadius() const -> auto { return fInnerRadius; }

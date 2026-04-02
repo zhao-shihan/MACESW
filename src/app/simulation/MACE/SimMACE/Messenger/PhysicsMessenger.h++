@@ -35,7 +35,7 @@ inline namespace Messenger {
 
 class PhysicsMessenger final : public Mustard::Geant4X::SingletonMessenger<PhysicsMessenger,
                                                                            DetectorConstruction> {
-    friend class Mustard::Env::Memory::SingletonInstantiator;
+    friend class Mustard::Env::SingletonFactory;
 
 private:
     PhysicsMessenger();

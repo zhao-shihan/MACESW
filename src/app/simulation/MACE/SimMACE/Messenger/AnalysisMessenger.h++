@@ -41,7 +41,7 @@ class AnalysisMessenger final : public Mustard::Geant4X::SingletonMessenger<Anal
                                                                             Analysis,
                                                                             TrackingAction,
                                                                             PrimaryGeneratorAction> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     AnalysisMessenger();

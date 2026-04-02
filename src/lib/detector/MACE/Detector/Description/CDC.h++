@@ -39,11 +39,11 @@ class G4Material;
 namespace MACE::Detector::Description {
 
 class CDC final : public Mustard::Detector::Description::DescriptionWithCacheBase<CDC> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     CDC();
-    ~CDC() override = default;
+    ~CDC() = default;
 
 public:
     ///////////////////////////////////////////////////////////

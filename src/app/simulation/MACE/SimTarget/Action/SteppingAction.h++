@@ -21,14 +21,14 @@
 
 #include "MACE/SimTarget/Messenger/ActionMessenger.h++"
 
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4ParticleDefinition.hh"
 #include "G4UserSteppingAction.hh"
 
 namespace MACE::SimTarget::inline Action {
 
-class SteppingAction final : public Mustard::Env::Memory::PassiveSingleton<SteppingAction>,
+class SteppingAction final : public Mustard::Env::PassiveSingleton<SteppingAction>,
                              public G4UserSteppingAction {
 public:
     SteppingAction();

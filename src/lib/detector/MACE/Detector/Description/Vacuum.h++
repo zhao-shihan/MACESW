@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class Vacuum final : public Mustard::Detector::Description::DescriptionBase<Vacuum> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Vacuum();
-    ~Vacuum() override = default;
+    ~Vacuum() = default;
 
 public:
     auto Name() const -> auto { return fName; }

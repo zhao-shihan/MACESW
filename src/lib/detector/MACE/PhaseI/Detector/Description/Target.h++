@@ -5,11 +5,11 @@
 namespace MACE::PhaseI::Detector::Description {
 
 class Target final : public Mustard::Detector::Description::DescriptionBase<Target> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Target();
-    ~Target() override = default;
+    ~Target() = default;
 
 public:
     auto ProjectionRadius() const -> auto { return fProjectionRadius; }

@@ -21,7 +21,7 @@
 
 #include "MACE/Simulation/Action/NeutrinoKillerMessenger.h++"
 
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4AntiNeutrinoE.hh"
 #include "G4AntiNeutrinoMu.hh"
@@ -45,7 +45,7 @@
 namespace MACE::inline Simulation::inline Action {
 
 template<typename ADerived = void>
-class NeutrinoKillerSteppingAction : public Mustard::Env::Memory::PassiveSingleton<ADerived>,
+class NeutrinoKillerSteppingAction : public Mustard::Env::PassiveSingleton<ADerived>,
                                      public G4UserSteppingAction {
 public:
     explicit NeutrinoKillerSteppingAction(ADerived* derived);

@@ -113,7 +113,7 @@ auto GenM2ENNEE::Main(int argc, char* argv[]) const -> int {
     }
 
     // Integrate matrix element
-    Mustard::Executor<unsigned long long> executor{"Generation", "Sample"};
+    Mustard::Executor<unsigned long long> executor{"Generation", "Generation", "Sample"};
     const auto [phaseSpaceIntegral, nEff, integrationState]{cli.PhaseSpaceIntegral(executor, generator)};
     const auto width{muc::pow(2 * pi, 4) / (2 * muon_mass_c2) * phaseSpaceIntegral};
     const auto branchingRatio{width * (muon_lifetime / hbar_Planck)};
@@ -137,7 +137,7 @@ auto GenM2ENNEE::Main(int argc, char* argv[]) const -> int {
 
     // Generate events
     Mustard::Data::Output<Mustard::Data::GeneratedKinematics> writer{cli->get("--output-tree")};
-    executor(nEvent, [&](auto) {
+    executor.Run(nEvent, [&](auto) {
         const auto [weight, pdgID, p]{generator(rng)};
         Mustard::Data::Tuple<Mustard::Data::GeneratedKinematics> event;
         // Index: 0: e+, 1: νe, 2: νμ, 3: e-, 4: e+

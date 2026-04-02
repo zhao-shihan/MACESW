@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class ECALMagnet final : public Mustard::Detector::Description::DescriptionBase<ECALMagnet> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     ECALMagnet();
-    ~ECALMagnet() override = default;
+    ~ECALMagnet() = default;
 
 public:
     // Geometry

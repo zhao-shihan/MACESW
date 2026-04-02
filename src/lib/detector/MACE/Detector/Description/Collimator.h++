@@ -29,11 +29,11 @@
 namespace MACE::Detector::Description {
 
 class Collimator final : public Mustard::Detector::Description::DescriptionBase<Collimator> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Collimator();
-    ~Collimator() override = default;
+    ~Collimator() = default;
 
 public:
     // Geometry

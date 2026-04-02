@@ -31,7 +31,7 @@ class MMSTruthTracker;
 
 class MMSTruthTrackerMessenger final : public Mustard::Geant4X::SingletonMessenger<MMSTruthTrackerMessenger,
                                                                                    MMSTruthTracker> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MMSTruthTrackerMessenger();

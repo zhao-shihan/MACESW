@@ -25,7 +25,7 @@
 
 #include "Mustard/Data/Output.h++"
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4Types.hh"
 
@@ -41,7 +41,7 @@ class TFile;
 
 namespace MACE::SimPTS {
 
-class Analysis final : public Mustard::Env::Memory::PassiveSingleton<Analysis> {
+class Analysis final : public Mustard::Env::PassiveSingleton<Analysis> {
 public:
     Analysis();
 

@@ -28,11 +28,11 @@ namespace MACE::SimECAL::inline Messenger {
 class DetectorMessenger final : public Mustard::Geant4X::DetectorMessenger<DetectorMessenger,
                                                                            DetectorConstruction,
                                                                            "SimECAL"> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     DetectorMessenger() = default;
-    ~DetectorMessenger() override = default;
+    ~DetectorMessenger() = default;
 };
 
 } // namespace MACE::SimECAL::inline Messenger

@@ -29,11 +29,11 @@
 namespace MACE::Detector::Description {
 
 class Accelerator final : public Mustard::Detector::Description::DescriptionBase<Accelerator> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Accelerator();
-    ~Accelerator() override = default;
+    ~Accelerator() = default;
 
 public:
     // Geometry

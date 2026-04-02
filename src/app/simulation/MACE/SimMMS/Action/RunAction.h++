@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4UserRunAction.hh"
 
 namespace MACE::SimMMS::inline Action {
 
-class RunAction final : public Mustard::Env::Memory::PassiveSingleton<RunAction>,
+class RunAction final : public Mustard::Env::PassiveSingleton<RunAction>,
                         public G4UserRunAction {
 public:
     RunAction();

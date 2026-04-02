@@ -30,11 +30,11 @@ namespace MACE::inline Simulation::inline Messenger {
 template<typename AReceiver>
 class NeutrinoKillerMessenger final : public Mustard::Geant4X::SingletonMessenger<NeutrinoKillerMessenger<AReceiver>,
                                                                                   AReceiver> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     NeutrinoKillerMessenger();
-    ~NeutrinoKillerMessenger() override = default;
+    ~NeutrinoKillerMessenger() = default;
 
 public:
     auto SetNewValue(G4UIcommand* command, G4String value) -> void override;

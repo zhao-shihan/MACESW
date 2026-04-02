@@ -37,11 +37,11 @@
 namespace MACE::Detector::Description {
 
 class ECAL final : public Mustard::Detector::Description::DescriptionWithCacheBase<ECAL> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     ECAL();
-    ~ECAL() override = default;
+    ~ECAL() = default;
 
 public:
     auto NSubdivision() const -> auto { return *fNSubdivision; }

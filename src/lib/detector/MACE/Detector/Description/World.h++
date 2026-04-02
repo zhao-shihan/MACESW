@@ -24,11 +24,11 @@
 namespace MACE::Detector::Description {
 
 class World final : public Mustard::Detector::Description::DescriptionBase<World> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     World();
-    ~World() override = default;
+    ~World() = default;
 
 public:
     auto HalfXExtent() const -> auto { return fHalfXExtent; }

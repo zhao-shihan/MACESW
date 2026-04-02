@@ -89,7 +89,7 @@ protected:
     explicit GenFitterBase(double driftErrorRMS, double lowestMomentum = 1 * CLHEP::MeV);
 
 public:
-    ~GenFitterBase() override = default;
+    ~GenFitterBase() = default;
 
     auto DriftErrorRMS() const -> auto { return fDriftErrorRMS; }
     auto LowestMomentum() const -> auto { return fLowestMomentum; }

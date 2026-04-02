@@ -21,7 +21,7 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/Value.h++"
-#include "Mustard/Geant4X/Memory/UseG4Allocator.h++"
+#include "Mustard/Memory/ClassSpecificNewDelete.h++"
 
 #include "G4THitsCollection.hh"
 #include "G4VHit.hh"
@@ -43,7 +43,7 @@ using VirtualHitModel = Mustard::Data::TupleModel<
     Mustard::Data::Value<muc::array3f, "p0", "Vertex momentum">,
     Mustard::Data::Value<std::string, "CreatProc", "Track creator process">>;
 
-class VirtualHit final : public Mustard::Geant4X::UseG4Allocator<VirtualHit>,
+class VirtualHit final : public Mustard::ClassSpecificNewDelete,
                          public G4VHit,
                          public Mustard::Data::Tuple<VirtualHitModel> {};
 

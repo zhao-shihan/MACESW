@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class MCP final : public Mustard::Detector::Description::DescriptionBase<MCP> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MCP();
-    ~MCP() override = default;
+    ~MCP() = default;
 
 public:
     // Geometry

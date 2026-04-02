@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class SolenoidShield final : public Mustard::Detector::Description::DescriptionBase<SolenoidShield> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     SolenoidShield();
-    ~SolenoidShield() override = default;
+    ~SolenoidShield() = default;
 
 public:
     // Geometry

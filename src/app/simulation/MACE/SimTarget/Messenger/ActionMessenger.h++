@@ -38,7 +38,7 @@ inline namespace Messenger {
 
 class ActionMessenger final : public Mustard::Geant4X::SingletonMessenger<ActionMessenger,
                                                                           SteppingAction> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     ActionMessenger();

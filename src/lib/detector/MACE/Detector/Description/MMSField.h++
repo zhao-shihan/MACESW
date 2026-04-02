@@ -24,11 +24,11 @@
 namespace MACE::Detector::Description {
 
 class MMSField final : public Mustard::Detector::Description::DescriptionBase<MMSField> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MMSField();
-    ~MMSField() override = default;
+    ~MMSField() = default;
 
 public:
     ///////////////////////////////////////////////////////////

@@ -29,11 +29,11 @@
 namespace MACE::Detector::Description {
 
 class TTC final : public Mustard::Detector::Description::DescriptionWithCacheBase<TTC> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     TTC();
-    ~TTC() override = default;
+    ~TTC() = default;
 
 public:
     // Geometry

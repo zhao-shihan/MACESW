@@ -27,11 +27,11 @@
 namespace MACE::PhaseI::Detector::Description {
 
 class CentralBeamPipe final : public Mustard::Detector::Description::DescriptionBase<CentralBeamPipe> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     CentralBeamPipe();
-    ~CentralBeamPipe() override = default;
+    ~CentralBeamPipe() = default;
 
 public:
     // Geometry

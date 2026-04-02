@@ -35,7 +35,7 @@ inline namespace Messenger {
 
 class AnalysisMessenger final : public Mustard::Geant4X::SingletonMessenger<AnalysisMessenger,
                                                                             Analysis> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     AnalysisMessenger();

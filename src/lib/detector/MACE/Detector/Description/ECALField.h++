@@ -28,11 +28,11 @@
 namespace MACE::Detector::Description {
 
 class ECALField final : public Mustard::Detector::Description::DescriptionBase<ECALField> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     ECALField();
-    ~ECALField() override = default;
+    ~ECALField() = default;
 
 public:
     ///////////////////////////////////////////////////////////

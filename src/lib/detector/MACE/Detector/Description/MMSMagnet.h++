@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class MMSMagnet final : public Mustard::Detector::Description::DescriptionBase<MMSMagnet> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MMSMagnet();
-    ~MMSMagnet() override = default;
+    ~MMSMagnet() = default;
 
 public:
     // Geometry

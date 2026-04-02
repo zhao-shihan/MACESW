@@ -27,11 +27,11 @@
 namespace MACE::Detector::Description {
 
 class MMSShield final : public Mustard::Detector::Description::DescriptionBase<MMSShield> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     MMSShield();
-    ~MMSShield() override = default;
+    ~MMSShield() = default;
 
 public:
     // Geometry

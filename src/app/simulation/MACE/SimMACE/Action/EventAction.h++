@@ -19,13 +19,13 @@
 
 #pragma once
 
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4UserEventAction.hh"
 
 namespace MACE::SimMACE::inline Action {
 
-class EventAction final : public Mustard::Env::Memory::PassiveSingleton<EventAction>,
+class EventAction final : public Mustard::Env::PassiveSingleton<EventAction>,
                           public G4UserEventAction {
 public:
     EventAction();

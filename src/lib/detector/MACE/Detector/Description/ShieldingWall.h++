@@ -24,11 +24,11 @@
 namespace MACE::Detector::Description {
 
 class ShieldingWall final : public Mustard::Detector::Description::DescriptionBase<ShieldingWall> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     ShieldingWall();
-    ~ShieldingWall() override = default;
+    ~ShieldingWall() = default;
 
 public:
     auto Enabled() const -> auto { return fEnabled; }

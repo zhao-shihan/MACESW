@@ -24,11 +24,11 @@
 namespace MACE::Detector::Description {
 
 class BeamMonitor final : public Mustard::Detector::Description::DescriptionBase<BeamMonitor> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     BeamMonitor();
-    ~BeamMonitor() override = default;
+    ~BeamMonitor() = default;
 
 public:
     auto Enabled() const -> auto { return fEnabled; }

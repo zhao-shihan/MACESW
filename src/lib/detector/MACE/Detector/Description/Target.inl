@@ -21,7 +21,7 @@ namespace MACE::Detector::Description {
 
 template<typename ADerivedShape>
 Target::ShapeBase<ADerivedShape>::ShapeBase(ADerivedShape* derived) :
-    Mustard::Env::Memory::WeakSingleton<ADerivedShape>{derived} {
+    Mustard::Env::WeakSingleton<ADerivedShape>{derived} {
     static_assert(
         requires(const ADerivedShape shape, double x[3], bool inside) {
             requires std::is_base_of_v<ShapeBase<ADerivedShape>, ADerivedShape>;
@@ -35,7 +35,7 @@ Target::ShapeBase<ADerivedShape>::ShapeBase(ADerivedShape* derived) :
 template<typename ADerivedShape>
 template<typename ADerivedDetail>
 Target::ShapeBase<ADerivedShape>::DetailBase<ADerivedDetail>::DetailBase(ADerivedDetail* derived) :
-    Mustard::Env::Memory::WeakSingleton<ADerivedDetail>{derived} {
+    Mustard::Env::WeakSingleton<ADerivedDetail>{derived} {
     static_assert(
         requires(const ADerivedDetail detail, double x[3]) {
             requires std::is_base_of_v<DetailBase<ADerivedDetail>, ADerivedDetail>;

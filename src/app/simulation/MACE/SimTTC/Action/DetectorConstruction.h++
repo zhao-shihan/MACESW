@@ -24,7 +24,7 @@
 #include "MACE/Detector/Description/World.h++"
 #include "MACE/Simulation/Messenger/NumericMessenger.h++"
 
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4VUserDetectorConstruction.hh"
 
@@ -38,7 +38,7 @@ class DefinitionBase;
 
 namespace MACE::SimTTC::inline Action {
 
-class DetectorConstruction final : public Mustard::Env::Memory::PassiveSingleton<DetectorConstruction>,
+class DetectorConstruction final : public Mustard::Env::PassiveSingleton<DetectorConstruction>,
                                    public G4VUserDetectorConstruction {
 public:
     DetectorConstruction();

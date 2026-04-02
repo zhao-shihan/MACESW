@@ -57,7 +57,7 @@ public:
 
 public:
     explicit GenFitDAFFitter(double driftErrorRMS);
-    ~GenFitDAFFitter() override = default;
+    ~GenFitDAFFitter() = default;
 
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and

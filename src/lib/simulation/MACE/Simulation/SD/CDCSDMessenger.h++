@@ -32,7 +32,7 @@ class CDCSD;
 
 class CDCSDMessenger final : public Mustard::Geant4X::SingletonMessenger<CDCSDMessenger,
                                                                          CDCSD> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     CDCSDMessenger();

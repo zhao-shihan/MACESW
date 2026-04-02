@@ -21,7 +21,7 @@
 
 #include "Mustard/Concept/InputVector.h++"
 #include "Mustard/Detector/Description/DescriptionBase.h++"
-#include "Mustard/Env/Memory/WeakSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/WeakSingleton.h++"
 
 #include "muc/array"
 #include "muc/math"
@@ -39,7 +39,7 @@ class G4Material;
 namespace MACE::Detector::Description {
 
 class Target final : public Mustard::Detector::Description::DescriptionBase<Target> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 public:
     enum struct TargetShapeType {
@@ -50,7 +50,7 @@ public:
 
 private:
     Target();
-    ~Target() override = default;
+    ~Target() = default;
 
 public:
     auto ShapeType() const -> auto { return fShapeType; }
@@ -60,14 +60,14 @@ public:
 
 public:
     template<typename ADerivedShape>
-    class ShapeBase : public Mustard::Env::Memory::WeakSingleton<ADerivedShape> {
+    class ShapeBase : public Mustard::Env::WeakSingleton<ADerivedShape> {
     protected:
         explicit ShapeBase(ADerivedShape* derived);
         ~ShapeBase() = default;
 
     protected:
         template<typename ADerivedDetail>
-        class DetailBase : public Mustard::Env::Memory::WeakSingleton<ADerivedDetail> {
+        class DetailBase : public Mustard::Env::WeakSingleton<ADerivedDetail> {
         protected:
             explicit DetailBase(ADerivedDetail* derived);
             ~DetailBase() = default;

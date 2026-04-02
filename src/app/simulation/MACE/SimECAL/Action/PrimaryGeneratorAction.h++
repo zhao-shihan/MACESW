@@ -24,7 +24,7 @@
 #include "MACE/SimECAL/Messenger/PrimaryGeneratorActionMessenger.h++"
 
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 #include "Mustard/Geant4X/Generator/EcoMugCosmicRayMuon.h++"
 #include "Mustard/Geant4X/Generator/GeneralParticleSourceX.h++"
 
@@ -34,7 +34,7 @@
 
 namespace MACE::SimECAL::inline Action {
 
-class PrimaryGeneratorAction final : public Mustard::Env::Memory::PassiveSingleton<PrimaryGeneratorAction>,
+class PrimaryGeneratorAction final : public Mustard::Env::PassiveSingleton<PrimaryGeneratorAction>,
                                      public G4VUserPrimaryGeneratorAction {
 public:
     PrimaryGeneratorAction();

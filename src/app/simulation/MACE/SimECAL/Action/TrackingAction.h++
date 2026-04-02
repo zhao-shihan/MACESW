@@ -23,7 +23,7 @@
 #include "MACE/SimECAL/Messenger/AnalysisMessenger.h++"
 
 #include "Mustard/Data/Tuple.h++"
-#include "Mustard/Env/Memory/PassiveSingleton.h++"
+#include "Mustard/Env/ObjectRegistry/PassiveSingleton.h++"
 
 #include "G4UserTrackingAction.hh"
 
@@ -31,7 +31,7 @@
 
 namespace MACE::SimECAL::inline Action {
 
-class TrackingAction final : public Mustard::Env::Memory::PassiveSingleton<TrackingAction>,
+class TrackingAction final : public Mustard::Env::PassiveSingleton<TrackingAction>,
                              public G4UserTrackingAction {
 public:
     TrackingAction();

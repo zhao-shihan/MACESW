@@ -54,7 +54,7 @@ private:
 
 public:
     GenFitDAFFinder(double driftErrorRMS);
-    virtual ~GenFitDAFFinder() override = default;
+    virtual ~GenFitDAFFinder() = default;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit>

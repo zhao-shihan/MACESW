@@ -29,11 +29,11 @@
 namespace MACE::Detector::Description {
 
 class ECALShield final : public Mustard::Detector::Description::DescriptionBase<ECALShield> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     ECALShield();
-    ~ECALShield() override = default;
+    ~ECALShield() = default;
 
 public:
     // Geometry

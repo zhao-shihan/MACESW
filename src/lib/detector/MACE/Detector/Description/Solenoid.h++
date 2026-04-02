@@ -34,11 +34,11 @@ namespace MACE::Detector::Description {
 using namespace Mustard::VectorArithmeticOperator;
 
 class Solenoid final : public Mustard::Detector::Description::DescriptionBase<Solenoid> {
-    friend Mustard::Env::Memory::SingletonInstantiator;
+    friend Mustard::Env::SingletonFactory;
 
 private:
     Solenoid();
-    ~Solenoid() override = default;
+    ~Solenoid() = default;
 
 public:
     // Geometry
