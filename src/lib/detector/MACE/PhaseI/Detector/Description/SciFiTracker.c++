@@ -109,7 +109,7 @@ SciFiTracker::SciFiTracker() : // clang-format off
                            0.129670093, 0.120230653, 0.108280609, 0.091831406, 0.098424138, 0.083937488, 0.073056832, 0.060399447, 0.047887957,
                            0.034501313}, // S13360
     // reconstruction
-    fEnergyDepositionThreshold{0.01},
+    fEnergyDepositionThreshold{0.0001},
     fClusterLength{3},
     fThresholdTime{10},
     fTimeWindow{10},

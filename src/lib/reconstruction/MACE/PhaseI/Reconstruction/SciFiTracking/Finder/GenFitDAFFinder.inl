@@ -18,27 +18,21 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
     auto clusterLists{this->ClusterHits(hitData)};
     auto hitLists{this->FindCompatibleClusterCombinations(this->DivideHits(clusterLists))};
 
-    // Step 1: 初始无方向修正计算（与原来完全一致）
+    // Initial coordinates without direction correction.
     auto coordinateMap{this->CalCoordinates(hitLists, muc::array3d{})};
     auto dividedPointMap{this->DividePoints(coordinateMap)};
 
-    // 保存初始分组，用于严格 per-track 处理（避免重分组后丢失对应关系）
+    // Keep the initial groups and update each group independently in iterations.
     auto initialDivided = dividedPointMap;
 
     for (const auto& initialCluster : initialDivided) {
-        // 对当前这条径迹独立进行击中点迭代（使用它自己的 initialResult 方向）
         auto initialResult = this->EstimateInitialDirection(initialCluster);
         muc::array3d prev_dir = std::get<0>(initialResult);
 
         constexpr int nIter = 10;
         for (int iter = 0; iter < nIter; ++iter) {
-            // 用这条径迹自己的方向重新计算整个事件的击中点坐标
             coordinateMap = this->CalCoordinates(hitLists, prev_dir);
-
-            // 重新分组（全局重分组，但我们只关心当前这条径迹的更新版本）
             dividedPointMap = this->DividePoints(coordinateMap);
-
-            // 用质心距离匹配找到更新后与 originalCluster 对应的 group
             muc::array3d initialCentroid = std::get<1>(initialResult);
 
             auto bestIt = std::ranges::min_element(dividedPointMap,
@@ -49,12 +43,11 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
                                                    });
 
             if (bestIt != dividedPointMap.end()) {
-                initialResult = this->EstimateInitialDirection(*bestIt); // 更新用于下一次迭代
+                initialResult = this->EstimateInitialDirection(*bestIt);
                 prev_dir = std::get<0>(initialResult);
             }
         }
 
-        // 迭代完成后，用最终更新后的 initialResult 做拟合（结构与原来完全一致）
         auto result{this->TrackFit(initialResult)};
 
         std::vector<AHitPointer> resultData;
@@ -142,24 +135,33 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
     std::set<std::vector<std::vector<AHitPointer>>> result;
 
-    auto AreAdjacent = [&fiberMap](const std::vector<int>& targetIDs) -> bool {
-        if (targetIDs.size() < 2) {
+    auto layerGroupOf = [&fiberMap](int fiberID) -> int {
+        return static_cast<int>(fiberMap[fiberID].layerID / 2);
+    };
+
+    auto areAdjacentPair = [&layerGroupOf](int lhsID, int rhsID) -> bool {
+        return std::abs(layerGroupOf(lhsID) - layerGroupOf(rhsID)) <= 1;
+    };
+
+    auto areCompatibleTriple = [&layerGroupOf](int lID, int rID, int aID) -> bool {
+        const int gL = layerGroupOf(lID);
+        const int gR = layerGroupOf(rID);
+        const int gA = layerGroupOf(aID);
+
+        // Standard ALR uses adjacent groups with A between L and R.
+        // For ALAR with missing middle A response, allow one skipped A group:
+        // |L-R| = 2 and keep A attached to L (same local ALAR unit).
+        const int lrGap = std::abs(gL - gR);
+        if (lrGap > 2) {
             return false;
         }
-
-        std::vector<size_t> indices;
-        indices.reserve(targetIDs.size());
-        for (int id : targetIDs) {
-            indices.push_back(fiberMap[id].layerID / 2);
+        if (std::abs(gA - gL) > 1) {
+            return false;
         }
-        std::sort(indices.begin(), indices.end());
-        bool is_consecutive{
-            std::adjacent_find(
-                indices.begin(),
-                indices.end(),
-                [](size_t a, size_t b) { return std::fabs(b - a) > 1; }) == indices.end()};
-
-        return is_consecutive;
+        if (lrGap == 2 && ((gL < gR && gA > gR) || (gL > gR && gA < gR))) {
+            return false;
+        }
+        return true;
     };
 
     auto calculateAvgAngle{[&fiberMap](const std::vector<AHitPointer>& cluster) -> double {
@@ -186,64 +188,120 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         return sum / cluster.size();
     }};
 
+    auto normalizeAngle = [](double angle) -> double {
+        angle = std::fmod(angle, 2 * std::numbers::pi);
+        if (angle < 0) {
+            angle += 2 * std::numbers::pi;
+        }
+        return angle;
+    };
+
+    auto angularDist = [](double a, double b) -> double {
+        double delta = std::fmod(std::fabs(a - b), 2 * std::numbers::pi);
+        return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
+    };
+
     auto [lCluster, rCluster, aCluster] = hitData;
-    for (auto&& lHits : lCluster) {
-        auto lAvgAngle = calculateAvgAngle(lHits);
-        auto lAvgTime = calculateAvgTime(lHits);
 
-        for (auto&& rHits : rCluster) {
-            auto rAvgAngle = calculateAvgAngle(rHits);
-            auto rAvgTime = calculateAvgTime(rHits);
+    struct TripleCandidate {
+        size_t lIndex;
+        size_t rIndex;
+        size_t aIndex;
+        double timeResidual;
+        double angleResidual;
+    };
 
-            for (auto&& aHits : aCluster) {
-                auto aAvgAngle = calculateAvgAngle(aHits);
-                auto aAvgTime = calculateAvgTime(aHits);
+    std::vector<double> lAvgAngle(lCluster.size()), lAvgTime(lCluster.size());
+    std::vector<double> rAvgAngle(rCluster.size()), rAvgTime(rCluster.size());
+    std::vector<double> aAvgAngle(aCluster.size()), aAvgTime(aCluster.size());
+    std::vector<int> lFrontID(lCluster.size()), rFrontID(rCluster.size()), aFrontID(aCluster.size());
 
-                double angleCondition1 = std::fmod(lAvgAngle + rAvgAngle, 4 * std::numbers::pi) / 2;
-                double angleCondition2 = (angleCondition1 > std::numbers::pi) ?
-                                             angleCondition1 - std::numbers::pi :
-                                             std::fmod(angleCondition1 + std::numbers::pi, 2 * std::numbers::pi);
+    for (size_t i{}; i < lCluster.size(); ++i) {
+        lAvgAngle[i] = calculateAvgAngle(lCluster[i]);
+        lAvgTime[i] = calculateAvgTime(lCluster[i]);
+        lFrontID[i] = Get<"FiberID">(*lCluster[i].front());
+    }
+    for (size_t i{}; i < rCluster.size(); ++i) {
+        rAvgAngle[i] = calculateAvgAngle(rCluster[i]);
+        rAvgTime[i] = calculateAvgTime(rCluster[i]);
+        rFrontID[i] = Get<"FiberID">(*rCluster[i].front());
+    }
+    for (size_t i{}; i < aCluster.size(); ++i) {
+        aAvgAngle[i] = calculateAvgAngle(aCluster[i]);
+        aAvgTime[i] = calculateAvgTime(aCluster[i]);
+        aFrontID[i] = Get<"FiberID">(*aCluster[i].front());
+    }
 
-                if (std::abs(lAvgTime - aAvgTime) < sciFiTracker.ThresholdTime() and
-                    std::abs(rAvgTime - aAvgTime) < sciFiTracker.ThresholdTime() and
-                    AreAdjacent({Get<"FiberID">(*lHits.front()), Get<"FiberID">(*rHits.front()), Get<"FiberID">(*aHits.front())}) and
-                    (std::abs(angleCondition1 - aAvgAngle) <= 0.05 * std::numbers::pi or
-                     std::abs(angleCondition2 - aAvgAngle) <= 0.05 * std::numbers::pi)) {
-                    result.insert({lHits, rHits, aHits});
+    std::vector<TripleCandidate> tripleCandidates;
+    for (size_t li{}; li < lCluster.size(); ++li) {
+        for (size_t ri{}; ri < rCluster.size(); ++ri) {
+            double S = lAvgAngle[li] + rAvgAngle[ri];
+            double angleCondition1 = normalizeAngle(std::fmod(S, 4 * std::numbers::pi) / 2);
+            double angleCondition2 = normalizeAngle(std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2);
+
+            for (size_t ai{}; ai < aCluster.size(); ++ai) {
+                if (std::abs(lAvgTime[li] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() ||
+                    std::abs(rAvgTime[ri] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() ||
+                    !areCompatibleTriple(lFrontID[li], rFrontID[ri], aFrontID[ai])) {
+                    continue;
                 }
+
+                const auto angleResidual = std::min(angularDist(angleCondition1, aAvgAngle[ai]), angularDist(angleCondition2, aAvgAngle[ai]));
+                if (angleResidual > 0.05 * std::numbers::pi) {
+                    continue;
+                }
+
+                const auto timeResidual = std::abs(lAvgTime[li] - aAvgTime[ai]) + std::abs(rAvgTime[ri] - aAvgTime[ai]);
+                tripleCandidates.push_back({li, ri, ai, timeResidual, angleResidual});
             }
         }
     }
 
-    for (auto&& lHits : lCluster) {
-        for (auto&& aHits : aCluster) {
-            auto lAvgTime = calculateAvgTime(lHits);
-            auto aAvgTime = calculateAvgTime(aHits);
-            if (std::abs(lAvgTime - aAvgTime) < sciFiTracker.ThresholdTime() and
-                AreAdjacent({Get<"FiberID">(*lHits.front()), Get<"FiberID">(*aHits.front())})) {
-                result.insert({lHits, aHits});
+    std::ranges::sort(tripleCandidates,
+                      [](const TripleCandidate& lhs, const TripleCandidate& rhs) {
+                          if (std::abs(lhs.timeResidual - rhs.timeResidual) > 1e-9) {
+                              return lhs.timeResidual < rhs.timeResidual;
+                          }
+                          return lhs.angleResidual < rhs.angleResidual;
+                      });
+
+    std::vector<bool> lUsed(lCluster.size(), false);
+    std::vector<bool> rUsed(rCluster.size(), false);
+    std::vector<bool> aUsed(aCluster.size(), false);
+
+    for (const auto& candidate : tripleCandidates) {
+        if (lUsed[candidate.lIndex] || rUsed[candidate.rIndex] || aUsed[candidate.aIndex]) {
+            continue;
+        }
+        result.insert({lCluster[candidate.lIndex], rCluster[candidate.rIndex], aCluster[candidate.aIndex]});
+        lUsed[candidate.lIndex] = true;
+        rUsed[candidate.rIndex] = true;
+        aUsed[candidate.aIndex] = true;
+    }
+
+    for (size_t li{}; li < lCluster.size(); ++li) {
+        for (size_t ai{}; ai < aCluster.size(); ++ai) {
+            if (std::abs(lAvgTime[li] - aAvgTime[ai]) < sciFiTracker.ThresholdTime() and
+                areAdjacentPair(lFrontID[li], aFrontID[ai])) {
+                result.insert({lCluster[li], aCluster[ai]});
             }
         }
     }
 
-    for (auto&& rHits : rCluster) {
-        for (auto&& aHits : aCluster) {
-            auto rAvgTime = calculateAvgTime(rHits);
-            auto aAvgTime = calculateAvgTime(aHits);
-            if (std::abs(rAvgTime - aAvgTime) < sciFiTracker.ThresholdTime() and
-                AreAdjacent({Get<"FiberID">(*rHits.front()), Get<"FiberID">(*aHits.front())})) {
-                result.insert({rHits, aHits});
+    for (size_t ri{}; ri < rCluster.size(); ++ri) {
+        for (size_t ai{}; ai < aCluster.size(); ++ai) {
+            if (std::abs(rAvgTime[ri] - aAvgTime[ai]) < sciFiTracker.ThresholdTime() and
+                areAdjacentPair(rFrontID[ri], aFrontID[ai])) {
+                result.insert({rCluster[ri], aCluster[ai]});
             }
         }
     }
 
-    for (auto&& lHits : lCluster) {
-        for (auto&& rHits : rCluster) {
-            auto lAvgTime = calculateAvgTime(lHits);
-            auto rAvgTime = calculateAvgTime(rHits);
-            if (std::abs(lAvgTime - rAvgTime) < sciFiTracker.ThresholdTime() and
-                AreAdjacent({Get<"FiberID">(*lHits.front()), Get<"FiberID">(*rHits.front())})) {
-                result.insert({lHits, rHits});
+    for (size_t li{}; li < lCluster.size(); ++li) {
+        for (size_t ri{}; ri < rCluster.size(); ++ri) {
+            if (std::abs(lAvgTime[li] - rAvgTime[ri]) < sciFiTracker.ThresholdTime() and
+                areAdjacentPair(lFrontID[li], rFrontID[ri])) {
+                result.insert({lCluster[li], rCluster[ri]});
             }
         }
     }
@@ -262,17 +320,22 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
     std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> coordinateMap;
 
-    auto calculateLeftZ = [](double lAngle, double aAngle, double fiberLength) -> double {
-        return (aAngle > lAngle) ?
-                   (fiberLength / 2) - (lAngle + 2 * std::numbers::pi - aAngle) / (2 * std::numbers::pi) * fiberLength :
-                   (fiberLength / 2) - (lAngle - aAngle) / (2 * std::numbers::pi) * fiberLength;
+    auto wrapTo2Pi = [](double angle) -> double {
+        angle = std::fmod(angle, 2 * std::numbers::pi);
+        if (angle < 0)
+            angle += 2 * std::numbers::pi;
+        return angle;
     };
 
-    auto calculateRightZ = [](double rAngle, double aAngle, double fiberLength) -> double {
-        rAngle -= std::numbers::pi;
-        return (aAngle > rAngle + std::numbers::pi) ?
-                   -(fiberLength / 2) + std::fmod(rAngle + 3 * std::numbers::pi - aAngle, 2 * std::numbers::pi) / (2 * std::numbers::pi) * fiberLength :
-                   -(fiberLength / 2) + std::fmod(rAngle + std::numbers::pi - aAngle, 2 * std::numbers::pi) / (2 * std::numbers::pi) * fiberLength;
+    auto calculateLeftZ = [&wrapTo2Pi](double lAngle, double phi, double fiberLength) -> double {
+        double delta = wrapTo2Pi(lAngle - phi);
+        return (fiberLength / 2) - (delta / (2 * std::numbers::pi)) * fiberLength;
+    };
+
+    auto calculateRightZ = [&wrapTo2Pi](double rAngle, double phi, double fiberLength) -> double {
+        double delta = wrapTo2Pi(rAngle - phi);
+
+        return -(fiberLength / 2) + (delta / (2 * std::numbers::pi)) * fiberLength;
     };
 
     auto calculateCoordinates = [&](double lAngle, double rAngle, double aAngle,
@@ -284,35 +347,44 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
             double x0 = rLLayer;
             double rDir = direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle);
             double phiDir = -direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle);
-            double theta = (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ? (rLLayer - rALayer) / rDir * phiDir / rLLayer : 0;
 
-            aAngle += theta;
-            double x1 = x0 * std::cos(aAngle);
-            double y1 = x0 * std::sin(aAngle);
-            double z1 = calculateLeftZ(lAngle, aAngle, sciFiTracker.FiberLength());
+            double thetaL = (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ?
+                                (rLLayer - rALayer) / rDir * phiDir / rLLayer :
+                                0.0;
+            double phiL = aAngle + thetaL;
+            double x1{x0 * std::cos(phiL)};
+            double y1{x0 * std::sin(phiL)};
+            double z1{calculateLeftZ(lAngle, phiL, sciFiTracker.FiberLength())};
 
             x0 = rRLayer;
-            aAngle -= theta;
-            theta = (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ? (rRLayer - rALayer) / rDir * phiDir / rRLayer : 0;
-            aAngle += theta;
+            double thetaR = (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ?
+                                (rRLayer - rALayer) / rDir * phiDir / rRLayer :
+                                0.0;
+            double phiR = aAngle + thetaR;
+            double x2{x0 * std::cos(phiR)};
+            double y2{x0 * std::sin(phiR)};
+            double z2{calculateRightZ(rAngle, phiR, sciFiTracker.FiberLength())};
 
-            double x2 = x0 * std::cos(aAngle);
-            double y2 = x0 * std::sin(aAngle);
-            double z2 = calculateRightZ(rAngle, aAngle, sciFiTracker.FiberLength());
+            double S = lAngle + rAngle;
+            double trueTID1 = std::fmod(S, 4 * std::numbers::pi) / 2;
+            double trueTID2 = std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2;
 
-            double trueTID = [&]() {
-                double trueTID1 = std::fmod(lAngle + rAngle - std::numbers::pi, 4 * std::numbers::pi) / 2;
-                double trueTID2 = std::fmod(lAngle + rAngle + std::numbers::pi, 4 * std::numbers::pi) / 2;
+            if (trueTID1 < 0)
+                trueTID1 += 2 * std::numbers::pi;
+            if (trueTID2 < 0)
+                trueTID2 += 2 * std::numbers::pi;
 
-                if (trueTID1 < 0)
-                    trueTID1 += 2 * std::numbers::pi;
+            auto angularDist = [](double a, double b) {
+                double delta = std::fmod(std::fabs(a - b), 2 * std::numbers::pi);
+                return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
+            };
 
-                return (std::fabs(trueTID2 - aAngle) < std::fabs(trueTID1 - aAngle)) ? trueTID2 : trueTID1;
-            }();
+            double trueTID = (angularDist(trueTID2, aAngle) < angularDist(trueTID1, aAngle)) ? trueTID2 : trueTID1;
+
             x0 = (rLLayer + rRLayer) / 2;
-            double x3 = x0 * std::cos(trueTID);
-            double y3 = x0 * std::sin(trueTID);
-            double z3 = calculateLeftZ(lAngle, trueTID, sciFiTracker.FiberLength());
+            double x3{x0 * std::cos(trueTID)};
+            double y3{x0 * std::sin(trueTID)};
+            double z3{calculateLeftZ(lAngle, trueTID, sciFiTracker.FiberLength())};
 
             coords = {
                 {x1, y1, z1},
@@ -349,8 +421,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
             };
         } else if (aAngle == -1) {
             double x0 = (rLLayer + rRLayer) / 2;
-            double trueTID1 = std::fmod(lAngle + rAngle - std::numbers::pi, 4 * std::numbers::pi) / 2;
-            double trueTID2 = std::fmod(lAngle + rAngle + std::numbers::pi, 4 * std::numbers::pi) / 2;
+            double S = lAngle + rAngle;
+            double trueTID1 = std::fmod(S, 4 * std::numbers::pi) / 2;
+            double trueTID2 = std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2;
 
             // first point
             double x1 = x0 * std::cos(trueTID1);
@@ -420,45 +493,86 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
     -> const std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
 
-    std::vector<std::vector<std::pair<muc::array3d, std::vector<std::vector<AHitPointer>>>>> tempDivData;
+    using Entry = std::pair<muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
-    for (auto&& [x1, clusters] : hitData) {
-        auto pairCluster = std::ranges::find_if(
-            tempDivData.begin(),
-            tempDivData.end(),
-            [&](const auto& group) {
-                return std::ranges::any_of(
-                    group.begin(),
-                    group.end(),
-                    [&](const auto& element) {
-                        const auto& [x2, cluster2] = element;
-                        double theta1 = std::atan2(x1[1], x1[0]);
-                        double theta2 = std::atan2(x2[1], x2[0]);
-                        double deltaTheta = std::fabs(theta1 - theta2);
+    auto isConnected = [&](const muc::array3d& x1, const muc::array3d& x2) -> bool {
+        double theta1 = std::atan2(x1[1], x1[0]);
+        double theta2 = std::atan2(x2[1], x2[0]);
+        double deltaTheta = std::fabs(theta1 - theta2);
+        if (deltaTheta > std::numbers::pi) {
+            deltaTheta = 2 * std::numbers::pi - deltaTheta;
+        }
+        return std::fabs(x1[2] - x2[2]) < sciFiTracker.CentroidZThreshold() &&
+               deltaTheta < sciFiTracker.CentroidThetaThreshold();
+    };
 
-                        if (deltaTheta > std::numbers::pi) {
-                            deltaTheta = 2 * std::numbers::pi - deltaTheta;
-                        }
+    std::vector<Entry> entries;
+    entries.reserve(hitData.size());
+    for (const auto& p : hitData) {
+        entries.push_back(p);
+    }
+    const size_t n = entries.size();
 
-                        return std::fabs(x1[2] - x2[2]) < sciFiTracker.CentroidZThreshold() &&
-                               deltaTheta < sciFiTracker.CentroidThetaThreshold();
-                    });
-            });
+    if (n == 0)
+        return {};
 
-        if (pairCluster != tempDivData.end()) {
-            pairCluster->emplace_back(x1, clusters);
-        } else {
-            tempDivData.emplace_back().emplace_back(x1, clusters);
+    struct UnionFind {
+        std::vector<int> parent, rank;
+        UnionFind(size_t sz) :
+            parent(sz),
+            rank(sz, 0) {
+            std::iota(parent.begin(), parent.end(), 0);
+        }
+        int find(int x) {
+            if (parent[x] != x)
+                parent[x] = find(parent[x]);
+            return parent[x];
+        }
+        void unite(int x, int y) {
+            int px = find(x), py = find(y);
+            if (px == py)
+                return;
+            if (rank[px] < rank[py])
+                std::swap(px, py);
+            parent[py] = px;
+            if (rank[px] == rank[py])
+                ++rank[px];
+        }
+    } uf(n);
+
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = i + 1; j < n; ++j) {
+            if (isConnected(entries[i].first, entries[j].first)) {
+                uf.unite(static_cast<int>(i), static_cast<int>(j));
+            }
         }
     }
 
+    std::map<int, std::vector<size_t>> components;
+    for (size_t i = 0; i < n; ++i) {
+        components[uf.find(static_cast<int>(i))].push_back(i);
+    }
+
     std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData;
-    for (const auto& group : tempDivData) {
-        std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> groupMap;
-        for (const auto& [coord, clusters] : group) {
-            groupMap[coord] = clusters;
+    for (auto& component : components) {
+        auto& idxList = component.second;
+        bool hasAnySize3 = false;
+
+        for (size_t idx : idxList) {
+            const auto& clusters = entries[idx].second;
+
+            if (clusters.size() == 3) {
+                hasAnySize3 = true;
+            }
         }
-        divData.push_back(std::move(groupMap));
+        if (hasAnySize3) {
+            std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> groupMap;
+            for (size_t idx : idxList) {
+                auto& [coord, clusters] = entries[idx];
+                groupMap[coord] = std::move(clusters);
+            }
+            divData.push_back(std::move(groupMap));
+        }
     }
 
     return divData;
@@ -519,7 +633,6 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
     if (direction[0] * centroid.x() + direction[1] * centroid.y() + direction[2] * centroid.z() < 0) {
         direction *= -1;
     }
-    // std::cout << "DirectionFit: direction = (" << direction[0] << ", " << direction[1] << ", " << direction[2] << "), centroid = (" << centroid[0] << ", " << centroid[1] << ", " << centroid[2] << "), nhit = " << fiberLists.size() << std::endl;
     return std::tuple(muc::array3d{direction.x(), direction.y(), direction.z()}, muc::array3d{centroid.x(), centroid.y(), centroid.z()}, fiberLists);
 }
 
@@ -591,7 +704,6 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindLLMinDistanceSquare(
     }
     double min_dis = ((vector1[0] * cross[0] + vector1[1] * cross[1] + vector1[2] * cross[2]) / std::hypot(cross[0], cross[1], cross[2])) *
                      ((vector1[0] * cross[0] + vector1[1] * cross[1] + vector1[2] * cross[2]) / std::hypot(cross[0], cross[1], cross[2]));
-    // std::cout << min_dis << std::endl;
     return min_dis;
 }
 

@@ -15,19 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-file(GLOB_RECURSE MACESW_RECONSTRUCTION_SRC 
-${CMAKE_CURRENT_SOURCE_DIR}/MACE/*.c++
-${CMAKE_CURRENT_SOURCE_DIR}/MACE/PhaseI/reconstruction/GenFitExtension/*.c++   
-)
-
-SET(MEASUREMENTS_DICTIONARY_SOURCES
-${CMAKE_CURRENT_SOURCE_DIR}/MACE/PhaseI/reconstruction/GenFitExtension/HelixMeasurement.h++
-)
-ROOT_GENERATE_DICTIONARY(
-	ExtensionmeasurementsRootDict
-	${MEASUREMENTS_DICTIONARY_SOURCES}
-	LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/MACE/PhaseI/reconstruction/GenFitExtension/measurementsLinkDef.h)
-SET(library_sources ${CMAKE_CURRENT_BINARY_DIR}/ExtensionmeasurementsRootDict.cxx ${library_sources})
+file(GLOB_RECURSE MACESW_RECONSTRUCTION_SRC ${CMAKE_CURRENT_SOURCE_DIR}/MACE/*.c++)
 
 add_library(MACEReconstruction STATIC ${MACESW_RECONSTRUCTION_SRC})
 target_include_directories(MACEReconstruction PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${GENFIT_INCLUDE_DIRS})
