@@ -19,6 +19,12 @@ auto Target::Construct(G4bool checkOverlaps) -> void {
     const auto& target{Description::Target::Instance()};
     const auto semiMajorAxis{target.ProjectionRadius() / std::cos(target.InclinationAngle())};
 
+    const auto mylar{G4NistManager::Instance()->FindOrBuildMaterial("G4_MYLAR")};
+    const auto mpt{new G4MaterialPropertiesTable};
+    mpt->AddConstProperty("MUONIUM_MFP", target.MeanFreePath(), true);
+    mpt->AddConstProperty("MUONIUM_FORM_PROB", target.FormationProbability(), true);
+    mylar->SetMaterialPropertiesTable(mpt);
+
     const auto solid{Make<G4EllipticalTube>(
         target.Name(),
         target.ProjectionRadius(),
@@ -26,7 +32,7 @@ auto Target::Construct(G4bool checkOverlaps) -> void {
         target.Thickness() / 2)};
     const auto logic{Make<G4LogicalVolume>(
         solid,
-        G4NistManager::Instance()->FindOrBuildMaterial("G4_MYLAR"),
+        mylar,
         target.Name())};
     Make<G4PVPlacement>(
         G4RotateX3D{target.InclinationAngle()},
