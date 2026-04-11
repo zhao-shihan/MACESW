@@ -67,9 +67,6 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
     window->AddElement(oxygenElement, ttc.WindowOxygenElement());
 
     // Construct Detector
-    int tileID{};
-    const auto nCircle{ssize(ttc.NAlongPhi())};
-
     // set up the PCB
     const auto ttcPCBSolid{Make<G4Box>(
         "TTCPCBSolid",
@@ -121,19 +118,21 @@ auto TTC::Construct(G4bool checkOverlaps) -> void {
         ttcVirtualBoxSolid,
         ttcVirtualBoxMaterial,
         "TTCVirtualBox")};
-    for (int i{}; i < nCircle; ++i) {
-        auto deltaPhi{2 * pi / ttc.NAlongPhi()[i]};
-        // set the position of air mother box
-        const auto transform{G4Translate3D{G4ThreeVector(ttc.Radius()[i], 0, ttc.ZPosition()[i])} *
-                             G4RotateZ3D{ttc.SlantAngle()}};
-        for (int j{}; j < ttc.NAlongPhi()[i]; ++j, ++tileID) {
+    int tileID{};
+    for (int i{}; i < ttc.NCircle(); ++i) {
+        auto deltaPhi{2 * pi / ttc.NAlongPhi()};
+        // place air mother box
+        for (int j{}; j < ttc.NAlongPhi(); ++j) {
+            const auto z{ttc.TilePosition(tileID).z()};
             Make<G4PVPlacement>(
-                G4RotateZ3D{j * deltaPhi} * transform,
+                G4RotateZ3D{j * deltaPhi} *
+                    G4Translate3D{ttc.Radius(), 0, z} *
+                    G4RotateZ3D{ttc.SlantAngle()},
                 ttcVirtualBoxLogic,
                 "TTCVirtualBoxPhysics",
                 Mother().LogicalVolume(),
                 false,
-                tileID,
+                tileID++,
                 checkOverlaps);
         }
     }

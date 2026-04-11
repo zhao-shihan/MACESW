@@ -24,8 +24,8 @@
 #include "MACE/PhaseI/Simulation/Hit/SciFiSimHit.h++"
 #include "MACE/Simulation/Hit/ECALHit.h++"
 #include "MACE/Simulation/Hit/ECALPMHit.h++"
+#include "MACE/Simulation/Hit/PhotosensorHit.h++"
 #include "MACE/Simulation/Hit/TTCHit.h++"
-#include "MACE/Simulation/Hit/TTCSiPMHit.h++"
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
@@ -98,10 +98,10 @@ auto Analysis::EventEndUserAction() -> void {
         if (fSciFiSiPMHit) {
             fSciFiSiPMHitOutput->Fill(*fSciFiSiPMHit);
         }
-        if (fTTCSimHitOutput) {
+        if (fTTCHit) {
             fTTCSimHitOutput->Fill(*fTTCHit);
         }
-        if (fTTCSiPMHitOutput) {
+        if (fTTCSiPMHit) {
             fTTCSiPMHitOutput->Fill(*fTTCSiPMHit);
         }
     }

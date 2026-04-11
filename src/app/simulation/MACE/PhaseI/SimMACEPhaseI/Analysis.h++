@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "MACE/Data/PhotosensorDataModel.h++"
 #include "MACE/Data/SensorHit.h++"
 #include "MACE/Data/SimHit.h++"
 #include "MACE/Data/SimVertex.h++"
@@ -52,7 +53,7 @@ namespace MACE::inline Simulation::inline Hit {
 class ECALHit;
 class ECALPMHit;
 class TTCHit;
-class TTCSiPMHit;
+class PhotosensorHit;
 } // namespace MACE::inline Simulation::inline Hit
 
 namespace MACE::PhaseI::SimMACEPhaseI {
@@ -70,7 +71,7 @@ public:
     auto SubmitSciFiHC(const std::vector<gsl::owner<SciFiSimHit*>>& hc) -> void { fSciFiSimHit = &hc; }
     auto SubmitSciFiSiPMHC(const std::vector<gsl::owner<SciFiSiPMHit*>>& hc) -> void { fSciFiSiPMHit = &hc; }
     auto SubmitTTCHC(const std::vector<gsl::owner<TTCHit*>>& hc) -> void { fTTCHit = &hc; }
-    auto SubmitTTCSiPMHC(const std::vector<gsl::owner<TTCSiPMHit*>>& hc) -> void { fTTCSiPMHit = &hc; }
+    auto SubmitTTCSiPMHC(const std::vector<gsl::owner<PhotosensorHit*>>& hc) -> void { fTTCSiPMHit = &hc; }
     auto RunBeginUserAction(int runID) -> void override;
     auto EventEndUserAction() -> void override;
     auto RunEndUserAction(int) -> void override;
@@ -85,7 +86,7 @@ private:
     std::optional<Mustard::Data::Output<MACE::PhaseI::Data::SciFiSimHit>> fSciFiSimHitOutput;
     std::optional<Mustard::Data::Output<MACE::PhaseI::Data::SciFiSiPMHit>> fSciFiSiPMHitOutput;
     std::optional<Mustard::Data::Output<MACE::Data::TTCSimHit>> fTTCSimHitOutput;
-    std::optional<Mustard::Data::Output<MACE::Data::TTCSiPMHit>> fTTCSiPMHitOutput;
+    std::optional<Mustard::Data::Output<MACE::Data::SimPhotosensorHitModel>> fTTCSiPMHitOutput;
 
     const muc::unique_ptrvec<Mustard::Data::Tuple<MACE::Data::SimPrimaryVertex>>* fPrimaryVertex;
     const muc::unique_ptrvec<Mustard::Data::Tuple<MACE::Data::SimDecayVertex>>* fDecayVertex;
@@ -94,7 +95,7 @@ private:
     const std::vector<gsl::owner<SciFiSimHit*>>* fSciFiSimHit;
     const std::vector<gsl::owner<SciFiSiPMHit*>>* fSciFiSiPMHit;
     const std::vector<gsl::owner<TTCHit*>>* fTTCHit;
-    const std::vector<gsl::owner<TTCSiPMHit*>>* fTTCSiPMHit;
+    const std::vector<gsl::owner<PhotosensorHit*>>* fTTCSiPMHit;
 
     AnalysisMessenger::Register<Analysis> fMessengerRegister;
 };

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "Mustard/Detector/Description/DescriptionWithCacheBase.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
 
 #include "muc/array"
 
@@ -41,11 +42,12 @@ public:
     auto Length() const -> auto { return *fLength; }
     auto Width() const -> auto { return *fWidth; }
     auto Thickness() const -> auto { return *fThickness; }
-    auto Radius() const -> const auto& { return *fRadius; }
+    auto Radius() const -> auto { return *fRadius; }
     auto SlantAngle() const -> auto { return *fSlantAngle; }
-    auto NAlongPhi() const -> const auto& { return *fNAlongPhi; }
-    auto ZPosition() const -> auto { return *fZPosition; }
-    auto BarrelLength() const -> auto { return *fBarrelLength; }
+    auto NAlongPhi() const -> auto { return *fNAlongPhi; }
+    auto NCircle() const -> auto { return *fNCircle; }
+    auto NTile() const -> auto { return fNAlongPhi * fNCircle; }
+    auto CircleSpacing() const -> auto { return *fCircleSpacing; }
     auto PCBLength() const -> auto { return *fPCBLength; }
     auto PCBWidth() const -> auto { return *fPCBWidth; }
     auto PCBThickness() const -> auto { return *fPCBThickness; }
@@ -63,11 +65,11 @@ public:
     auto Length(double val) -> void { fLength = val; }
     auto Width(double val) -> void { fWidth = val; }
     auto Thickness(double val) -> void { fThickness = val; }
-    auto Radius(std::vector<double> val) -> void { fRadius = std::move(val); }
+    auto Radius(double val) -> void { fRadius = val; }
     auto SlantAngle(double val) -> void { fSlantAngle = val; }
-    auto NAlongPhi(std::vector<int> val) -> void { fNAlongPhi = std::move(val); }
-    auto ZPosition(std::vector<double> val) -> void { fZPosition = std::move(val); }
-    auto BarrelLength(int val) -> void { fBarrelLength = val; }
+    auto NAlongPhi(int val) -> void { fNAlongPhi = val; }
+    auto NCircle(int val) -> void { fNCircle = val; }
+    auto CircleSpacing(double val) -> void { fCircleSpacing = val; }
     auto PCBLength(double val) -> void { fPCBLength = val; }
     auto PCBWidth(double val) -> void { fPCBWidth = val; }
     auto PCBThickness(double val) -> void { fPCBThickness = val; }
@@ -81,6 +83,9 @@ public:
     auto SiliconeWidth(double val) -> void { fSiliconeWidth = val; }
     auto SiliconeThickness(double val) -> void { fSiliconeThickness = val; }
     auto NSiPM(int val) -> void { fNSiPM = val; }
+
+    auto TilePosition(int detID) const -> Mustard::Point3D;
+    auto TileNormal(int detID) const -> Mustard::Point3D;
 
     // Material
 
@@ -156,11 +161,12 @@ private:
     Simple<double> fLength;
     Simple<double> fWidth;
     Simple<double> fThickness;
-    Simple<std::vector<double>> fRadius;
+    Simple<double> fRadius;
     Simple<double> fSlantAngle;
-    Simple<std::vector<int>> fNAlongPhi;
-    Simple<std::vector<double>> fZPosition;
-    Simple<double> fBarrelLength;
+    Simple<int> fNAlongPhi;
+    Simple<int> fNCircle;
+    Cached<int> fNTile;
+    Simple<double> fCircleSpacing;
     Simple<double> fPCBLength;
     Simple<double> fPCBWidth;
     Simple<double> fPCBThickness;

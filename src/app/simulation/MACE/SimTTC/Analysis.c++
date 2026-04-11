@@ -20,8 +20,8 @@
 #include "MACE/SimTTC/Action/PrimaryGeneratorAction.h++"
 #include "MACE/SimTTC/Action/TrackingAction.h++"
 #include "MACE/SimTTC/Analysis.h++"
+#include "MACE/Simulation/Hit/PhotosensorHit.h++"
 #include "MACE/Simulation/Hit/TTCHit.h++"
-#include "MACE/Simulation/Hit/TTCSiPMHit.h++"
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"

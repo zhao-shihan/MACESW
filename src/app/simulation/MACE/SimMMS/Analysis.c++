@@ -21,8 +21,8 @@
 #include "MACE/SimMMS/Action/TrackingAction.h++"
 #include "MACE/SimMMS/Analysis.h++"
 #include "MACE/Simulation/Hit/CDCHit.h++"
+#include "MACE/Simulation/Hit/PhotosensorHit.h++"
 #include "MACE/Simulation/Hit/TTCHit.h++"
-#include "MACE/Simulation/Hit/TTCSiPMHit.h++"
 
 #include "Mustard/Env/MPIEnv.h++"
 #include "Mustard/Geant4X/Utility/ConvertGeometry.h++"
