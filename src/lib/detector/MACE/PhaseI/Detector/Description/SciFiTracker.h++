@@ -72,6 +72,7 @@ public:
     auto SiPMDeadTime() const -> auto { return fSiPMDeadTime; }
     auto CentroidThetaThreshold() const -> auto { return fCentroidThetaThreshold; }
     auto CentroidZThreshold() const -> auto { return fCentroidZThreshold; }
+    auto MinDirDotThreshold() const -> auto { return fMinDirDotThreshold; }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -107,6 +108,7 @@ public:
     auto SiPMDeadTime(double val) -> void { fSiPMDeadTime = val; }
     auto CentroidThetaThreshold(double val) -> void { fCentroidThetaThreshold = val; }
     auto CentroidZThreshold(double val) -> void { fCentroidZThreshold = val; }
+    auto MinDirDotThreshold(double val) -> void { fMinDirDotThreshold = val; }
 
 public:
     struct LayerConfiguration {
@@ -183,6 +185,7 @@ private:
     double fSiPMDeadTime;
     double fCentroidThetaThreshold;
     double fCentroidZThreshold;
+    double fMinDirDotThreshold;
 };
 
 } // namespace MACE::PhaseI::Detector::Description
