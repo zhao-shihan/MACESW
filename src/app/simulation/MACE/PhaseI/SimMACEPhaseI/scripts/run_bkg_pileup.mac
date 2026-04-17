@@ -33,5 +33,5 @@
 
 /MACE/Analysis/FilePath SimMACEPhaseI_bkg.root
 /MACE/Analysis/FileMode RECREATE
-/run/beamOn 10000
+/run/beamOn 100000000
 /Mustard/Run/PrintRunSummary

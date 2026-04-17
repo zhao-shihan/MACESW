@@ -105,7 +105,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     auto ttcData{
         ROOT::RDataFrame{"G4Run0/TTCSimHit", fileName}
     };
-    processor.Process<MACE::Data::ECALHit, PhaseI::Data::SciFiHit, MACE::Data::TTCHit>(
+    processor.Process<MACE::Data::ECALHit, PhaseI::Data::SciFiSimHit, MACE::Data::TTCHit>(
         {ecalData, sciFiData, ttcData}, int{}, "EvtID",
         [&](auto&& ecalEvent, auto&& sciFiEvent, auto&& ttcEvent) {
             muc::timsort(ecalEvent,
@@ -127,11 +127,15 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                 if (*Get<"Edep">(*hit) <= sciFiTracker.EnergyDepositionThreshold()) {
                     continue;
                 }
+                if (*Get<"EvtID">(*hit) > 1000) {
+                    continue;
+                }
                 auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
                 *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*hit);
                 *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*hit);
                 *Get<"Edep">(*sciFiHit) = *Get<"Edep">(*hit);
                 *Get<"t">(*sciFiHit) = *Get<"t">(*hit);
+                *Get<"TrkID">(*sciFiHit) = *Get<"TrkID">(*hit);
                 sciFiHitData.emplace_back(std::move(sciFiHit));
             }
 
@@ -142,8 +146,8 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                     if (track == nullptr) {
                         continue;
                     }
-                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
-                    //  std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
+                    std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
+                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
                     // std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
                     reconTrack.Fill(*track);
                 }

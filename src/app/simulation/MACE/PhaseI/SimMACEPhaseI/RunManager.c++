@@ -21,7 +21,7 @@
 #include "MACE/PhaseI/SimMACEPhaseI/Action/DetectorConstruction.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/Analysis.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/RunManager.h++"
-#include "MACE/Simulation/Physics/StandardPhysicsList.h++"
+#include "MACE/PhaseI/Simulation/Physics/PhysicsList.h++"
 
 #include "Mustard/Env/BasicEnv.h++"
 #include "Mustard/Utility/LiteralUnit.h++"

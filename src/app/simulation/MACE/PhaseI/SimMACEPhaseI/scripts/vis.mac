@@ -27,9 +27,12 @@
 /GPSX/NVertex             1
 /GPSX/PulseWidth          0 ns
 
-/Mustard/Physics/MuonDecay/RadiativeDecay/BR 0
-/Mustard/Physics/MuonDecay/NeutrinolessDoubleRadiativeDecay/BR 1
-/Mustard/Physics/MuonDecay/UpdateDecayBR
+/Mustard/Physics/MuonDecay/Biasing/EnergyCut 45 MeV
+/Mustard/Physics/MuonDecay/Biasing/MaxTheta 4 deg
+
+#/Mustard/Physics/MuonDecay/RadiativeDecay/BR 0
+#/Mustard/Physics/MuoniumDecay/AnnihilativeDecay/BR 1
+#/Mustard/Physics/MuonDecay/UpdateDecayBR
 
 /MACE/Analysis/CoincidenceWithECAL    no
 

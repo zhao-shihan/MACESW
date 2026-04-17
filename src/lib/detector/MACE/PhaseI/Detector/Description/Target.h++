@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Mustard/Detector/Description/DescriptionBase.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
 
 namespace MACE::PhaseI::Detector::Description {
 
@@ -23,6 +24,10 @@ public:
     auto InclinationAngle(double val) -> void { fInclinationAngle = val; }
     auto MeanFreePath(double val) -> void { fMeanFreePath = val; }
     auto FormationProbability(double val) -> void { fFormationProbability = val; }
+
+    auto VolumeContain(Mustard::Point3D x) const -> bool;
+    auto Contain(Mustard::Point3D x) const -> auto { return VolumeContain(x); }
+    auto Contain(Mustard::Point3D, bool insideVolume) const -> auto { return insideVolume; }
 
 private:
     auto ImportAllValue(const YAML::Node& node) -> void override;

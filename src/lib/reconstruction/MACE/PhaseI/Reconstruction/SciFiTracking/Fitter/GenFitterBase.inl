@@ -173,7 +173,14 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
     auto track{std::make_shared_for_overwrite<Mustard::Data::Tuple<ATrack>>()};
     Get<"EvtID">(*track) = Get<"EvtID">(*seed);
     Get<"x">(*track) = this->template FromTVector3<muc::array3d>(x0);
-    Get<"p">(*track) = this->template FromTVector3<muc::array3d>(p0);
+    auto p{this->template FromTVector3<muc::array3d>(p0)};
+    const auto& seedX{Get<"x">(*seed)};
+    if (p[0] * seedX[0] + p[1] * seedX[1] + p[2] * seedX[2] < 0) {
+        p[0] *= -1;
+        p[1] *= -1;
+        p[2] *= -1;
+    }
+    Get<"p">(*track) = p;
     Get<"t">(*track) = t0;
     Get<"chi2">(*track) = status.getChi2() / status.getNdf();
     if (fEnableEventDisplay) {
