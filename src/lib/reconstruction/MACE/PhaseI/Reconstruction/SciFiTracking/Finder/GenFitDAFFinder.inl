@@ -36,10 +36,10 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
     };
     std::vector<Candidate> candidates;
     for (const auto& initialCluster : initialDivided) {
-        auto initialResult = this->EstimateInitialDirection(initialCluster);
-        muc::array3d prev_dir = std::get<0>(initialResult);
+        auto initialResult{this->EstimateInitialDirection(initialCluster)};
+        muc::array3d prev_dir{std::get<0>(initialResult)};
 
-        constexpr int nIter = 10;
+        constexpr int nIter{10};
         double minDirDotThreshold{sciFiTracker.MinDirDotThreshold()};
         for (int iter = 0; iter < nIter; ++iter) {
             coordinateMap = this->CalCoordinates(hitLists, prev_dir);
@@ -108,7 +108,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
                           return lhs.signature.size() > rhs.signature.size();
                       });
 
-    auto overlapFraction = [](const std::vector<int>& lhs, const std::vector<int>& rhs) -> double {
+    auto overlapFraction{[](const std::vector<int>& lhs, const std::vector<int>& rhs) -> double {
         if (lhs.empty() || rhs.empty()) {
             return 0;
         }
@@ -126,9 +126,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
             }
         }
 
-        const auto denominator = std::min(lhs.size(), rhs.size());
+        const auto denominator{std::min(lhs.size(), rhs.size())};
         return static_cast<double>(intersection) / static_cast<double>(denominator);
-    };
+    }};
 
     std::vector<std::vector<int>> acceptedSignatures;
     for (auto& candidate : candidates) {
@@ -156,7 +156,7 @@ template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::ClusterHits(std::vector<AHitPointer>& hitData) -> const std::vector<std::vector<AHitPointer>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
 
     std::vector<std::vector<AHitPointer>> clusterList;
 
@@ -193,7 +193,7 @@ template<std::indirectly_readable AHitPointer>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
     -> const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
 
     std::vector<std::vector<AHitPointer>> lCluster;
     std::vector<std::vector<AHitPointer>> rCluster;
@@ -221,25 +221,25 @@ template<std::indirectly_readable AHitPointer>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
     -> const std::set<std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
     std::set<std::vector<std::vector<AHitPointer>>> result;
 
-    auto superLayer = [&fiberMap](int fiberID) -> int {
+    auto superLayer{[&fiberMap](int fiberID) -> int {
         return static_cast<int>(fiberMap[fiberID].layerID / 2);
-    };
+    }};
 
-    auto areAdjacentPair = [&superLayer](int lhsID, int rhsID) -> bool {
+    auto areAdjacentPair{[&superLayer](int lhsID, int rhsID) -> bool {
         return std::abs(superLayer(lhsID) - superLayer(rhsID)) <= 1;
-    };
+    }};
 
-    auto areCompatibleTriple = [&superLayer](int lID, int rID, int aID) -> bool {
-        const int gL = superLayer(lID);
-        const int gR = superLayer(rID);
-        const int gA = superLayer(aID);
+    auto areCompatibleTriple{[&superLayer](int lID, int rID, int aID) -> bool {
+        const int gL{superLayer(lID)};
+        const int gR{superLayer(rID)};
+        const int gA{superLayer(aID)};
 
-        const int minLR = std::min(gL, gR);
-        const int maxLR = std::max(gL, gR);
-        const int lrGap = maxLR - minLR;
+        const int minLR{std::min(gL, gR)};
+        const int maxLR{std::max(gL, gR)};
+        const int lrGap{maxLR - minLR};
 
         if (lrGap != 2) {
             return false;
@@ -250,9 +250,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         // 1) middle group (between L and R), or
         // 2) outer adjacent group (just outside L/R block).
 
-        const bool isMiddleA = (gA > minLR && gA < maxLR);
+        const bool isMiddleA{(gA > minLR && gA < maxLR)};
         return isMiddleA;
-    };
+    }};
 
     auto calculateAvgAngle{[&fiberMap](const std::vector<AHitPointer>& cluster) -> double {
         if (cluster.empty())
@@ -278,18 +278,19 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         return sum / cluster.size();
     }};
 
-    auto normalizeAngle = [](double angle) -> double {
+    auto normalizeAngle{[](double angle) -> double {
         angle = std::fmod(angle, 2 * std::numbers::pi);
         if (angle < 0) {
             angle += 2 * std::numbers::pi;
         }
         return angle;
-    };
+    }};
 
-    auto angularDist = [](double a, double b) -> double {
-        double delta = std::fmod(std::fabs(a - b), 2 * std::numbers::pi);
-        return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
-    };
+    auto angularDist{
+        [](double a, double b) -> double {
+            double delta{std::fmod(std::fabs(a - b), 2 * std::numbers::pi)};
+            return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
+        }};
 
     auto [lCluster, rCluster, aCluster] = hitData;
 
@@ -325,9 +326,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
     std::vector<TripleCandidate> tripleCandidates;
     for (size_t li{}; li < lCluster.size(); ++li) {
         for (size_t ri{}; ri < rCluster.size(); ++ri) {
-            double S = lAvgAngle[li] + rAvgAngle[ri];
-            double angleCondition1 = normalizeAngle(std::fmod(S, 4 * std::numbers::pi) / 2);
-            double angleCondition2 = normalizeAngle(std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2);
+            double S{lAvgAngle[li] + rAvgAngle[ri]};
+            double angleCondition1{normalizeAngle(std::fmod(S, 4 * std::numbers::pi) / 2)};
+            double angleCondition2{normalizeAngle(std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2)};
 
             for (size_t ai{}; ai < aCluster.size(); ++ai) {
                 if (std::abs(lAvgTime[li] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() ||
@@ -493,42 +494,43 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
         std::vector<muc::array3d> coords;
 
         if (lAngle >= 0 and rAngle >= 0 and aAngle >= 0) {
-            double x0 = rLLayer;
-            double rDir = direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle);
-            double phiDir = -direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle);
+            double x0{rLLayer};
+            double rDir{direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle)};
+            double phiDir{-direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle)};
 
-            double thetaL = (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ?
-                                (rLLayer - rALayer) / rDir * phiDir / rLLayer :
-                                0.0;
-            double phiL = aAngle + thetaL;
+            double thetaL{(direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ?
+                              (rLLayer - rALayer) / rDir * phiDir / rLLayer :
+                              0.0};
+            double phiL{aAngle + thetaL};
             double x1{x0 * std::cos(phiL)};
             double y1{x0 * std::sin(phiL)};
             double z1{calculateLeftZ(lAngle, phiL, sciFiTracker.FiberLength())};
 
             x0 = rRLayer;
-            double thetaR = (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ?
-                                (rRLayer - rALayer) / rDir * phiDir / rRLayer :
-                                0.0;
-            double phiR = aAngle + thetaR;
+            double thetaR{
+                (direction[0] != 0 and direction[1] != 0 and direction[2] != 0) ?
+                    (rRLayer - rALayer) / rDir * phiDir / rRLayer :
+                    0.0};
+            double phiR{aAngle + thetaR};
             double x2{x0 * std::cos(phiR)};
             double y2{x0 * std::sin(phiR)};
             double z2{calculateRightZ(rAngle, phiR, sciFiTracker.FiberLength())};
 
-            double S = lAngle + rAngle;
-            double trueTID1 = std::fmod(S, 4 * std::numbers::pi) / 2;
-            double trueTID2 = std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2;
+            double S{lAngle + rAngle};
+            double trueTID1{std::fmod(S, 4 * std::numbers::pi) / 2};
+            double trueTID2{std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2};
 
             if (trueTID1 < 0)
                 trueTID1 += 2 * std::numbers::pi;
             if (trueTID2 < 0)
                 trueTID2 += 2 * std::numbers::pi;
 
-            auto angularDist = [](double a, double b) {
-                double delta = std::fmod(std::fabs(a - b), 2 * std::numbers::pi);
+            auto angularDist{[](double a, double b) {
+                double delta{std::fmod(std::fabs(a - b), 2 * std::numbers::pi)};
                 return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
-            };
+            }};
 
-            double trueTID = (angularDist(trueTID2, aAngle) < angularDist(trueTID1, aAngle)) ? trueTID2 : trueTID1;
+            double trueTID{(angularDist(trueTID2, aAngle) < angularDist(trueTID1, aAngle)) ? trueTID2 : trueTID1};
 
             x0 = (rLLayer + rRLayer) / 2;
             double x3{x0 * std::cos(trueTID)};
@@ -541,48 +543,48 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
                 {x3, y3, z3}
             };
         } else if (rAngle == -1) {
-            double x0 = rLLayer;
-            double rDir = direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle);
-            double phiDir = -direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle);
-            double theta = (direction[0] != 0 && direction[1] != 0 && direction[2] != 0) ? (rLLayer - rALayer) / rDir * phiDir / rLLayer : 0;
+            double x0{rLLayer};
+            double rDir{direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle)};
+            double phiDir{-direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle)};
+            double theta{(direction[0] != 0 && direction[1] != 0 && direction[2] != 0) ? (rLLayer - rALayer) / rDir * phiDir / rLLayer : 0};
 
             aAngle += theta;
-            double x = x0 * std::cos(aAngle);
-            double y = x0 * std::sin(aAngle);
-            double z = calculateLeftZ(lAngle, aAngle, sciFiTracker.FiberLength());
+            double x{x0 * std::cos(aAngle)};
+            double y{x0 * std::sin(aAngle)};
+            double z{calculateLeftZ(lAngle, aAngle, sciFiTracker.FiberLength())};
 
             coords = {
                 {x, y, z}
             };
         } else if (lAngle == -1) {
-            double x0 = rRLayer;
-            double rDir = direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle);
-            double phiDir = -direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle);
-            double theta = (direction[0] != 0 && direction[1] != 0 && direction[2] != 0) ? (rRLayer - rALayer) / rDir * phiDir / rRLayer : 0;
+            double x0{rRLayer};
+            double rDir{direction[0] * std::cos(aAngle) + direction[1] * std::sin(aAngle)};
+            double phiDir{-direction[0] * std::sin(aAngle) + direction[1] * std::cos(aAngle)};
+            double theta{(direction[0] != 0 && direction[1] != 0 && direction[2] != 0) ? (rRLayer - rALayer) / rDir * phiDir / rRLayer : 0};
 
             aAngle += theta;
-            double x = x0 * std::cos(aAngle);
-            double y = x0 * std::sin(aAngle);
-            double z = calculateRightZ(rAngle, aAngle, sciFiTracker.FiberLength());
+            double x{x0 * std::cos(aAngle)};
+            double y{x0 * std::sin(aAngle)};
+            double z{calculateRightZ(rAngle, aAngle, sciFiTracker.FiberLength())};
 
             coords = {
                 {x, y, z}
             };
         } else if (aAngle == -1) {
-            double x0 = (rLLayer + rRLayer) / 2;
-            double S = lAngle + rAngle;
-            double trueTID1 = std::fmod(S, 4 * std::numbers::pi) / 2;
-            double trueTID2 = std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2;
+            double x0{(rLLayer + rRLayer) / 2};
+            double S{lAngle + rAngle};
+            double trueTID1{std::fmod(S, 4 * std::numbers::pi) / 2};
+            double trueTID2{std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2};
 
             // first point
-            double x1 = x0 * std::cos(trueTID1);
-            double y1 = x0 * std::sin(trueTID1);
-            double z1 = calculateLeftZ(lAngle, trueTID1, sciFiTracker.FiberLength());
+            double x1{x0 * std::cos(trueTID1)};
+            double y1{x0 * std::sin(trueTID1)};
+            double z1{calculateLeftZ(lAngle, trueTID1, sciFiTracker.FiberLength())};
 
             // second point
-            double x2 = x0 * std::cos(trueTID2);
-            double y2 = x0 * std::sin(trueTID2);
-            double z2 = calculateLeftZ(lAngle, trueTID2, sciFiTracker.FiberLength());
+            double x2{x0 * std::cos(trueTID2)};
+            double y2{x0 * std::sin(trueTID2)};
+            double z2{calculateLeftZ(lAngle, trueTID2, sciFiTracker.FiberLength())};
 
             coords = {
                 {x1, y1, z1},
@@ -625,7 +627,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
                 rALayer /= hitList.size();
             }
         }
-        auto coordinates = calculateCoordinates(lAngle, rAngle, aAngle, rLLayer, rRLayer, rALayer);
+        auto coordinates{calculateCoordinates(lAngle, rAngle, aAngle, rLLayer, rRLayer, rALayer)};
 
         for (auto&& coordinate : coordinates) {
             coordinateMap[coordinate] = hitLists;
@@ -645,9 +647,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
     using Entry = std::pair<muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
     auto isConnected = [&](const muc::array3d& x1, const muc::array3d& x2) -> bool {
-        double theta1 = std::atan2(x1[1], x1[0]);
-        double theta2 = std::atan2(x2[1], x2[0]);
-        double deltaTheta = std::fabs(theta1 - theta2);
+        double theta1{std::atan2(x1[1], x1[0])};
+        double theta2{std::atan2(x2[1], x2[0])};
+        double deltaTheta{std::fabs(theta1 - theta2)};
         if (deltaTheta > std::numbers::pi) {
             deltaTheta = 2 * std::numbers::pi - deltaTheta;
         }
@@ -704,11 +706,11 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
 
     std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData;
     for (auto& component : components) {
-        auto& idxList = component.second;
-        bool hasAnySize3 = false;
+        auto& idxList{component.second};
+        bool hasAnySize3{false};
 
         for (size_t idx : idxList) {
-            const auto& clusters = entries[idx].second;
+            const auto& clusters{entries[idx].second};
 
             if (clusters.size() == 3) {
                 hasAnySize3 = true;
@@ -801,14 +803,12 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
     }
 
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeFullV);
-    Eigen::Vector3d direction = svd.matrixV().col(0);
+    Eigen::Vector3d direction{svd.matrixV().col(0)};
 
     if (direction.norm() < 1e-12) {
         direction = centroid;
     }
-    if (direction.norm() < 1e-12) {
-        direction = Eigen::Vector3d::UnitZ();
-    }
+
     direction.normalize();
     if (direction[0] * centroid.x() + direction[1] * centroid.y() + direction[2] * centroid.z() < 0) {
         direction *= -1;
