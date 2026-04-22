@@ -9,6 +9,8 @@
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
+#include "Mustard/Math/GeometryRepresentation.h++"
+#include "Mustard/Math/POCA.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 
 #include "Math/Factory.h"
@@ -27,6 +29,7 @@
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <ranges>
 #include <tuple>
@@ -75,12 +78,6 @@ public:
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
     auto EstimateInitialDirection(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
         -> std::tuple<muc::array3d, muc::array3d, std::vector<std::vector<AHitPointer>>>;
-
-    auto Helix(double theta, double r, double b, double rotationAngle)
-        -> const muc::array3d;
-
-    auto Line(double t, const muc::array3d s0, const muc::array3d d)
-        -> const muc::array3d;
 
     auto FindHLMinDistanceSquare(
         double HelixR, double HelixB, double rotationAngle,

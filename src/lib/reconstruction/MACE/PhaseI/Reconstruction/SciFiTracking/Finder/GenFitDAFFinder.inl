@@ -818,46 +818,45 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-auto GenFitDAFFinder<ASciFiHit, ATrack>::Helix(double theta, double r, double b, double rotationAngle) -> const muc::array3d {
-    double u{theta + rotationAngle};
-    double zOffset{b * std::numbers::pi};
-    return {r * std::cos(u), r * std::sin(u), b * theta - zOffset};
-}
-
-template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
-         Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-auto GenFitDAFFinder<ASciFiHit, ATrack>::Line(double t, const muc::array3d s0, const muc::array3d d) -> const muc::array3d {
-    return muc::array3d{
-        s0[0] + t * d[0],
-        s0[1] + t * d[1],
-        s0[2] + t * d[2]};
-}
-
-template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
-         Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::FindHLMinDistanceSquare(
     double HelixR, double HelixB, double rotationAngle,
     const muc::array3d line_p0, const muc::array3d line_dir,
     double initialT, double initialTheta) -> std::tuple<double, double, double> {
-    const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    ROOT::Minuit2::Minuit2Minimizer minimizer;
+    const Mustard::Helix helix{
+        Mustard::Point2D{0, 0},
+        HelixR,
+        rotationAngle,
+        -HelixB * std::numbers::pi,
+        std::atan2(HelixR, HelixB)
+    };
+    const Mustard::Point3D linePoint{line_p0[0], line_p0[1], line_p0[2]};
+    const Mustard::Vector3D lineDirection{line_dir[0], line_dir[1], line_dir[2]};
+    const Mustard::Line3D line{linePoint, lineDirection};
 
-    std::function targetFunction{[HelixR, HelixB, rotationAngle, line_p0, line_dir, this](const double* xx) {
-        double t{xx[0]};
-        double theta{xx[1]};
-        muc::array3d sp_point{this->Helix(theta, HelixR, HelixB, rotationAngle)};
-        muc::array3d line_point{this->Line(t, line_p0, line_dir)};
-        double dis{muc::hypot(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2]) *
-                   muc::hypot(sp_point[0] - line_point[0], sp_point[1] - line_point[1], sp_point[2] - line_point[2])};
-        return dis;
-    }};
+    const auto pocaResult{Mustard::POCA(helix, line,
+                                        0.0, 2 * std::numbers::pi,
+                                        1, 300, 1e-7, 1e-7)};
+    if (not pocaResult.has_value()) {
+        return std::tuple{std::numeric_limits<double>::max(), initialT, initialTheta};
+    }
 
-    ROOT::Math::Functor f(targetFunction, 2);
-    minimizer.SetFunction(f);
-    minimizer.SetLimitedVariable(0, "x", initialT, 0.01, -sciFiTracker.FiberLength() / 2, sciFiTracker.FiberLength() / 2);
-    minimizer.SetLimitedVariable(1, "y", initialTheta, 0.01, 0, 2 * std::numbers::pi);
-    minimizer.Minimize();
-    return std::tuple{minimizer.MinValue(), minimizer.State().Parameter(0).Value(), minimizer.State().Parameter(1).Value()};
+    const auto& [pocaOnHelix, pocaOnLine, doca]{*pocaResult};
+
+    double t{initialT};
+    const auto lineDirectionMag2{lineDirection.mag2()};
+    if (lineDirectionMag2 > 1e-12) {
+        t = (pocaOnLine - linePoint).dot(lineDirection) / lineDirectionMag2;
+    }
+
+    auto theta{std::atan2(pocaOnHelix.y(), pocaOnHelix.x()) - rotationAngle};
+    while (theta < 0) {
+        theta += 2 * std::numbers::pi;
+    }
+    while (theta >= 2 * std::numbers::pi) {
+        theta -= 2 * std::numbers::pi;
+    }
+
+    return std::tuple{doca * doca, t, theta};
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
@@ -865,26 +864,14 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
 auto GenFitDAFFinder<ASciFiHit, ATrack>::FindLLMinDistanceSquare(
     const muc::array3d line1_point, const muc::array3d line1_dir,
     const muc::array3d line2_point, const muc::array3d line2_dir) -> double {
+    const Mustard::Point3D line1Point{line1_point[0], line1_point[1], line1_point[2]};
+    const Mustard::Vector3D line1Direction{line1_dir[0], line1_dir[1], line1_dir[2]};
+    const Mustard::Point3D line2Point{line2_point[0], line2_point[1], line2_point[2]};
+    const Mustard::Vector3D line2Direction{line2_dir[0], line2_dir[1], line2_dir[2]};
 
-    muc::array3d vector1{line1_point[0] - line2_point[0], line1_point[1] - line2_point[1], line1_point[2] - line2_point[2]};
-    muc::array3d cross{
-        line1_dir[1] * line2_dir[2] - line2_dir[1] * line1_dir[2],
-        line1_dir[2] * line2_dir[0] - line2_dir[2] * line1_dir[0],
-        line1_dir[0] * line2_dir[1] - line2_dir[0] * line1_dir[1]};
-    if (std::hypot(cross[0], cross[1], cross[2]) < 1e-9) {
-        double dot = ((line1_point[0] - line2_point[0]) * line2_dir[0] +
-                      (line1_point[1] - line2_point[1]) * line2_dir[1] +
-                      (line1_point[2] - line2_point[2]) * line2_dir[2]) /
-                     sqrt(line2_dir[0] * line2_dir[0] + line2_dir[1] * line2_dir[1] + line2_dir[2] * line2_dir[2]);
-
-        return ((line1_point[0] - line2_point[0]) * (line1_point[0] - line2_point[0]) +
-                (line1_point[1] - line2_point[1]) * (line1_point[1] - line2_point[1]) +
-                (line1_point[2] - line2_point[2]) * (line1_point[2] - line2_point[2]) - dot * dot);
-        // return DLDistance(line1_point, line2_point, line2_dir);
-    }
-    double min_dis = ((vector1[0] * cross[0] + vector1[1] * cross[1] + vector1[2] * cross[2]) / std::hypot(cross[0], cross[1], cross[2])) *
-                     ((vector1[0] * cross[0] + vector1[1] * cross[1] + vector1[2] * cross[2]) / std::hypot(cross[0], cross[1], cross[2]));
-    return min_dis;
+    const auto [poca1, poca2, doca]{Mustard::POCA(Mustard::Line3D{line1Point, line1Direction},
+                                                  Mustard::Line3D{line2Point, line2Direction})};
+    return doca * doca;
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
