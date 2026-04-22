@@ -81,12 +81,24 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli;
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
     cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("data"s).required().nargs(1);
-    cli->add_argument("-o", "--output").help("Output file path.").required().nargs(1);
+    cli->add_argument("-o", "--output").help("Output file path. If not provided, auto-generated from input name.");
     cli->add_argument("-m", "--output-mode").help("Output file creation mode.").default_value("NEW"s).required().nargs(1);
     cli->add_argument("-c", "--description").help("Description YAML file path.").nargs(1);
+
+    cli->parse_args(argc, argv);
     Mustard::Env::MPIEnv env{argc, argv, {}};
-    std::string fileName{argv[1]};
-    TFile file{Mustard::Parallel::ProcessSpecificPath("SciFiOutput.root").generic_string().c_str(), "RECREATE"};
+    auto inputFiles = cli->get<std::vector<std::string>>("input");
+    if (inputFiles.empty()) {
+        throw std::runtime_error("No input file provided.");
+    }
+    std::filesystem::path inputPath(inputFiles[0]);
+    std::string fileName = inputPath.stem().string();
+
+    std::string outputBase;
+    outputBase = "SciFiOutput_" + fileName + ".root";
+
+    auto finalPath = Mustard::Parallel::ProcessSpecificPath(outputBase);
+    TFile file(finalPath.generic_string().c_str(), "RECREATE");
     Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
 
     MACE::PhaseI::SciFiTracking::GenFitDAFFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder;
@@ -97,13 +109,13 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     Mustard::Data::SeqProcessor processor;
 
     auto ecalData{
-        ROOT::RDataFrame{"G4Run0/ECALSimHit", fileName}
+        ROOT::RDataFrame{"G4Run0/ECALSimHit", inputFiles[0]}
     };
     auto sciFiData{
-        ROOT::RDataFrame{"G4Run0/SciFiSimHit", fileName}
+        ROOT::RDataFrame{"G4Run0/SciFiSimHit", inputFiles[0]}
     };
     auto ttcData{
-        ROOT::RDataFrame{"G4Run0/TTCSimHit", fileName}
+        ROOT::RDataFrame{"G4Run0/TTCSimHit", inputFiles[0]}
     };
     processor.Process<MACE::Data::ECALHit, PhaseI::Data::SciFiSimHit, MACE::Data::TTCHit>(
         {ecalData, sciFiData, ttcData}, int{}, "EvtID",
@@ -127,9 +139,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                 if (*Get<"Edep">(*hit) <= sciFiTracker.EnergyDepositionThreshold()) {
                     continue;
                 }
-                if (*Get<"EvtID">(*hit) > 1000) {
-                    continue;
-                }
+
                 auto sciFiHit{std::make_shared<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>()};
                 *Get<"EvtID">(*sciFiHit) = *Get<"EvtID">(*hit);
                 *Get<"FiberID">(*sciFiHit) = *Get<"FiberID">(*hit);
@@ -146,9 +156,9 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                     if (track == nullptr) {
                         continue;
                     }
-                    std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
-                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
-                    // std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
+                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
+                    //  std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
+                    //  std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
                     reconTrack.Fill(*track);
                 }
             }
