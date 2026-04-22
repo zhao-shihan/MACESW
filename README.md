@@ -56,7 +56,7 @@ The recommended approach for basic user to build MACESW is using the RGB Apptain
 对于 Debian 系 GNU/Linux 系统，可直接从 APT 安装：  
 Install Apptainer via APT on Debian-based systems:
 ```bash
-sudo apt install apptainer
+sudo apt install apptainer squashfuse fuse2fs gocryptfs
 ```
 您也可从[官方发布页](https://github.com/apptainer/apptainer/releases)下载并安装 Apptainer。  
 You can also download and install Apptainer from the [official releases](https://github.com/apptainer/apptainer/releases).
@@ -68,21 +68,21 @@ Pull the RGB Apptainer image:
 ```bash
 apptainer pull oras://ghcr.io/zhao-shihan/rgb
 ```
-这将在您当前目录下创建一个镜像文件 `rgb.sif`。  
-This creates an image file `rgb.sif` in your current directory.
+这将在您当前目录下创建一个镜像文件 `rgb_latest.sif`。  
+This creates an image file `rgb_latest.sif` in your current directory.
 
 #### 3. 构建 MACESW / Build MACESW
 
 在 RGB 镜像内启动一个交互式 shell：  
 Start an interactive shell within the RGB image:
 ```bash
-apptainer shell ./rgb.sif
+apptainer shell ./rgb_latest.sif
 ```
-（注意：并非必须打开 shell，您也可以通过 `./rgb.sif <command>` 使用镜像运行命令，但为了简单起见，这里我们在容器 shell 内进行操作）  
-(Note that opening a shell is not necessary, you can also run something with the image by `./rgb.sif <command>`, but here we work inside the container shell for simplicity)
+（请留意：并非必须打开 shell，您也可以通过 `./rgb_latest.sif <command>` 使用镜像运行命令，但为了简单起见，这里我们在容器 shell 内进行操作）  
+(Please note that opening a shell is not necessary, you can also run something with the image by `./rgb_latest.sif <command>`, but here we work inside the container shell for simplicity)
 
-然后，在容器 shell 中，克隆并构建 MACESW：  
-Then, in the container shell, clone and build MACESW:
+然后，在容器 shell 中，克隆并构建 MACESW。  
+Then, in the container shell, clone and build MACESW.
 ```bash
 git clone https://github.com/zhao-shihan/MACESW.git
 cd MACESW
@@ -90,6 +90,8 @@ mkdir build && cd build
 cmake ..
 make -j8
 ```
+（请留意：现在您所在的目录为您进入容器 shell 时的目录，进入 Apptainer 容器只相当于“替换”了一部分系统目录，您的个人目录和容器外是一致的。）  
+(Please note that the directory you are in now is the same as the one outside the container, entering the Apptainer container is like "replacing" part of the system directories, your home directory is consistent with outside the container.)
 
 #### 4. 运行 MACESW / Run MACESW
 
@@ -144,9 +146,9 @@ https://doi.org/10.1007/s41365-025-01876-0.
 ## 文献列表（按公开日期排序）/ Literatures list (sort by disclosure date)
 
 **LU Guihao, ZHAO Shihan, CHEN Siyuan, et al.**  
-**Positron Transport System for Muonium-to-Antimuonium Conversion Experiment** [DB/OL].  
-*arXiv preprint*, 2025: 2508.07922 [hep-ex].  
-https://arxiv.org/abs/2508.07922.
+**Positron transport system for muonium-to-antimuonium conversion experiment** [J].  
+*Phys. Rev. Accel. Beams*, 2026, 29(3): 031602. DOI: 10.1103/2yb7-zv76. arXiv: 2508.07922 [hep-ex].  
+https://doi.org/10.1103/2yb7-zv76.
 
 **AN FengPeng, BAI Dong, CHEN Siyuan, et al.**  
 **High-Precision Physics Experiments at Huizhou Large-Scale Scientific Facilities** [J].  
@@ -168,6 +170,11 @@ https://doi.org/10.15302/frontphys.2025.035202.
 *Nucl. Part. Phys. Proc.*, 2024, 345: 24-28. DOI: 10.1016/j.nuclphysbps.2024.05.005.  
 https://doi.org/10.1016/j.nuclphysbps.2024.05.005.
 
+**ZHAO Shihan, TANG Jian**  
+**Optimization of muonium yield in perforated silica aerogel** [J].  
+*Phys. Rev. D*, 2024, 109(7): 072012. DOI: 10.1103/PhysRevD.109.072012. arXiv: 2401.00222 [hep-ex].  
+https://doi.org/10.1103/PhysRevD.109.072012.
+
 **CORRODI S., OKSUZIAN Y., EDMONDS A., et al.**  
 **Workshop on a future muon program at FNAL** [C].  
 *arXiv preprint*, 2023: 2309.05933 [hep-ex].  
@@ -177,3 +184,8 @@ https://arxiv.org/abs/2309.05933.
 **Snowmass2021 Whitepaper: Muonium to Antimuonium Conversion** [DB/OL].  
 *arXiv preprint*, 2022: 2203.11406 [hep-ph].  
 https://arxiv.org/abs/2203.11406.
+
+**HAN Chengcheng, HUANG Da, TANG Jian, et al.**  
+**Probing the doubly charged Higgs boson with a muonium to antimuonium conversion experiment** [J].  
+*Phys. Rev. D*, 2021, 103(5): 055023. DOI: 10.1103/PhysRevD.103.055023. arXiv: 2102.00758 [hep-ph].  
+https://doi.org/10.1103/PhysRevD.103.055023.
