@@ -40,22 +40,22 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
         muc::array3d prev_dir{std::get<0>(initialResult)};
 
         constexpr int nIter{10};
-        double minDirDotThreshold{sciFiTracker.MinDirDotThreshold()};
+        const double minDirDotThreshold{sciFiTracker.MinDirDotThreshold()};
         for (int iter = 0; iter < nIter; ++iter) {
             coordinateMap = this->CalCoordinates(hitLists, prev_dir);
             dividedPointMap = this->DividePoints(coordinateMap);
-            muc::array3d initialCentroid = std::get<1>(initialResult);
+            muc::array3d initialCentroid{std::get<1>(initialResult)};
 
-            auto bestIt = std::ranges::min_element(dividedPointMap,
-                                                   std::ranges::less{},
-                                                   [&](const auto& group) -> double {
-                                                       auto [_, c, __] = this->EstimateInitialDirection(group);
-                                                       return (c[0] - initialCentroid[0]) * (c[0] - initialCentroid[0]) + (c[1] - initialCentroid[1]) * (c[1] - initialCentroid[1]) + (c[2] - initialCentroid[2]) * (c[2] - initialCentroid[2]);
-                                                   });
+            auto bestIt{std::ranges::min_element(dividedPointMap,
+                                                 std::ranges::less{},
+                                                 [&](const auto& group) -> double {
+                                                     auto [_, c, __] = this->EstimateInitialDirection(group);
+                                                     return (c[0] - initialCentroid[0]) * (c[0] - initialCentroid[0]) + (c[1] - initialCentroid[1]) * (c[1] - initialCentroid[1]) + (c[2] - initialCentroid[2]) * (c[2] - initialCentroid[2]);
+                                                 })};
 
             if (bestIt != dividedPointMap.end()) {
-                auto nextResult = this->EstimateInitialDirection(*bestIt);
-                const auto& curr_dir = std::get<0>(nextResult);
+                auto nextResult{this->EstimateInitialDirection(*bestIt)};
+                const auto& curr_dir{std::get<0>(nextResult)};
                 const double dirDot{prev_dir[0] * curr_dir[0] + prev_dir[1] * curr_dir[1] + prev_dir[2] * curr_dir[2]};
 
                 if (dirDot < minDirDotThreshold) {
@@ -260,7 +260,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
 
         double sum = 0.0;
         for (const auto& hit : cluster) {
-            auto fiberID = Get<"FiberID">(*hit);
+            const auto fiberID = Get<"FiberID">(*hit);
 
             sum += fiberMap[fiberID].rotationAngle;
         }
@@ -326,9 +326,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
     std::vector<TripleCandidate> tripleCandidates;
     for (size_t li{}; li < lCluster.size(); ++li) {
         for (size_t ri{}; ri < rCluster.size(); ++ri) {
-            double S{lAvgAngle[li] + rAvgAngle[ri]};
-            double angleCondition1{normalizeAngle(std::fmod(S, 4 * std::numbers::pi) / 2)};
-            double angleCondition2{normalizeAngle(std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2)};
+            const double S{lAvgAngle[li] + rAvgAngle[ri]};
+            const double angleCondition1{normalizeAngle(std::fmod(S, 4 * std::numbers::pi) / 2)};
+            const double angleCondition2{normalizeAngle(std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2)};
 
             for (size_t ai{}; ai < aCluster.size(); ++ai) {
                 if (std::abs(lAvgTime[li] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() ||
@@ -478,19 +478,19 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
         return angle;
     };
 
-    auto calculateLeftZ = [&wrapTo2Pi](double lAngle, double phi, double fiberLength) -> double {
-        double delta = wrapTo2Pi(lAngle - phi);
+    auto calculateLeftZ{[&wrapTo2Pi](double lAngle, double phi, double fiberLength) -> double {
+        double delta{wrapTo2Pi(lAngle - phi)};
         return (fiberLength / 2) - (delta / (2 * std::numbers::pi)) * fiberLength;
-    };
+    }};
 
-    auto calculateRightZ = [&wrapTo2Pi](double rAngle, double phi, double fiberLength) -> double {
-        double delta = wrapTo2Pi(rAngle - phi);
+    auto calculateRightZ{[&wrapTo2Pi](double rAngle, double phi, double fiberLength) -> double {
+        double delta{wrapTo2Pi(rAngle - phi)};
 
         return -(fiberLength / 2) + (delta / (2 * std::numbers::pi)) * fiberLength;
-    };
+    }};
 
-    auto calculateCoordinates = [&](double lAngle, double rAngle, double aAngle,
-                                    double rLLayer, double rRLayer, double rALayer) -> std::vector<muc::array3d> {
+    auto calculateCoordinates{[&](double lAngle, double rAngle, double aAngle,
+                                  double rLLayer, double rRLayer, double rALayer) -> std::vector<muc::array3d> {
         std::vector<muc::array3d> coords;
 
         if (lAngle >= 0 and rAngle >= 0 and aAngle >= 0) {
@@ -594,7 +594,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
             Mustard::Throw<std::runtime_error>("Too many negative angles!");
         }
         return coords;
-    };
+    }};
     for (auto&& hitLists : hitData) {
         double lAngle{-1};
         double rAngle{-1};
@@ -646,7 +646,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
 
     using Entry = std::pair<muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
-    auto isConnected = [&](const muc::array3d& x1, const muc::array3d& x2) -> bool {
+    auto isConnected{[&](const muc::array3d& x1, const muc::array3d& x2) -> bool {
         double theta1{std::atan2(x1[1], x1[0])};
         double theta2{std::atan2(x2[1], x2[0])};
         double deltaTheta{std::fabs(theta1 - theta2)};
@@ -655,17 +655,18 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
         }
         return std::fabs(x1[2] - x2[2]) < sciFiTracker.CentroidZThreshold() &&
                deltaTheta < sciFiTracker.CentroidThetaThreshold();
-    };
+    }};
 
     std::vector<Entry> entries;
     entries.reserve(hitData.size());
     for (const auto& p : hitData) {
         entries.push_back(p);
     }
-    const size_t n = entries.size();
+    const size_t n{entries.size()};
 
-    if (n == 0)
+    if (n == 0) {
         return {};
+    }
 
     struct UnionFind {
         std::vector<int> parent, rank;
@@ -691,8 +692,8 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
         }
     } uf(n);
 
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = i + 1; j < n; ++j) {
+    for (size_t i{}; i < n; ++i) {
+        for (size_t j{i + 1}; j < n; ++j) {
             if (isConnected(entries[i].first, entries[j].first)) {
                 uf.unite(static_cast<int>(i), static_cast<int>(j));
             }
@@ -700,7 +701,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
     }
 
     std::map<int, std::vector<size_t>> components;
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i{}; i < n; ++i) {
         components[uf.find(static_cast<int>(i))].push_back(i);
     }
 
@@ -738,7 +739,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
 
     std::vector<std::vector<AHitPointer>> fiberLists;
 
-    Eigen::Vector3d centroid = Eigen::Vector3d::Zero();
+    Eigen::Vector3d centroid{Eigen::Vector3d::Zero()};
     for (const auto& [point, _] : hitData) {
         Eigen::Vector3d c(point[0], point[1], point[2]);
         if (point[0] * centroid.x() + point[1] * centroid.y() + point[2] * centroid.z() >= 0) {
@@ -756,7 +757,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
         for (const auto& [_, hitLists] : hitData) {
             fiberLists.insert(fiberLists.end(), hitLists.begin(), hitLists.end());
         }
-        Eigen::Vector3d direction = centroid;
+        Eigen::Vector3d direction{centroid};
         if (direction.norm() < 1e-12) {
             direction = Eigen::Vector3d::UnitZ();
         }
@@ -798,7 +799,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
     }
 
     Eigen::MatrixXd A(selectedPoints.size(), 3);
-    for (size_t i = 0; i < selectedPoints.size(); ++i) {
+    for (size_t i{}; i < selectedPoints.size(); ++i) {
         A.row(static_cast<Eigen::Index>(i)) = selectedPoints[i] - centroid;
     }
 
