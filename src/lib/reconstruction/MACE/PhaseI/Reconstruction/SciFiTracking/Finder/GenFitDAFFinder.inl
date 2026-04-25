@@ -772,13 +772,13 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
     std::vector<Eigen::Vector3d> selectedPoints;
     selectedPoints.reserve(hitData.size());
 
-    auto appendUniqueCluster = [&](const std::vector<AHitPointer>& cluster) {
+    auto appendUniqueCluster{[&](const std::vector<AHitPointer>& cluster) {
         if (std::ranges::none_of(fiberLists, [&](const auto& existing) {
                 return existing == cluster;
             })) {
             fiberLists.push_back(cluster);
         }
-    };
+    }};
 
     for (const auto& [point, hitLists] : hitData) {
         if (point[0] * centroid.x() + point[1] * centroid.y() + point[2] * centroid.z() >= 0) {
@@ -883,7 +883,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
     -> std::shared_ptr<Mustard::Data::Tuple<ATrack>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
-    auto result = std::make_shared<Mustard::Data::Tuple<ATrack>>();
+    auto result{std::make_shared<Mustard::Data::Tuple<ATrack>>()};
     auto r{(sciFiTracker.BracketInnerRadius() + sciFiTracker.BracketOuterRadius()) / 2};
 
     auto [initialDirection, initialCentroid, clusterLists] = hitData;
@@ -921,7 +921,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
 
             std::unordered_set<int> processedSiPMIDs;
             for (int i{}; i < std::ssize(clusterLists); ++i) {
-                auto&& cluster = clusterLists[i];
+                auto&& cluster{clusterLists[i]};
                 for (auto&& hit : cluster) {
                     auto rLayer{fiberMap[Get<"FiberID">(*hit)].radius};
                     if (processedSiPMIDs.count(Get<"FiberID">(*hit)) > 0) {
@@ -946,8 +946,8 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
                         double x0{rLayer};
                         double y0{};
                         double minDistance;
-                        double x = x0 * std::cos(rotationAngle) - y0 * std::sin(rotationAngle);
-                        double y = x0 * std::sin(rotationAngle) + y0 * std::cos(rotationAngle);
+                        double x{x0 * std::cos(rotationAngle) - y0 * std::sin(rotationAngle)};
+                        double y{x0 * std::sin(rotationAngle) + y0 * std::cos(rotationAngle)};
                         minDistance = this->FindLLMinDistanceSquare(s0, dir, {x, y, 0}, {0, 0, 1});
                         distance += minDistance;
                     }
