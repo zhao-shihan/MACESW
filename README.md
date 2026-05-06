@@ -11,9 +11,6 @@
 [![Build (AMD64 GNU/Linux Clang, unity build)](https://github.com/zhao-shihan/MACESW/actions/workflows/build-with-clang.yml/badge.svg)](https://github.com/zhao-shihan/MACESW/actions/workflows/build-with-clang.yml)
 [![Static code analysis](https://github.com/zhao-shihan/MACESW/actions/workflows/static-code-analysis.yml/badge.svg)](https://github.com/zhao-shihan/MACESW/actions/workflows/static-code-analysis.yml)
 
-[![Regression test (AMD64 GNU/Linux GCC)](https://github.com/zhao-shihan/MACESW/actions/workflows/regression-test-with-gcc.yml/badge.svg)](https://github.com/zhao-shihan/MACESW/actions/workflows/regression-test-with-gcc.yml)
-[![Regression test (AMD64 GNU/Linux Clang, unity build)](https://github.com/zhao-shihan/MACESW/actions/workflows/regression-test-with-clang.yml/badge.svg)](https://github.com/zhao-shihan/MACESW/actions/workflows/regression-test-with-clang.yml)
-
 <!--
   The align attribute on img is obsolete in HTML5, but is used here because
   GitHub strips inline styles from README.md. This is the only way to right-align
