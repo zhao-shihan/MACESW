@@ -67,8 +67,18 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
             }
         }
 
+        auto& currentClusters = std::get<2>(initialResult);
+        auto extraAxial{this->AddStraightFibersByTheta(
+            currentClusters,
+            std::get<2>(dividedClusters),
+            sciFiTracker.CentroidThetaThreshold(),
+            sciFiTracker.ThresholdTime())};
+        if (!extraAxial.empty()) {
+            currentClusters.insert(currentClusters.end(), extraAxial.begin(), extraAxial.end());
+        }
+
         std::vector<int> signature;
-        for (const auto& cluster : std::get<2>(initialResult)) {
+        for (const auto& cluster : currentClusters) {
             for (const auto& hit : cluster) {
                 signature.push_back(Get<"FiberID">(*hit));
             }
@@ -132,13 +142,12 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
 
     std::vector<std::vector<int>> acceptedSignatures;
     for (auto& candidate : candidates) {
-        double maxOverlap{};
-        for (const auto& signature : acceptedSignatures) {
-            maxOverlap = std::max(maxOverlap, overlapFraction(candidate.signature, signature));
-        }
-
-        const bool overlapped{maxOverlap > 0.5};
-        if (overlapped) {
+        const bool hasLargeOverlap{std::ranges::any_of(
+            acceptedSignatures,
+            [&](const auto& signature) {
+                return overlapFraction(candidate.signature, signature) > 0.5;
+            })};
+        if (hasLargeOverlap) {
             continue;
         }
 
@@ -383,9 +392,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
     std::vector<PairCandidate> pairCandidates;
 
     for (size_t li{}; li < lCluster.size(); ++li) {
-        if (lUsed[li]) {
-            continue;
-        }
+        // if (lUsed[li]) {
+        //     continue;
+        // }
         for (size_t ai{}; ai < aCluster.size(); ++ai) {
             if (aUsed[ai]) {
                 continue;
@@ -398,9 +407,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
     }
 
     for (size_t ri{}; ri < rCluster.size(); ++ri) {
-        if (rUsed[ri]) {
-            continue;
-        }
+        // if (rUsed[ri]) {
+        //     continue;
+        // }
         for (size_t ai{}; ai < aCluster.size(); ++ai) {
             if (aUsed[ai]) {
                 continue;
@@ -421,7 +430,8 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
                 continue;
             }
             if (std::abs(lAvgTime[li] - rAvgTime[ri]) < sciFiTracker.ThresholdTime() and
-                areAdjacentPair(lFrontID[li], rFrontID[ri])) {
+                std::abs(superLayer(lFrontID[li]) - superLayer(rFrontID[ri])) <= 2) {
+
                 pairCandidates.push_back({PairType::LR, li, ri, std::abs(lAvgTime[li] - rAvgTime[ri])});
             }
         }
@@ -434,23 +444,23 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
 
     for (const auto& pair : pairCandidates) {
         if (pair.type == PairType::LA) {
-            if (lUsed[pair.first] or aUsed[pair.second]) {
-                continue;
-            }
+            // if (lUsed[pair.first] or aUsed[pair.second]) {
+            //     continue;
+            // }
             result.insert({lCluster[pair.first], aCluster[pair.second]});
             lUsed[pair.first] = true;
             aUsed[pair.second] = true;
         } else if (pair.type == PairType::RA) {
-            if (rUsed[pair.first] or aUsed[pair.second]) {
-                continue;
-            }
+            // if (rUsed[pair.first] or aUsed[pair.second]) {
+            //     continue;
+            // }
             result.insert({rCluster[pair.first], aCluster[pair.second]});
             rUsed[pair.first] = true;
             aUsed[pair.second] = true;
         } else {
-            if (lUsed[pair.first] or rUsed[pair.second]) {
-                continue;
-            }
+            // if (lUsed[pair.first] or rUsed[pair.second]) {
+            //     continue;
+            // }
             result.insert({lCluster[pair.first], rCluster[pair.second]});
             lUsed[pair.first] = true;
             rUsed[pair.second] = true;
@@ -643,6 +653,7 @@ template<std::indirectly_readable AHitPointer>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
     -> const std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
 
     using Entry = std::pair<muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
@@ -708,16 +719,17 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
     std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData;
     for (auto& component : components) {
         auto& idxList{component.second};
-        bool hasAnySize3{false};
-
+        std::set<std::string> layerTypes;
         for (size_t idx : idxList) {
             const auto& clusters{entries[idx].second};
-
-            if (clusters.size() == 3) {
-                hasAnySize3 = true;
+            for (const auto& cluster : clusters) {
+                for (const auto& hit : cluster) {
+                    layerTypes.insert(fiberMap[Get<"FiberID">(*hit)].layerType);
+                }
             }
         }
-        if (hasAnySize3) {
+
+        if (layerTypes.size() == 3) {
             std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> groupMap;
             for (size_t idx : idxList) {
                 auto& [coord, clusters] = entries[idx];
@@ -753,14 +765,11 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
                           fiberLists);
     }
 
-    if (hitData.size() == 1) {
+    if (hitData.size() <= 3) {
         for (const auto& [_, hitLists] : hitData) {
             fiberLists.insert(fiberLists.end(), hitLists.begin(), hitLists.end());
         }
         Eigen::Vector3d direction{centroid};
-        if (direction.norm() < 1e-12) {
-            direction = Eigen::Vector3d::UnitZ();
-        }
         direction.normalize();
         return std::tuple(muc::array3d{direction.x(), direction.y(), direction.z()},
                           muc::array3d{centroid.x(), centroid.y(), centroid.z()},
@@ -815,6 +824,89 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map
         direction *= -1;
     }
     return std::tuple(muc::array3d{direction.x(), direction.y(), direction.z()}, muc::array3d{centroid.x(), centroid.y(), centroid.z()}, fiberLists);
+}
+
+template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
+         Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
+template<std::indirectly_readable AHitPointer>
+    requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
+auto GenFitDAFFinder<ASciFiHit, ATrack>::AddStraightFibersByTheta(
+    const std::vector<std::vector<AHitPointer>>& currentClusters,
+    const std::vector<std::vector<AHitPointer>>& axialClusters,
+    double angleThreshold,
+    double timeThreshold) const -> std::vector<std::vector<AHitPointer>> {
+
+    const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
+
+    double averageTime{};
+    size_t referenceCount{};
+    for (const auto& cluster : currentClusters) {
+        for (const auto& hit : cluster) {
+            averageTime += Get<"t">(*hit);
+            ++referenceCount;
+        }
+    }
+    if (referenceCount > 0) {
+        averageTime /= static_cast<double>(referenceCount);
+    }
+    struct StraightHitInfo {
+        double phi;
+        double time;
+    };
+    std::unordered_map<int, StraightHitInfo> existingStraightHits; // fiberID -> hit info
+    std::unordered_set<int> usedFiberIDs;
+    for (const auto& cluster : currentClusters) {
+        for (const auto& hit : cluster) {
+            const int fid{Get<"FiberID">(*hit)};
+            if (fiberMap[fid].layerType == "LHelical" || fiberMap[fid].layerType == "RHelical")
+                continue;
+            const double hitTime{Get<"t">(*hit)};
+            if (std::fabs(hitTime - averageTime) >= timeThreshold) {
+                continue;
+            }
+            if (existingStraightHits.find(fid) == existingStraightHits.end()) {
+                existingStraightHits[fid] = {fiberMap[fid].rotationAngle, hitTime};
+                usedFiberIDs.insert(fid);
+            }
+        }
+    }
+
+    auto angularDist{[](double a, double b) -> double {
+        double delta{std::fabs(a - b)};
+        if (delta > std::numbers::pi) {
+            delta = 2 * std::numbers::pi - delta;
+        }
+        return delta;
+    }};
+
+    std::vector<std::vector<AHitPointer>> extraClusters;
+
+    for (const auto& cluster : axialClusters) {
+        for (const auto& hit : cluster) {
+            const int fiberID = Get<"FiberID">(*hit);
+            if (usedFiberIDs.count(fiberID) > 0) {
+                continue;
+            }
+
+            const double fiberPhi{fiberMap[fiberID].rotationAngle};
+            const double fiberTime{Get<"t">(*hit)};
+
+            const bool accepted{std::ranges::any_of(
+                existingStraightHits,
+                [&](const auto& entry) {
+                    const auto& eInfo{entry.second};
+                    return angularDist(fiberPhi, eInfo.phi) < angleThreshold &&
+                           std::fabs(fiberTime - eInfo.time) < timeThreshold;
+                })};
+            if (accepted) {
+                extraClusters.push_back({hit});
+                usedFiberIDs.insert(fiberID);
+            }
+        }
+    }
+
+    return extraClusters;
 }
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
@@ -882,7 +974,7 @@ template<std::indirectly_readable AHitPointer>
 auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
     -> std::shared_ptr<Mustard::Data::Tuple<ATrack>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
     auto result{std::make_shared<Mustard::Data::Tuple<ATrack>>()};
     auto r{(sciFiTracker.BracketInnerRadius() + sciFiTracker.BracketOuterRadius()) / 2};
 
@@ -904,7 +996,8 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::
     const double initialT{std::abs(initialDirection[2]) > 1e-12 ?
                               (initialCentroid[2] - r * std::cos(initialSTheta)) / initialDirection[2] :
                               0.0};
-    const double initialTheta{};
+    const double bRef{sciFiTracker.FiberLength() / (2 * std::numbers::pi)};
+    const double initialTheta{initialCentroid[2] / bRef};
 
     ROOT::Minuit2::Minuit2Minimizer minimizer;
     std::function targetFunction{

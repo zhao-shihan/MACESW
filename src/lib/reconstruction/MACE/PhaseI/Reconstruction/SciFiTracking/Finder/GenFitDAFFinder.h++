@@ -79,6 +79,14 @@ public:
     auto EstimateInitialDirection(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
         -> std::tuple<muc::array3d, muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
+    template<std::indirectly_readable AHitPointer>
+        requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
+    auto AddStraightFibersByTheta(
+        const std::vector<std::vector<AHitPointer>>& currentClusters,
+        const std::vector<std::vector<AHitPointer>>& axialClusters,
+        double angleThreshold,
+        double timeThreshold) const -> std::vector<std::vector<AHitPointer>>;
+
     auto FindHLMinDistanceSquare(
         double HelixR, double HelixB, double rotationAngle,
         const muc::array3d line_p0, const muc::array3d line_dir,
