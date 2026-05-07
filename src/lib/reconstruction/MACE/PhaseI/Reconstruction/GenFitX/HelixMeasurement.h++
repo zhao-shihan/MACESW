@@ -28,7 +28,7 @@
 
 #include "TVector3.h"
 
-namespace MACE::PhaseI::Reconstruction::GenFitX {
+namespace MACE::PhaseI::inline Reconstruction::GenFitX {
 
 // * @brief
 // Class for measurements in helical detectors (like helical trackers or detectors)
@@ -68,4 +68,4 @@ protected:
     auto findClosestPointOnHelix(const TVector3& point) const -> ClosestPointResult;
 };
 
-} // namespace MACE::PhaseI::Reconstruction::GenFitX
+} // namespace MACE::PhaseI::inline Reconstruction::GenFitX

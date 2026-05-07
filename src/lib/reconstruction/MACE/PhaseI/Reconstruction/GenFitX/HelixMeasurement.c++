@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace MACE::PhaseI::Reconstruction::GenFitX {
+namespace MACE::PhaseI::inline Reconstruction::GenFitX {
 
 HelixMeasurement::HelixMeasurement(int nDim) :
     AbsMeasurement(nDim) {
@@ -201,4 +201,4 @@ auto HelixMeasurement::findClosestPointOnHelix(const TVector3& point) const -> H
     return result;
 }
 
-} // namespace MACE::PhaseI::Reconstruction::GenFitX
+} // namespace MACE::PhaseI::inline Reconstruction::GenFitX
