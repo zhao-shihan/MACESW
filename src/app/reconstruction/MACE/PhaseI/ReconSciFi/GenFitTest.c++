@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #include "MACE/Data/Hit.h++"
 #include "MACE/PhaseI/Data/Hit.h++"
 #include "MACE/PhaseI/Data/SensorHit.h++"
@@ -5,6 +24,7 @@
 #include "MACE/PhaseI/Data/SimHit.h++"
 #include "MACE/PhaseI/Data/Track.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
+#include "MACE/PhaseI/ReconSciFi/GenFitTest.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/GenFitDAFFinder.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitDAFFitter.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitReferenceKalmanFitter.h++"
@@ -14,13 +34,12 @@
 #include "Mustard/Data/SeqProcessor.h++"
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Env/MPIEnv.h++"
+#include "Mustard/IO/PrettyLog.h++"
 #include "Mustard/Parallel/ProcessSpecificPath.h++"
 #include "Mustard/Utility/LiteralUnit.h++"
 #include "Mustard/Utility/MathConstant.h++"
 #include "Mustard/Utility/PhysicalConstant.h++"
 #include "Mustard/Utility/VectorArithmeticOperator.h++"
-
-#include "GenFitTest.h++"
 
 #include "ROOT/RDataFrame.hxx"
 #include "TDatabasePDG.h"
@@ -54,11 +73,13 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <numbers>
 #include <ranges>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -78,7 +99,7 @@ GenFitTest::GenFitTest() :
     Subprogram{"GenFitTest", "GenFit test for Scintilating Fiber Tracker (SciFi Tracker) event reconstruction."} {}
 
 auto GenFitTest::Main(int argc, char* argv[]) const -> int {
-    Mustard::CLI::BasicCLI<> cli;
+    Mustard::CLI::BasicCLI<> cli{};
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
     cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("data"s).required().nargs(1);
     cli->add_argument("-o", "--output").help("Output file path. If not provided, auto-generated from input name.");
@@ -86,35 +107,34 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     cli->add_argument("-c", "--description").help("Description YAML file path.").nargs(1);
 
     cli->parse_args(argc, argv);
-    Mustard::Env::MPIEnv env{argc, argv, {}};
-    auto inputFiles = cli->get<std::vector<std::string>>("input");
+    const Mustard::Env::MPIEnv env{argc, argv, {}};
+    const auto inputFiles{cli->get<std::vector<std::string>>("input")};
     if (inputFiles.empty()) {
-        throw std::runtime_error("No input file provided.");
+        Mustard::Throw<std::runtime_error>("No input file provided.");
     }
-    std::filesystem::path inputPath(inputFiles[0]);
-    std::string fileName = inputPath.stem().string();
+    const std::filesystem::path inputPath{inputFiles[0]};
+    const auto fileName{inputPath.stem().string()};
 
-    std::string outputBase;
-    outputBase = "SciFiOutput_" + fileName + ".root";
+    const auto outputBase{"SciFiOutput_" + fileName + ".root"};
 
-    auto finalPath = Mustard::Parallel::ProcessSpecificPath(outputBase);
-    TFile file(finalPath.generic_string().c_str(), "RECREATE");
+    const auto finalPath{Mustard::Parallel::ProcessSpecificPath(outputBase)};
+    TFile file{finalPath.generic_string().c_str(), "RECREATE"};
     Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
 
-    MACE::PhaseI::SciFiTracking::GenFitDAFFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder;
+    MACE::PhaseI::SciFiTracking::GenFitDAFFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder{};
     // MACE::PhaseI::SciFiTracking::GenFitReferenceKalmanFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     MACE::PhaseI::SciFiTracking::GenFitDAFFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     fitter.EnableEventDisplay(false);
 
-    Mustard::Data::SeqProcessor processor;
+    Mustard::Data::SeqProcessor processor{};
 
-    auto ecalData{
+    const auto ecalData{
         ROOT::RDataFrame{"G4Run0/ECALSimHit", inputFiles[0]}
     };
-    auto sciFiData{
+    const auto sciFiData{
         ROOT::RDataFrame{"G4Run0/SciFiSimHit", inputFiles[0]}
     };
-    auto ttcData{
+    const auto ttcData{
         ROOT::RDataFrame{"G4Run0/TTCSimHit", inputFiles[0]}
     };
     processor.Process<MACE::Data::ECALHit, PhaseI::Data::SciFiSimHit, MACE::Data::TTCHit>(
@@ -134,8 +154,8 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
                          });
 
             const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData;
-            for (auto&& hit : sciFiEvent) {
+            std::vector<std::shared_ptr<Mustard::Data::Tuple<MACE::PhaseI::Data::SciFiSimHit>>> sciFiHitData{};
+            for (auto&& hit : std::as_const(sciFiEvent)) {
                 if (*Get<"Edep">(*hit) <= sciFiTracker.EnergyDepositionThreshold()) {
                     continue;
                 }
@@ -151,15 +171,14 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
 
             auto nextTrackID{0};
             if (sciFiHitData.size() >= 4) {
-                for (auto&& [trackID, good] : finder(sciFiHitData, nextTrackID).good) {
+                for (const auto& [trackID, good] : finder(sciFiHitData, nextTrackID).good) {
                     const auto track{fitter(good.hitData, good.seed).track};
                     if (track == nullptr) {
                         continue;
                     }
-                    // std::cout << Get<"EvtID">(*good.seed) << " " << Get<"p">(*good.seed)[0] << " " << Get<"p">(*good.seed)[1] << " " << Get<"p">(*good.seed)[2] << std::endl;
-                    //  std::cout << Get<"EvtID">(*good.seed) << " " << Get<"x">(*good.seed)[0] << " " << Get<"x">(*good.seed)[1] << " " << Get<"x">(*good.seed)[2] << std::endl;
-                    //  std::cout << Get<"EvtID">(*track) << " " << Get<"p">(*track)[0] << " " << Get<"p">(*track)[1] << " " << Get<"p">(*track)[2] << std::endl;
+
                     reconTrack.Fill(*track);
+                    nextTrackID = trackID;
                 }
             }
         });
@@ -167,4 +186,5 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     // fitter.OpenEventDisplay();
     return EXIT_SUCCESS;
 }
+
 } // namespace MACE::PhaseI::ReconSciFi

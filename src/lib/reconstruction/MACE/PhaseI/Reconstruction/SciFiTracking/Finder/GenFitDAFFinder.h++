@@ -1,3 +1,22 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 #pragma once
 
 #include "MACE/PhaseI/Data/Hit.h++"
@@ -44,7 +63,7 @@ private:
 
 public:
     GenFitDAFFinder();
-    virtual ~GenFitDAFFinder() override = default;
+    ~GenFitDAFFinder() override = default;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
@@ -88,13 +107,13 @@ public:
         double timeThreshold) const -> std::vector<std::vector<AHitPointer>>;
 
     auto FindHLMinDistanceSquare(
-        double HelixR, double HelixB, double rotationAngle,
-        const muc::array3d line_p0, const muc::array3d line_dir,
+        double helixR, double helixB, double rotationAngle,
+        const muc::array3d line1Point, const muc::array3d line1Dir,
         double initialT, double initialTheta) -> std::tuple<double, double, double>;
 
     auto FindLLMinDistanceSquare(
-        const muc::array3d line1_point, const muc::array3d line1_dir,
-        const muc::array3d line2_point, const muc::array3d line2_dir) -> double;
+        const muc::array3d line1Point, const muc::array3d line1Dir,
+        const muc::array3d line2Point, const muc::array3d line2Dir) -> double;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>

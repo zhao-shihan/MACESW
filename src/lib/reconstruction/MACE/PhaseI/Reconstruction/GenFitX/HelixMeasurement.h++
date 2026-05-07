@@ -30,20 +30,20 @@
 
 namespace MACE::PhaseI::inline Reconstruction::GenFitX {
 
-// * @brief
-// Class for measurements in helical detectors (like helical trackers or detectors)
-// which measure the drift distance from a helical wire.
-// This hit class is designed for helical-shaped detectors where measurements
-// are the  from a helical fiber. The hit is described by 7 coordinates:
-// h_x, h_y, h_z, radius, pitch, phi0, r
-// where:
-//- h_x, h_y, h_z: center coordinates of the helix
-//- radius: radius of the helix
-//- pitch: pitch length (z-distance per full turn)
-//- phi0: initial phase angle (in radians)
-//- rdrift: drift distance from the helix wire
-// The measurement plane is dynamically constructed at the point of closest approach
-// to the helix, with the V-axis tangent to the helix and the U-axis perpendicular.
+/// @brief Measurements for helical fibers.
+///
+/// This hit class models measurements from helical fibers. The hit is described
+/// by 7 coordinates:
+/// x, y, z, radius, pitch, phi0, r
+/// where:
+/// - x, y, z: center coordinates of the helix
+/// - radius: radius of the helix
+/// - pitch: pitch length (z-distance per full turn)
+/// - phi0: initial phase angle (radians)
+/// - r: radius of the helix fiber
+///
+/// The measurement plane is constructed at the point of closest approach to the
+/// helix, with the V-axis tangent to the helix and the U-axis perpendicular.
 
 class HelixMeasurement : public genfit::AbsMeasurement {
 

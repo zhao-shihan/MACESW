@@ -1,4 +1,24 @@
+// -*- C++ -*-
+//
+// Copyright (C) 2020-2025  MACESW developers
+//
+// This file is part of MACESW, Muonium-to-Antimuonium Conversion Experiment
+// offline software.
+//
+// MACESW is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// MACESW is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// MACESW. If not, see <https://www.gnu.org/licenses/>.
+
 namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Fitter {
+
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> AHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack,
          std::derived_from<genfit::AbsFitter> AFitter>
@@ -11,12 +31,12 @@ GenFitterBase<AHit, ATrack, AFitter>::GenFitterBase(double fiberRMS, double lowe
     fGenFitter{} {
     if (const auto name{"TrackerSystem"};
         gGeoManager == nullptr or std::string_view{gGeoManager->GetName()} != name) {
-        MACE::PhaseI::Detector::Definition::World world;
+        MACE::PhaseI::Detector::Definition::World world{};
         MACE::PhaseI::Detector::Assembly::TrackerSystem trackersystem{world, false};
         // geant4 -> gdml
         const auto& intraNodeComm{Mustard::Env::MPIEnv::Instance().IntraNodeComm()};
-        std::filesystem::path gdmlFSPath;
-        std::filesystem::path::string_type gdmlPath;
+        std::filesystem::path gdmlFSPath{};
+        std::filesystem::path::string_type gdmlPath{};
         if (intraNodeComm.rank() == 0) {
             gdmlFSPath = Mustard::CreateTemporaryFile("trackersystem_temp", ".gdml");
             world.Export(gdmlFSPath);
@@ -61,8 +81,8 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
 
-    TVector3 mom(Get<"p">(*seed)[0] / 20, Get<"p">(*seed)[1] / 20, Get<"p">(*seed)[2] / 20);
-    int pid = -11;
+    TVector3 mom{Get<"p">(*seed)[0] / 20, Get<"p">(*seed)[1] / 20, Get<"p">(*seed)[2] / 20};
+    const int pid{11};
 
     muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
     measurementHitMap.reserve(hitData.size());
@@ -70,24 +90,24 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
         std::make_shared<genfit::Track>(new genfit::RKTrackRep{pid}, // track rep will be deleted when genfit::Track destructs
                                         Mustard::ToG3<"Length">(this->ToTVector3(*Get<"x">(*seed))), mom)};
     struct BySiPMID {
-        bool operator()(const AHitPointer& hit1, const AHitPointer& hit2) const {
+        auto operator()(const AHitPointer& hit1, const AHitPointer& hit2) const -> bool {
             return *Get<"FiberID">(*hit1) < *Get<"FiberID">(*hit2);
         }
     };
-    std::set<AHitPointer, BySiPMID> dataSet;
-    for (auto&& hit : hitData) {
+    std::set<AHitPointer, BySiPMID> dataSet{};
+    for (auto&& hit : std::as_const(hitData)) {
         dataSet.insert(hit);
     }
-    for (auto&& hit : dataSet) {
+    for (auto&& hit : std::as_const(dataSet)) {
         const auto measurement{
             [&]() -> genfit::AbsMeasurement* {
                 if (fiberMap[*Get<"FiberID">(*hit)].layerType == "Axial") {
-                    double x = fiberMap[*Get<"FiberID">(*hit)].radius * std::cos(fiberMap[*Get<"FiberID">(*hit)].rotationAngle);
-                    double y = fiberMap[*Get<"FiberID">(*hit)].radius * std::sin(fiberMap[*Get<"FiberID">(*hit)].rotationAngle);
-                    double z = sciFiTracker.FiberLength() / 2;
-                    TVector3 startPoint(x, y, -z);
-                    TVector3 endPoint(x, y, z);
-                    TVectorD rawHitCoords(7);
+                    double x{fiberMap[*Get<"FiberID">(*hit)].radius * std::cos(fiberMap[*Get<"FiberID">(*hit)].rotationAngle)};
+                    double y{fiberMap[*Get<"FiberID">(*hit)].radius * std::sin(fiberMap[*Get<"FiberID">(*hit)].rotationAngle)};
+                    double z{sciFiTracker.FiberLength() / 2};
+                    TVector3 startPoint{x, y, -z};
+                    TVector3 endPoint{x, y, z};
+                    TVectorD rawHitCoords{7};
                     rawHitCoords[0] = Mustard::ToG3<"Length">(startPoint.x());
                     rawHitCoords[1] = Mustard::ToG3<"Length">(startPoint.y());
                     rawHitCoords[2] = Mustard::ToG3<"Length">(startPoint.z());
@@ -96,7 +116,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                     rawHitCoords[5] = Mustard::ToG3<"Length">(endPoint.z());
                     rawHitCoords[6] = Mustard::ToG3<"Length">(0);
 
-                    TMatrixDSym rawHitCov(7);
+                    TMatrixDSym rawHitCov{7};
                     rawHitCov.UnitMatrix();
                     rawHitCov(0, 0) = 0.0;
                     rawHitCov(1, 1) = 0.0;
@@ -110,7 +130,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                                                        *Get<"FiberID">(*hit), Get<"HitID">(*hit),
                                                        nullptr};
                 } else {
-                    TVectorD rawHitCoords(8);
+                    TVectorD rawHitCoords{8};
                     rawHitCoords[0] = 0.;                                                              // x
                     rawHitCoords[1] = 0.;                                                              // y
                     rawHitCoords[2] = 0.;                                                              // z
@@ -120,7 +140,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                     rawHitCoords[6] = 2 * std::numbers::pi;
                     rawHitCoords[7] = 0; //
 
-                    TMatrixDSym rawHitCov(8);
+                    TMatrixDSym rawHitCov{8};
                     rawHitCov.UnitMatrix();
                     rawHitCov(0, 0) = 0;
                     rawHitCov(1, 1) = 0;
@@ -130,7 +150,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                     rawHitCov(5, 5) = 0.0;
                     rawHitCov(6, 6) = 0.0;
                     rawHitCov(7, 7) = 0.0289 * 0.0289;
-                    return new MACE::PhaseI::Reconstruction::GenFitX::HelixMeasurement(rawHitCoords, rawHitCov, *Get<"FiberID">(*hit), Get<"HitID">(*hit), nullptr);
+                    return new MACE::PhaseI::Reconstruction::GenFitX::HelixMeasurement{rawHitCoords, rawHitCov, *Get<"FiberID">(*hit), Get<"HitID">(*hit), nullptr};
                 }
             }()};
         genfitTrack->insertPoint(new genfit::TrackPoint{measurement, genfitTrack.get()});
@@ -149,7 +169,12 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
                                                     const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
     const auto& status{*genfitTrack->getFitStatus()};
-    const genfit::MeasuredStateOnPlane* firstState;
+    const auto* firstState{static_cast<const genfit::MeasuredStateOnPlane*>(nullptr)};
+    try {
+        firstState = &genfitTrack->getFittedState();
+    } catch (const genfit::Exception&) {
+        return {};
+    }
     try {
         firstState = &genfitTrack->getFittedState();
     } catch (const genfit::Exception&) {
@@ -157,9 +182,9 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
     }
     const auto cardinalRep{genfitTrack->getCardinalRep()};
     const auto& allPoint{genfitTrack->getPointsWithMeasurement()};
-    std::vector<AHitPointer> fitted;
+    std::vector<AHitPointer> fitted{};
     fitted.reserve(allPoint.size());
-    std::vector<AHitPointer> failed;
+    std::vector<AHitPointer> failed{};
     failed.reserve(allPoint.size());
     for (gsl::index i{}; i < ssize(allPoint); ++i) {
         const auto fit{allPoint[i]->hasFitterInfo(cardinalRep)};
@@ -205,7 +230,7 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> AHit,
          std::derived_from<genfit::AbsFitter> AFitter>
 template<Mustard::Concept::NumericVector3FloatingPoint T>
 MUSTARD_ALWAYS_INLINE auto GenFitterBase<AHit, ATrack, AFitter>::ToTVector3(T src) -> TVector3 {
-    TVector3 dest;
+    TVector3 dest{};
     dest[0] = src[0];
     dest[1] = src[1];
     dest[2] = src[2];
@@ -217,10 +242,11 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> AHit,
          std::derived_from<genfit::AbsFitter> AFitter>
 template<Mustard::Concept::NumericVector3FloatingPoint T>
 MUSTARD_ALWAYS_INLINE auto GenFitterBase<AHit, ATrack, AFitter>::FromTVector3(const TVector3& src) -> T {
-    T dest;
+    T dest{};
     dest[0] = src[0];
     dest[1] = src[1];
     dest[2] = src[2];
     return dest;
 }
+
 } // namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Fitter
