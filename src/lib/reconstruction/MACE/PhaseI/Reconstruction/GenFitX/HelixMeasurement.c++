@@ -2,6 +2,7 @@
 #include "HelixMeasurement.h++"
 
 #include "Mustard/IO/PrettyLog.h++"
+#include "Mustard/Math/POCA.h++"
 
 #include "DetPlane.h"
 #include "Exception.h"
@@ -14,9 +15,6 @@
 #include "TBuffer.h"
 #include "TClass.h"
 #include "TMath.h"
-
-#include "gsl/gsl_multimin.h"
-#include "gsl/gsl_vector.h"
 
 #include "muc/numeric"
 
@@ -94,108 +92,44 @@ const genfit::AbsHMatrix* HelixMeasurement::constructHMatrix(const genfit::AbsTr
 auto HelixMeasurement::findClosestPointOnHelix(const TVector3& point) const -> HelixMeasurement::ClosestPointResult {
     ClosestPointResult result;
 
-    const TVector3 center(rawHitCoords_(0), rawHitCoords_(1), rawHitCoords_(2));
+    const Mustard::Point2D center2{rawHitCoords_(0), rawHitCoords_(1)};
+    const TVector3 center3(rawHitCoords_(0), rawHitCoords_(1), rawHitCoords_(2));
     const double radius{rawHitCoords_(3)};
-    const double pitchAngle{rawHitCoords_(4)};
+    const double pitchAngle{rawHitCoords_(4)}; // as returned by SciFiTracker::CalculateLayerPitch()
     const double phi0{rawHitCoords_(5)};
     const double phiTotal{rawHitCoords_(6)};
 
-    const auto cosA{std::cos(pitchAngle)};
-    const auto sinA{std::sin(pitchAngle)};
-    const auto tanA{sinA / cosA};
-    const auto tanAR{radius * tanA};
-    const auto zOffset{phiTotal / 2 * tanAR};
+    const double tanA{std::tan(pitchAngle)};      // tan(pitch)
+    const double tanAR{radius * tanA};            // r * tan(pitch)
+    const double zOffset{phiTotal / 2.0 * tanAR}; // matches original parametrization
 
-    const TVector3 relPos{point - center};
+    // z0 is the z coordinate at phi = phi0
+    const double z0{center3.Z() - zOffset};
 
-    auto helixPoint{[&](double u) -> TVector3 {
-        const double rotatedU{u + phi0};
-        return TVector3(
-            radius * std::cos(rotatedU),
-            radius * std::sin(rotatedU),
-            u * tanAR - zOffset);
-    }};
+    // Mustard::Helix expects 'lambda' (dip angle). Relationship: lambda = pi/2 - pitchAngle
+    const double lambda{std::acos(-1.0) / 2.0 - pitchAngle};
 
-    auto distanceSq{[&](double u) -> double {
-        const TVector3 helixPt{helixPoint(u)};
-        return (helixPt.X() - relPos.X()) * (helixPt.X() - relPos.X()) +
-               (helixPt.Y() - relPos.Y()) * (helixPt.Y() - relPos.Y()) +
-               (helixPt.Z() - relPos.Z()) * (helixPt.Z() - relPos.Z());
-    }};
+    const Mustard::Helix helix{center2, radius, phi0, z0, lambda};
 
-    auto derivative{[&](double u) -> double {
-        const double u1{u + phi0};
-        const TVector3 helixPt{helixPoint(u)};
+    const Mustard::Point3D targetPoint{point.X(), point.Y(), point.Z()};
 
-        const double dx_du{-radius * std::sin(u1)};
-        const double dy_du{radius * std::cos(u1)};
-        const double dz_du{tanAR};
+    const auto pocaResult{POCA(helix, targetPoint, 0.0, phiTotal,
+                               1, 300, muc::default_abs_tol<double>, muc::default_rel_tol<double>)};
 
-        return 2 * (helixPt.X() - relPos.X()) * dx_du +
-               2 * (helixPt.Y() - relPos.Y()) * dy_du +
-               2 * (helixPt.Z() - relPos.Z()) * dz_du;
-    }};
-
-    auto secondDerivative{
-        [&](double u) -> double {
-            const double u1{u + phi0};
-            const TVector3 helixPt{helixPoint(u)};
-
-            const double dx_du{-radius * std::sin(u1)};
-            const double dy_du{radius * std::cos(u1)};
-            const double dz_du{tanAR};
-
-            const double d2x_du2{-radius * std::cos(u1)};
-            const double d2y_du2{-radius * std::sin(u1)};
-            const double d2z_du2{0};
-
-            return 2 * (dx_du * dx_du + (helixPt.X() - relPos.X()) * d2x_du2) +
-                   2 * (dy_du * dy_du + (helixPt.Y() - relPos.Y()) * d2y_du2) +
-                   2 * (dz_du * dz_du + (helixPt.Z() - relPos.Z()) * d2z_du2);
-        }};
-
-    double bestU = 0.0;
-    double minDistSq = std::numeric_limits<double>::max();
-    const int numSamples = 100;
-    const double startU = 0;
-    const double endU = phiTotal;
-
-    for (int i = 0; i <= numSamples; ++i) {
-        const double u = startU + i * (endU - startU) / numSamples;
-        const double distSq = distanceSq(u);
-        if (distSq < minDistSq) {
-            minDistSq = distSq;
-            bestU = u;
-        }
+    if (not pocaResult.has_value()) {
+        Mustard::Throw<std::runtime_error>(
+            "HelixMeasurement::findClosestPointOnHelix: Failed to find POCA");
     }
 
-    constexpr int maxIterations = 50;
-    constexpr double tolerance = 1e-10;
-    double u = bestU;
+    const auto& [poca, doca]{*pocaResult};
+    result.point = TVector3(poca.x(), poca.y(), poca.z());
 
-    for (int i{}; i < maxIterations; ++i) {
-        const double d1 = derivative(u);
-        const double d2 = secondDerivative(u);
+    // Compute azimuthal angle (absolute) and convert to helix-relative phi
+    const double phiAbs{std::atan2(poca.y() - center2.y(), poca.x() - center2.x())};
+    const double phiRel{phiAbs - phi0};
 
-        if (std::abs(d2) < 1e-15)
-            break;
-
-        const double delta = -d1 / d2;
-        u += delta;
-
-        if (std::abs(delta) < tolerance)
-            break;
-    }
-
-    const TVector3 closestPoint = helixPoint(u);
-    result.point = center + closestPoint;
-
-    const double u1 = u + phi0;
-    result.tangent.SetXYZ(
-        -radius * std::sin(u1),
-        radius * std::cos(u1),
-        tanAR);
-
+    const auto dir{helix.DirectionAt(phiRel)}; // Mustard::Vector3D
+    result.tangent.SetXYZ(dir.x(), dir.y(), dir.z());
     result.tangent = result.tangent.Unit();
 
     return result;
