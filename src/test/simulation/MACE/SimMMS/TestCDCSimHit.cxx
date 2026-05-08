@@ -9,9 +9,9 @@
 #include <iostream>
 #include <string>
 
-const std::string dataTupleName{"TTCSimHit"};
+const std::string dataTupleName{"CDCSimHit"};
 
-const void Judge(double pValue) {
+auto Conclude(double pValue) -> void {
     const std::string boldInvert{"\x1B[1m\x1B[7m"};
     const std::string boldRedInvert{boldInvert + "\x1B[38;5;9m"};
     const std::string boldYellowInvert{boldInvert + "\x1B[38;5;11m"};
@@ -30,7 +30,7 @@ const void Judge(double pValue) {
     }
 }
 
-auto TestTTCSimHit(std::string moduleName, std::string testFileName, std::string sampleFileName) {
+auto TestCDCSimHit(std::string moduleName, std::string testFileName, std::string sampleFileName) {
     gROOT->SetBatch(kTRUE);
 
     auto SaveRegressionResult{
@@ -121,9 +121,6 @@ auto TestTTCSimHit(std::string moduleName, std::string testFileName, std::string
                 .Define("p_0", "p[0]")
                 .Define("p_1", "p[1]")
                 .Define("p_2", "p[2]")
-                .Define("x0_0", "x0[0]")
-                .Define("x0_1", "x0[1]")
-                .Define("x0_2", "x0[2]")
                 .Define("p0_0", "p0[0]")
                 .Define("p0_1", "p0[1]")
                 .Define("p0_2", "p0[2]")};
@@ -143,7 +140,7 @@ auto TestTTCSimHit(std::string moduleName, std::string testFileName, std::string
         std::cout << "\n"
                   << "(#" << ++idx << ") " << " Column " << branchName << std::endl;
         auto pValue{hist->Chi2Test(testHist.GetPtr(), "P")};
-        Judge(pValue);
+        Conclude(pValue);
         SaveRegressionResult(hist, testHist.GetPtr(), branchName);
         std::cout << "\n";
     }

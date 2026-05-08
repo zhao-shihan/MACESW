@@ -11,9 +11,9 @@
 #include <vector>
 
 const auto nBinsValueType{100};
-auto DataTupleName{"VetoSimHit"};
+auto DataTupleName{"TTCSimHit"};
 
-auto ReadVetoSimHit(auto moduleName, auto srcFileName, auto dstFileName) -> int {
+auto ReadTTCSimHit(auto moduleName, auto srcFileName, auto dstFileName) -> int {
     ROOT::RDataFrame df0{Form("G4Run0/%s", DataTupleName), srcFileName};
     const auto dstFile{new TFile(dstFileName, "UPDATE")};
     auto moduleDir{static_cast<TDirectory*>(dstFile->Get(moduleName))};
@@ -47,6 +47,23 @@ auto ReadVetoSimHit(auto moduleName, auto srcFileName, auto dstFileName) -> int 
                 .Define("p0_2", "p0[2]")};
 
     std::vector<std::tuple<std::string, std::any, std::any>> histParameterList{
+<<<<<<< HEAD:src/test/simulation/MACE/SimTTC/ReadTTCSimHit.cxx
+        // {"TileID",  0.,            4000.                                                                                     },
+        {"Ek",   0., df.Max("Ek")                                                                        },
+        // {"Ek0",     0.,            df.Max("Ek0")                                                                             },
+        // {"x_0",      df.Min("x_0"),  df.Max("x_0")                                                                              },
+        // {"x_1",      df.Min("x_1"),  df.Max("x_1")                                                                              },
+        // {"x_2",      df.Min("x_2"),  df.Max("x_2")                                                                              },
+        // {"p_0",      df.Min("p_0"),  df.Max("p_0")                                                                              },
+        // {"p_1",      df.Min("p_1"),  df.Max("p_1")                                                                              },
+        // {"p_2",      df.Min("p_2"),  df.Max("p_2")                                                                              },
+        // {"p0_0",     df.Min("p0_0"), df.Max("p0_0")                                                                             },
+        // {"p0_1",     df.Min("p0_1"), df.Max("p0_1")                                                                             },
+        // {"p0_2",     df.Min("p0_2"), df.Max("p0_2")                                                                             },
+        // {"t",       0,             std::function([&]() -> double { return *df.Mean("t") + 5 * *df.StdDev("t"); })            },
+        // {"nOptPho", 0,             std::function([&]() -> double { return *df.Mean("nOptPho") + 5 * *df.StdDev("nOptPho"); })},
+        {"Edep", 0., std::function([&]() -> double { return *df.Mean("Edep") + 5 * *df.StdDev("Edep"); })}
+=======
         {"HitID", 0., 10.                                                                                 },
         // {"StripID", 0.,                                                                                   200.                                                                                },
         // {"x0_0",     -2100.,                                                                               2100.                                                                               },
@@ -64,6 +81,7 @@ auto ReadVetoSimHit(auto moduleName, auto srcFileName, auto dstFileName) -> int 
         // {"p0_0",     std::function([&]() -> double { return *df.Mean("p0_0") - 0.5 * *df.StdDev("p0_0"); }), std::function([&]() -> double { return *df.Mean("p0_0") + 0.5 * *df.StdDev("p0_0"); })},
         // {"p0_1",     std::function([&]() -> double { return *df.Mean("p0_1") - 0.5 * *df.StdDev("p0_1"); }), std::function([&]() -> double { return *df.Mean("p0_1") + 0.5 * *df.StdDev("p0_1"); })},
         // {"p0_2",     std::function([&]() -> double { return *df.Mean("p0_2") - 0.5 * *df.StdDev("p0_2"); }), std::function([&]() -> double { return *df.Mean("p0_2") + 0.5 * *df.StdDev("p0_2"); })}
+>>>>>>> origin/main:src/test/scripts/ReadVetoSimHit.cxx
     };
 
     std::vector<ROOT::RDF::RResultPtr<TH1>> histList;

@@ -15,10 +15,21 @@
 # You should have received a copy of the GNU General Public License along with
 # MACESW. If not, see <https://www.gnu.org/licenses/>.
 
-file(GLOB Test_SCRIPTS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*)
-foreach(_scripts ${Test_SCRIPTS})
-    set(Test_SCRIPTS_COPY_DIR test)
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${Test_SCRIPTS_COPY_DIR})
-    configure_file(${_scripts} ${CMAKE_BINARY_DIR}/${Test_SCRIPTS_COPY_DIR} COPYONLY)
-    install(FILES ${_scripts} DESTINATION ${MACESW_DATAROOTDIR}/${Test_SCRIPTS_COPY_DIR})
-endforeach()
+set(SOURCE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/simulation"
+    "${CMAKE_CURRENT_SOURCE_DIR}/source"
+)
+set(SOURCE_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/generate_regression_data_dr.sh"
+    "${CMAKE_CURRENT_SOURCE_DIR}/regression_test_all.sh"
+)
+set(DEST_DIR "${CMAKE_BINARY_DIR}/test")
+
+file(COPY ${SOURCE_DIR} ${SOURCE_FILE}
+     DESTINATION "${DEST_DIR}"
+     FILES_MATCHING 
+     REGEX ".*\\.template$" EXCLUDE
+     REGEX ".*\\.cxx$" 
+     REGEX ".*\\.sh$" 
+           PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)

@@ -12,9 +12,14 @@ for arg in "$@"; do
     esac
 done
 
-script_dir="$(dirname "$(readlink -f "$0")")"
-build_dir=$script_dir/..
-test_dir=$script_dir/test_$(date --utc +%Y%m%d-%H%M%S)
+current_dir="$(dirname "$(readlink -f "$0")")"
+test_src_dir=$current_dir
+build_dir=$test_src_dir/..
+test_dir=$test_src_dir/test_ALL_$(date --utc +%Y%m%d-%H%M%S)
+
+simmace_dir=$test_src_dir/simulation/MACE/SimMACE
+simmms_dir=$test_src_dir/simulation/MACE/SimMMS
+simttc_dir=$test_src_dir/simulation/MACE/SimTTC
 
 mkdir "$test_dir" && cd "$test_dir"
 echo "Working directory: $(pwd)"
@@ -85,24 +90,24 @@ parexec() {
     fi
 }
 
-echo "Start simulation..."
+echo "Start simulation"
+run_command parexec $build_dir/MACE SimMACE --seed 0 $build_dir/SimMACE/run_signal.mac
 run_command parexec $build_dir/MACE SimMMS --seed 0 $build_dir/SimMMS/run_em_flat.mac
 run_command parexec $build_dir/MACE SimTTC --seed 0 $build_dir/SimTTC/run_em_flat.mac
-run_command parexec $build_dir/MACE SimMACE --seed 0 $build_dir/SimMACE/run_signal.mac
 
 echo "Merging results..."
+run_command hadd -ff SimMACE_signal_test.root SimMACE_signal_test/*
 run_command hadd -ff SimMMS_em_flat_test.root SimMMS_em_flat_test/*
 run_command hadd -ff SimTTC_em_flat_test.root SimTTC_em_flat_test/*
-run_command hadd -ff SimMACE_signal_test.root SimMACE_signal_test/*
 
 echo "Generating regression report..."
-run_command root -l -q "$script_dir/TestCDCSimHit.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_test.root\",\"$script_dir/macesw_regression_data.root\")"
-run_command root -l -q "$script_dir/TestMMSSimTrack.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_test.root\",\"$script_dir/macesw_regression_data.root\")"
-run_command root -l -q "$script_dir/TestTTCSimHit.cxx(\"SimTTC_em_flat\",\"SimTTC_em_flat_test.root\",\"$script_dir/macesw_regression_data.root\")"
-run_command root -l -q "$script_dir/TestMCPSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$script_dir/macesw_regression_data.root\")"
-run_command root -l -q "$script_dir/TestTTCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$script_dir/macesw_regression_data.root\")"
-run_command root -l -q "$script_dir/TestCDCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$script_dir/macesw_regression_data.root\")"
-run_command root -l -q "$script_dir/TestMMSSimTrack.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$script_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simmace_dir/TestMCPSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simmace_dir/TestTTCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simmace_dir/TestCDCSimHit.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simmace_dir/TestMMSSimTrack.cxx(\"SimMACE_signal\",\"SimMACE_signal_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simmms_dir/TestCDCSimHit.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simmms_dir/TestMMSSimTrack.cxx(\"SimMMS_em_flat\",\"SimMMS_em_flat_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
+run_command root -l -q "$simttc_dir/TestTTCSimHit.cxx(\"SimTTC_em_flat\",\"SimTTC_em_flat_test.root\",\"$test_src_dir/macesw_regression_data.root\")"
 
 end_time=$(date +%s)
 total_time=$((end_time - start_time))
