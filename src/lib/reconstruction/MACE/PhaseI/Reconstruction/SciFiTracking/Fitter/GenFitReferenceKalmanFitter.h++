@@ -58,7 +58,7 @@ public:
 
 public:
     GenFitReferenceKalmanFitter(double fiberRMS);
-    virtual ~GenFitReferenceKalmanFitter() override = default;
+    ~GenFitReferenceKalmanFitter() override = default;
 
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and

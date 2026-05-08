@@ -86,7 +86,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
             }
         }
 
-        auto& currentClusters = std::get<2>(initialResult);
+        auto& currentClusters{std::get<2>(initialResult)};
         auto extraAxial{this->AddStraightFibersByTheta(
             currentClusters,
             std::get<2>(dividedClusters),
@@ -159,8 +159,8 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hi
         return static_cast<double>(intersection) / static_cast<double>(denominator);
     }};
 
-    std::vector<std::vector<int>> acceptedSignatures;
-    for (auto& candidate : candidates) {
+    std::vector<std::vector<int>> acceptedSignatures{};
+    for (const auto& candidate : candidates) {
         const bool hasLargeOverlap{std::ranges::any_of(
             acceptedSignatures,
             [&](const auto& signature) {
@@ -223,13 +223,13 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vecto
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
 
-    std::vector<std::vector<AHitPointer>> lCluster;
-    std::vector<std::vector<AHitPointer>> rCluster;
-    std::vector<std::vector<AHitPointer>> aCluster;
+    std::vector<std::vector<AHitPointer>> lCluster{};
+    std::vector<std::vector<AHitPointer>> rCluster{};
+    std::vector<std::vector<AHitPointer>> aCluster{};
 
     for (auto&& cluster : hitData) {
-        auto firstSiPMID{Get<"FiberID">(*cluster.front())};
-        auto layerType{fiberMap[firstSiPMID].layerType};
+        const auto firstSiPMID{Get<"FiberID">(*cluster.front())};
+        const auto layerType{fiberMap[firstSiPMID].layerType};
 
         if (layerType == "LHelical") {
             lCluster.push_back(cluster);
@@ -250,7 +250,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
     -> const std::set<std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
-    std::set<std::vector<std::vector<AHitPointer>>> result;
+    std::set<std::vector<std::vector<AHitPointer>>> result{};
 
     auto superLayer{[&fiberMap](int fiberID) -> int {
         return static_cast<int>(fiberMap[fiberID].layerID / 2);
@@ -286,9 +286,9 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         if (cluster.empty())
             return 0.0;
 
-        double sum = 0.0;
+        double sum{0.0};
         for (const auto& hit : cluster) {
-            const auto fiberID = Get<"FiberID">(*hit);
+            const auto fiberID{Get<"FiberID">(*hit)};
 
             sum += fiberMap[fiberID].rotationAngle;
         }
@@ -299,7 +299,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         if (cluster.empty())
             return 0.0;
 
-        double sum = 0.0;
+        double sum{0.0};
         for (const auto& hit : cluster) {
             sum += Get<"t">(*hit);
         }
@@ -329,10 +329,15 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         double angleResidual;
     };
 
-    std::vector<double> lAvgAngle(lCluster.size()), lAvgTime(lCluster.size());
-    std::vector<double> rAvgAngle(rCluster.size()), rAvgTime(rCluster.size());
-    std::vector<double> aAvgAngle(aCluster.size()), aAvgTime(aCluster.size());
-    std::vector<int> lFrontID(lCluster.size()), rFrontID(rCluster.size()), aFrontID(aCluster.size());
+    std::vector<double> lAvgAngle(lCluster.size(), 0.0);
+    std::vector<double> lAvgTime(lCluster.size(), 0.0);
+    std::vector<double> rAvgAngle(rCluster.size(), 0.0);
+    std::vector<double> rAvgTime(rCluster.size(), 0.0);
+    std::vector<double> aAvgAngle(aCluster.size(), 0.0);
+    std::vector<double> aAvgTime(aCluster.size(), 0.0);
+    std::vector<int> lFrontID(lCluster.size(), 0);
+    std::vector<int> rFrontID(rCluster.size(), 0);
+    std::vector<int> aFrontID(aCluster.size(), 0);
 
     for (size_t i{}; i < lCluster.size(); ++i) {
         lAvgAngle[i] = calculateAvgAngle(lCluster[i]);
@@ -350,7 +355,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         aFrontID[i] = Get<"FiberID">(*aCluster[i].front());
     }
 
-    std::vector<TripleCandidate> tripleCandidates;
+    std::vector<TripleCandidate> tripleCandidates{};
     for (size_t li{}; li < lCluster.size(); ++li) {
         for (size_t ri{}; ri < rCluster.size(); ++ri) {
             const double S{lAvgAngle[li] + rAvgAngle[ri]};
@@ -360,16 +365,16 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
             for (size_t ai{}; ai < aCluster.size(); ++ai) {
                 if (std::abs(lAvgTime[li] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() or
                     std::abs(rAvgTime[ri] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() or
-                    !areCompatibleTriple(lFrontID[li], rFrontID[ri], aFrontID[ai])) {
+                    not areCompatibleTriple(lFrontID[li], rFrontID[ri], aFrontID[ai])) {
                     continue;
                 }
 
-                const auto angleResidual = std::min(angularDist(angleCondition1, aAvgAngle[ai]), angularDist(angleCondition2, aAvgAngle[ai]));
+                const auto angleResidual{std::min(angularDist(angleCondition1, aAvgAngle[ai]), angularDist(angleCondition2, aAvgAngle[ai]))};
                 if (angleResidual > 0.05 * std::numbers::pi) {
                     continue;
                 }
 
-                const auto timeResidual = std::abs(lAvgTime[li] - aAvgTime[ai]) + std::abs(rAvgTime[ri] - aAvgTime[ai]);
+                const auto timeResidual{std::abs(lAvgTime[li] - aAvgTime[ai]) + std::abs(rAvgTime[ri] - aAvgTime[ai])};
                 tripleCandidates.push_back({li, ri, ai, timeResidual, angleResidual});
             }
         }
@@ -407,7 +412,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const
         size_t second;
         double timeResidual;
     };
-    std::vector<PairCandidate> pairCandidates;
+    std::vector<PairCandidate> pairCandidates{};
 
     for (size_t li{}; li < lCluster.size(); ++li) {
         // if (lUsed[li]) {
@@ -487,8 +492,8 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
     -> const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> {
 
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
-    std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> coordinateMap;
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
+    std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> coordinateMap{};
 
     auto wrapTo2Pi{[&](double angle) -> double {
         angle = std::fmod(angle, 2 * std::numbers::pi);
@@ -510,7 +515,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::CalCoordinates(const std::set<std::vect
 
     auto calculateCoordinates{[&](double lAngle, double rAngle, double aAngle,
                                   double rLLayer, double rRLayer, double rALayer) -> std::vector<muc::array3d> {
-        std::vector<muc::array3d> coords;
+        std::vector<muc::array3d> coords{};
 
         if (lAngle >= 0 and rAngle >= 0 and aAngle >= 0) {
             double x0{rLLayer};
@@ -677,7 +682,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
                deltaTheta < sciFiTracker.CentroidThetaThreshold();
     }};
 
-    std::vector<Entry> entries;
+    std::vector<Entry> entries{};
     entries.reserve(hitData.size());
     for (const auto& p : hitData) {
         entries.push_back(p);
@@ -720,15 +725,15 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
         }
     }
 
-    std::map<int, std::vector<size_t>> components;
+    std::map<int, std::vector<size_t>> components{};
     for (size_t i{}; i < n; ++i) {
         components[uf.find(static_cast<int>(i))].push_back(i);
     }
 
-    std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData;
+    std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>> divData{};
     for (auto& component : components) {
         auto& idxList{component.second};
-        std::set<std::string> layerTypes;
+        std::set<std::string> layerTypes{};
         for (size_t idx : idxList) {
             const auto& clusters{entries[idx].second};
             for (const auto& cluster : clusters) {
@@ -739,7 +744,7 @@ auto GenFitDAFFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3
         }
 
         if (layerTypes.size() == 3) {
-            std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> groupMap;
+            std::map<muc::array3d, std::vector<std::vector<AHitPointer>>> groupMap{};
             for (size_t idx : idxList) {
                 auto& [coord, clusters] = entries[idx];
                 groupMap[coord] = std::move(clusters);

@@ -79,12 +79,12 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
     -> std::pair<std::shared_ptr<genfit::Track>,
                  muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
-    const auto& fiberMap = sciFiTracker.DetectorFiberInformation();
+    const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
 
-    TVector3 mom{Get<"p">(*seed)[0] / 20, Get<"p">(*seed)[1] / 20, Get<"p">(*seed)[2] / 20};
+    const TVector3 mom{Get<"p">(*seed)[0] / 20, Get<"p">(*seed)[1] / 20, Get<"p">(*seed)[2] / 20};
     const int pid{11};
 
-    muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap;
+    muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer> measurementHitMap{};
     measurementHitMap.reserve(hitData.size());
     const auto genfitTrack{
         std::make_shared<genfit::Track>(new genfit::RKTrackRep{pid}, // track rep will be deleted when genfit::Track destructs
@@ -169,12 +169,7 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Finalize(std::shared_ptr<genfit::Trac
                                                     const muc::flat_hash_map<const genfit::AbsMeasurement*, AHitPointer>& measurementHitMap)
     -> Base::template Result<AHitPointer> {
     const auto& status{*genfitTrack->getFitStatus()};
-    const auto* firstState{static_cast<const genfit::MeasuredStateOnPlane*>(nullptr)};
-    try {
-        firstState = &genfitTrack->getFittedState();
-    } catch (const genfit::Exception&) {
-        return {};
-    }
+    const genfit::MeasuredStateOnPlane* firstState{nullptr};
     try {
         firstState = &genfitTrack->getFittedState();
     } catch (const genfit::Exception&) {

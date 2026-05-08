@@ -90,7 +90,7 @@ private:
 
 protected:
     GenFitterBase(double fiberRMS, double lowestMomentum = 1 * CLHEP::MeV);
-    virtual ~GenFitterBase() = default;
+    ~GenFitterBase() = default;
 
 public:
     auto FiberRMS() const -> auto { return fFiberRMS; }
