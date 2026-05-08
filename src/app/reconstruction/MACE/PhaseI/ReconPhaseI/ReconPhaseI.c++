@@ -24,7 +24,7 @@
 #include "MACE/PhaseI/Data/SimHit.h++"
 #include "MACE/PhaseI/Data/Track.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
-#include "MACE/PhaseI/ReconSciFi/GenFitTest.h++"
+#include "MACE/PhaseI/ReconPhaseI/ReconPhaseI.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/GenFitFinder.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitDAFFitter.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitReferenceKalmanFitter.h++"
@@ -87,7 +87,7 @@
 #include <utility>
 #include <vector>
 
-namespace MACE::PhaseI::ReconSciFi {
+namespace MACE::PhaseI::ReconPhaseI {
 
 using namespace Mustard::LiteralUnit::Energy;
 using namespace Mustard::LiteralUnit::Time;
@@ -95,10 +95,10 @@ using namespace Mustard::MathConstant;
 using namespace Mustard::PhysicalConstant;
 using namespace std::literals;
 
-GenFitTest::GenFitTest() :
-    Subprogram{"GenFitTest", "GenFit test for Scintilating Fiber Tracker (SciFi Tracker) event reconstruction."} {}
+ReconPhaseI::ReconPhaseI() :
+    Subprogram{"ReconPhaseI", "Phase-I event reconstruction."} {}
 
-auto GenFitTest::Main(int argc, char* argv[]) const -> int {
+auto ReconPhaseI::Main(int argc, char* argv[]) const -> int {
     Mustard::CLI::BasicCLI<> cli{};
     cli->add_argument("input").help("Input file path(s).").nargs(argparse::nargs_pattern::at_least_one);
     cli->add_argument("-t", "--input-tree").help("Input tree name.").default_value("data"s).required().nargs(1);
@@ -187,4 +187,4 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     return EXIT_SUCCESS;
 }
 
-} // namespace MACE::PhaseI::ReconSciFi
+} // namespace MACE::PhaseI::ReconPhaseI

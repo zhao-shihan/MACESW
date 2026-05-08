@@ -21,13 +21,13 @@
 
 #include "Mustard/Application/Subprogram.h++"
 
-namespace MACE::PhaseI::ReconSciFi {
+namespace MACE::PhaseI::ReconPhaseI {
 
-class GenFitTest : public Mustard::Application::Subprogram {
+class ReconPhaseI : public Mustard::Application::Subprogram {
 public:
-    GenFitTest();
+    ReconPhaseI();
 
     auto Main(int argc, char* argv[]) const -> int override;
 };
 
-} // namespace MACE::PhaseI::ReconSciFi
+} // namespace MACE::PhaseI::ReconPhaseI

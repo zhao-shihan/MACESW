@@ -21,7 +21,7 @@
 #include "MACE/PhaseI/MakeGeometry/MakeGeometry.h++"
 #include "MACE/PhaseI/PhaseI.h++"
 #include "MACE/PhaseI/ReconECAL/ReconECAL.h++"
-#include "MACE/PhaseI/ReconSciFi/GenFitTest.h++"
+#include "MACE/PhaseI/ReconPhaseI/ReconPhaseI.h++"
 #include "MACE/PhaseI/SimMACEPhaseI/SimMACEPhaseI.h++"
 
 #include "Mustard/Application/SubprogramLauncher.h++"
@@ -35,7 +35,7 @@ auto PhaseI::Main(int argc, char* argv[]) const -> int {
     Mustard::Application::SubprogramLauncher launcher;
     launcher.AddSubprogram<MACE::PhaseI::CaliECAL::CaliECAL>();
     launcher.AddSubprogram<MACE::PhaseI::ReconECAL::ReconECAL>();
-    launcher.AddSubprogram<MACE::PhaseI::ReconSciFi::GenFitTest>();
+    launcher.AddSubprogram<MACE::PhaseI::ReconPhaseI::ReconPhaseI>();
     launcher.AddSubprogram<MACE::PhaseI::MakeGeometry::MakeGeometry>();
     launcher.AddSubprogram<MACE::PhaseI::SimMACEPhaseI::SimMACEPhaseI>();
     return launcher.LaunchMain(argc, argv);
