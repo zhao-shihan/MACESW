@@ -220,7 +220,7 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-const auto GenFitFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
+auto GenFitFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
     -> const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
@@ -248,7 +248,7 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-const auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
+auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
     -> const std::set<std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
