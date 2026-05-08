@@ -27,7 +27,7 @@ public:
 
     auto VolumeContain(Mustard::Point3D x) const -> bool;
     auto Contain(Mustard::Point3D x) const -> auto { return VolumeContain(x); }
-    auto Contain(Mustard::Point3D, bool insideVolume) const -> auto { return insideVolume; }
+    auto static Contain(Mustard::Point3D, bool insideVolume) -> auto { return insideVolume; }
 
 private:
     auto ImportAllValue(const YAML::Node& node) -> void override;

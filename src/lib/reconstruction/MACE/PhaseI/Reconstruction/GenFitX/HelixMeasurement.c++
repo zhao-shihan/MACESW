@@ -45,7 +45,7 @@ auto HelixMeasurement::constructPlane(const genfit::StateOnPlane& state) const -
     rep->extrapolateToCylinder(st, rawHitCoords_(3));
     TVector3 currentPos{rep->getPos(st)};
 
-    auto closest{findClosestPointOnHelix(currentPos)};
+    auto closest{FindClosestPointOnHelix(currentPos)};
     const TVector3& pocaOnHelix{closest.point};
     TVector3 tangent{closest.tangent};
     tangent.SetMag(1.0);
@@ -58,38 +58,38 @@ auto HelixMeasurement::constructPlane(const genfit::StateOnPlane& state) const -
             "HelixMeasurement::constructPlane: Direction is parallel to helix tangent");
     }
 
-    TVector3 U{dirInPoca.Cross(tangent)};
-    if (U.Mag2() < muc::default_abs_tol<double>) {
-        U = TVector3(1, 0, 0).Cross(tangent);
-        if (U.Mag2() < muc::default_abs_tol<double>) {
-            U = TVector3(0, 1, 0).Cross(tangent);
+    TVector3 u{dirInPoca.Cross(tangent)};
+    if (u.Mag2() < muc::default_abs_tol<double>) {
+        u = TVector3(1, 0, 0).Cross(tangent);
+        if (u.Mag2() < muc::default_abs_tol<double>) {
+            u = TVector3(0, 1, 0).Cross(tangent);
         }
     }
-    U.SetMag(1.0);
-    auto plane{new genfit::DetPlane(pocaOnHelix, U, tangent)};
+    u.SetMag(1.0);
+    auto plane{new genfit::DetPlane(pocaOnHelix, u, tangent)};
 
     return genfit::SharedPlanePtr(plane);
 }
 
 auto HelixMeasurement::constructMeasurementsOnPlane(const genfit::StateOnPlane& state) const -> std::vector<genfit::MeasurementOnPlane*> {
     double d{};
-    double V{rawHitCov_(7, 7)};
+    double v{rawHitCov_(7, 7)};
     return {new genfit::MeasurementOnPlane(
         TVectorD(1, &d),
-        TMatrixDSym(1, &V),
+        TMatrixDSym(1, &v),
         state.getPlane(),
         state.getRep(),
         constructHMatrix(state.getRep()))};
 }
 
-const genfit::AbsHMatrix* HelixMeasurement::constructHMatrix(const genfit::AbsTrackRep* rep) const {
+auto HelixMeasurement::constructHMatrix(const genfit::AbsTrackRep* rep) const -> const genfit::AbsHMatrix* {
     if (dynamic_cast<const genfit::RKTrackRep*>(rep) == nullptr) {
         Mustard::Throw<std::runtime_error>("HelixMeasurement can only handle state vectors of type RKTrackRep!");
     }
     return new genfit::HMatrixU();
 }
 
-auto HelixMeasurement::findClosestPointOnHelix(const TVector3& point) const -> HelixMeasurement::ClosestPointResult {
+auto HelixMeasurement::FindClosestPointOnHelix(const TVector3& point) const -> HelixMeasurement::ClosestPointResult {
     ClosestPointResult result;
 
     const Mustard::Point2D center2{rawHitCoords_(0), rawHitCoords_(1)};

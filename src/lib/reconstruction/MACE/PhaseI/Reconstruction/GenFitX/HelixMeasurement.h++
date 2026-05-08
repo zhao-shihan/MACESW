@@ -48,7 +48,7 @@ namespace MACE::PhaseI::inline Reconstruction::GenFitX {
 class HelixMeasurement : public genfit::AbsMeasurement {
 
 public:
-    HelixMeasurement(int nDim = 8);
+    explicit HelixMeasurement(int nDim = 8);
     HelixMeasurement(const TVectorD& rawHitCoords, const TMatrixDSym& rawHitCov,
                      int detId, int hitId, genfit::TrackPoint* trackPoint);
 
@@ -65,7 +65,7 @@ protected:
         TVector3 point;
         TVector3 tangent;
     };
-    auto findClosestPointOnHelix(const TVector3& point) const -> ClosestPointResult;
+    auto FindClosestPointOnHelix(const TVector3& point) const -> ClosestPointResult;
 };
 
 } // namespace MACE::PhaseI::inline Reconstruction::GenFitX

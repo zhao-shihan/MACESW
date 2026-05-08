@@ -86,9 +86,9 @@ public:
     auto FiberCoreRadius(double val) -> void { fFiberCoreWidth = val; }
     auto FiberCladdingRadius(double val) -> void { fFiberCladdingWidth = val; }
     auto FiberLength(double val) -> void { fFiberLength = val; }
-    auto HelicalLightGuideAngle(std::vector<double> val) -> void { fHelicalLightGuideAngle = val; }
+    auto HelicalLightGuideAngle(std::vector<double> val) -> void { fHelicalLightGuideAngle = std::move(val); }
     auto StraightLightGuideExtensionLength(double val) -> void { fStraightLightGuideExtensionLength = val; }
-    auto LightGuideEntryLength(std::vector<double> val) -> void { fLightGuideEntryLength = val; }
+    auto LightGuideEntryLength(std::vector<double> val) -> void { fLightGuideEntryLength = std::move(val); }
     auto LightGuideCurvatureRadius(double val) -> void { fLightGuideCurvatureRadius = val; }
     auto ScintillationTimeConstant1(double val) -> void { fScintillationTimeConstant1 = val; }
     auto NLayer(int val) -> void { fNLayer = val; }

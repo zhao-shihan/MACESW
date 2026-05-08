@@ -92,7 +92,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hitDa
             std::get<2>(dividedClusters),
             sciFiTracker.CentroidThetaThreshold(),
             sciFiTracker.ThresholdTime())};
-        if (!extraAxial.empty()) {
+        if (not extraAxial.empty()) {
             currentClusters.insert(currentClusters.end(), extraAxial.begin(), extraAxial.end());
         }
 
@@ -103,7 +103,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hitDa
             }
         }
         std::ranges::sort(signature);
-        signature.erase(std::unique(signature.begin(), signature.end()), signature.end());
+        signature.erase(std::ranges::unique(signature).end(), signature.end());
         if (signature.empty()) {
             continue;
         }
@@ -142,7 +142,9 @@ auto GenFitFinder<ASciFiHit, ATrack>::operator()(std::vector<AHitPointer>& hitDa
             return 0;
         }
 
-        size_t i{}, j{}, intersection{};
+        size_t i{};
+        size_t j{};
+        size_t intersection{};
         while (i < lhs.size() and j < rhs.size()) {
             if (lhs[i] == rhs[j]) {
                 ++intersection;
@@ -218,7 +220,7 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-auto GenFitFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
+const auto GenFitFinder<ASciFiHit, ATrack>::DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
     -> const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
@@ -246,21 +248,21 @@ template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 template<std::indirectly_readable AHitPointer>
     requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
+const auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
     -> const std::set<std::vector<std::vector<AHitPointer>>> {
     const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
     const auto& fiberMap{sciFiTracker.DetectorFiberInformation()};
     std::set<std::vector<std::vector<AHitPointer>>> result{};
 
-    auto superLayer{[&fiberMap](int fiberID) -> int {
+    auto superLayer{[&](int fiberID) -> int {
         return static_cast<int>(fiberMap[fiberID].layerID / 2);
     }};
 
-    auto areAdjacentPair{[&superLayer](int lhsID, int rhsID) -> bool {
+    auto areAdjacentPair{[&](int lhsID, int rhsID) -> bool {
         return std::abs(superLayer(lhsID) - superLayer(rhsID)) <= 1;
     }};
 
-    auto areCompatibleTriple{[&superLayer](int lID, int rID, int aID) -> bool {
+    auto areCompatibleTriple{[&](int lID, int rID, int aID) -> bool {
         const int gL{superLayer(lID)};
         const int gR{superLayer(rID)};
         const int gA{superLayer(aID)};
@@ -282,7 +284,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return middleA;
     }};
 
-    auto calculateAvgAngle{[&fiberMap](const std::vector<AHitPointer>& cluster) -> double {
+    auto calculateAvgAngle{[&](const std::vector<AHitPointer>& cluster) -> double {
         if (cluster.empty())
             return 0.0;
 
@@ -295,7 +297,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return sum / cluster.size();
     }};
 
-    auto calculateAvgTime{[](const std::vector<AHitPointer>& cluster) -> double {
+    auto calculateAvgTime{[&](const std::vector<AHitPointer>& cluster) -> double {
         if (cluster.empty())
             return 0.0;
 
@@ -306,7 +308,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return sum / cluster.size();
     }};
 
-    auto normalizeAngle{[](double angle) -> double {
+    auto normalizeAngle{[&](double angle) -> double {
         angle = std::fmod(angle, 2 * std::numbers::pi);
         if (angle < 0) {
             angle += 2 * std::numbers::pi;
@@ -358,9 +360,9 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
     std::vector<TripleCandidate> tripleCandidates{};
     for (size_t li{}; li < lCluster.size(); ++li) {
         for (size_t ri{}; ri < rCluster.size(); ++ri) {
-            const double S{lAvgAngle[li] + rAvgAngle[ri]};
-            const double angleCondition1{normalizeAngle(std::fmod(S, 4 * std::numbers::pi) / 2)};
-            const double angleCondition2{normalizeAngle(std::fmod(S + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2)};
+            const double s{lAvgAngle[li] + rAvgAngle[ri]};
+            const double angleCondition1{normalizeAngle(std::fmod(s, 4 * std::numbers::pi) / 2)};
+            const double angleCondition2{normalizeAngle(std::fmod(s + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2)};
 
             for (size_t ai{}; ai < aCluster.size(); ++ai) {
                 if (std::abs(lAvgTime[li] - aAvgTime[ai]) >= sciFiTracker.ThresholdTime() or

@@ -107,12 +107,12 @@ public:
 
     auto FindHLMinDistanceSquare(
         double helixR, double helixB, double rotationAngle,
-        const muc::array3d line1Point, const muc::array3d line1Dir,
+        muc::array3d linePoint, muc::array3d lineDir,
         double initialT, double initialTheta) -> std::tuple<double, double, double>;
 
     auto FindLLMinDistanceSquare(
-        const muc::array3d line1Point, const muc::array3d line1Dir,
-        const muc::array3d line2Point, const muc::array3d line2Dir) -> double;
+        muc::array3d line1Point, muc::array3d line1Dir,
+        muc::array3d line2Point, muc::array3d line2Dir) -> double;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
