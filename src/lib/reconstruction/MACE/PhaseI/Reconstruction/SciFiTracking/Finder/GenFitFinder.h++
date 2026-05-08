@@ -24,7 +24,6 @@
 #include "MACE/PhaseI/Data/SimHit.h++"
 #include "MACE/PhaseI/Data/Track.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/FinderBase.h++"
-#include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitDAFFitter.h++"
 
 #include "Mustard/Data/Tuple.h++"
 #include "Mustard/Data/TupleModel.h++"
@@ -57,13 +56,13 @@ namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Finder {
 
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
-class GenFitDAFFinder : public FinderBase<ASciFiHit, ATrack> {
+class GenFitFinder : public FinderBase<ASciFiHit, ATrack> {
 private:
     using Base = FinderBase<ASciFiHit, ATrack>;
 
 public:
-    GenFitDAFFinder();
-    ~GenFitDAFFinder() override = default;
+    GenFitFinder();
+    ~GenFitFinder() override = default;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
@@ -128,4 +127,4 @@ private:
 
 } // namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Finder
 
-#include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/GenFitDAFFinder.inl"
+#include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/GenFitFinder.inl"

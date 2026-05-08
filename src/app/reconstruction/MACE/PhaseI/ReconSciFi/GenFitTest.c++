@@ -25,7 +25,7 @@
 #include "MACE/PhaseI/Data/Track.h++"
 #include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
 #include "MACE/PhaseI/ReconSciFi/GenFitTest.h++"
-#include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/GenFitDAFFinder.h++"
+#include "MACE/PhaseI/Reconstruction/SciFiTracking/Finder/GenFitFinder.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitDAFFitter.h++"
 #include "MACE/PhaseI/Reconstruction/SciFiTracking/Fitter/GenFitReferenceKalmanFitter.h++"
 
@@ -121,7 +121,7 @@ auto GenFitTest::Main(int argc, char* argv[]) const -> int {
     TFile file{finalPath.generic_string().c_str(), "RECREATE"};
     Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
 
-    MACE::PhaseI::SciFiTracking::GenFitDAFFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder{};
+    MACE::PhaseI::SciFiTracking::GenFitFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder{};
     // MACE::PhaseI::SciFiTracking::GenFitReferenceKalmanFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     MACE::PhaseI::SciFiTracking::GenFitDAFFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     fitter.EnableEventDisplay(false);
