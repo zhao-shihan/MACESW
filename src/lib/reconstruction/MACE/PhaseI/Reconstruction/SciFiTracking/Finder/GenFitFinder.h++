@@ -83,6 +83,19 @@ public:
 
     auto CompatibleTriple(int lID, int rID, int aID) -> bool;
 
+    enum struct PairType {
+        LA,
+        RA,
+        LR
+    };
+
+    struct PairCandidate {
+        PairType type;
+        size_t first;
+        size_t second;
+        double timeResidual;
+    };
+
     struct TripleCandidate {
         size_t lIndex;
         size_t rIndex;
@@ -106,6 +119,14 @@ public:
         const ClusterStats& lStats,
         const ClusterStats& rStats,
         const ClusterStats& aStats) -> std::vector<TripleCandidate>;
+
+    auto BuildAllPairCandidates(
+        const ClusterStats& lStats,
+        const ClusterStats& rStats,
+        const ClusterStats& aStats,
+        const std::vector<bool>& lUsed,
+        const std::vector<bool>& rUsed,
+        const std::vector<bool>& aUsed) -> std::vector<PairCandidate>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>

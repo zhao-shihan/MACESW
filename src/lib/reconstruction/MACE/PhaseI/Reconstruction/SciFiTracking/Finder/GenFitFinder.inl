@@ -273,6 +273,19 @@ auto GenFitFinder<ASciFiHit, ATrack>::CompatibleTriple(int lID, int rID, int aID
     return (gA > minLR && gA < maxLR);
 }
 
+enum struct PairType {
+    LA,
+    RA,
+    LR
+};
+
+struct PairCandidate {
+    PairType type;
+    size_t first;
+    size_t second;
+    double timeResidual;
+};
+
 struct TripleCandidate {
     size_t lIndex;
     size_t rIndex;
@@ -316,13 +329,10 @@ auto GenFitFinder<ASciFiHit, ATrack>::BuildTripleCandidates(
 
     for (size_t li{}; li < lCluster.size(); ++li) {
         for (size_t ri{}; ri < rCluster.size(); ++ri) {
-            // 预计算角度条件
             const double s = lStats.avgAngle[li] + rStats.avgAngle[ri];
             const double angleCond1 = normalizeAngle(std::fmod(s, 4 * std::numbers::pi) / 2);
             const double angleCond2 = normalizeAngle(std::fmod(s + 2 * std::numbers::pi, 4 * std::numbers::pi) / 2);
-
             for (size_t ai{}; ai < aCluster.size(); ++ai) {
-
                 if (std::abs(lStats.avgTime[li] - aStats.avgTime[ai]) >= sciFiTracker.ThresholdTime() or
                     std::abs(rStats.avgTime[ri] - aStats.avgTime[ai]) >= sciFiTracker.ThresholdTime() or
                     not CompatibleTriple(lStats.frontID[li], rStats.frontID[ri], aStats.frontID[ai])) {
@@ -340,6 +350,66 @@ auto GenFitFinder<ASciFiHit, ATrack>::BuildTripleCandidates(
             }
         }
     }
+    return candidates;
+}
+
+template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
+         Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
+auto GenFitFinder<ASciFiHit, ATrack>::BuildAllPairCandidates(
+    const ClusterStats& lStats,
+    const ClusterStats& rStats,
+    const ClusterStats& aStats,
+    const std::vector<bool>& lUsed,
+    const std::vector<bool>& rUsed,
+    const std::vector<bool>& aUsed) -> std::vector<PairCandidate> {
+    const auto& sciFiTracker{MACE::PhaseI::Detector::Description::SciFiTracker::Instance()};
+    std::vector<PairCandidate> candidates;
+
+    // LA
+    for (size_t li{}; li < lStats.avgTime.size(); ++li) {
+        for (size_t ai{}; ai < aStats.avgTime.size(); ++ai) {
+            if (aUsed[ai]) {
+                continue;
+            }
+            const double timeResidual{std::abs(lStats.avgTime[li] - aStats.avgTime[ai])};
+            if (timeResidual < sciFiTracker.ThresholdTime() and
+                AdjacentPair(lStats.frontID[li], aStats.frontID[ai])) {
+                candidates.push_back({PairType::LA, li, ai, timeResidual});
+            }
+        }
+    }
+
+    // RA
+    for (size_t ri{}; ri < rStats.avgTime.size(); ++ri) {
+        for (size_t ai{}; ai < aStats.avgTime.size(); ++ai) {
+            if (aUsed[ai]) {
+                continue;
+            }
+            const double timeResidual{std::abs(rStats.avgTime[ri] - aStats.avgTime[ai])};
+            if (timeResidual < sciFiTracker.ThresholdTime() and
+                AdjacentPair(rStats.frontID[ri], aStats.frontID[ai])) {
+                candidates.push_back({PairType::RA, ri, ai, timeResidual});
+            }
+        }
+    }
+
+    // LR
+    for (size_t li{}; li < lStats.avgTime.size(); ++li) {
+        if (lUsed[li]) {
+            continue;
+        }
+        for (size_t ri{}; ri < rStats.avgTime.size(); ++ri) {
+            if (rUsed[ri]) {
+                continue;
+            }
+            const double timeResidual{std::abs(lStats.avgTime[li] - rStats.avgTime[ri])};
+            if (timeResidual < sciFiTracker.ThresholdTime() and
+                std::abs(SuperLayer(lStats.frontID[li]) - SuperLayer(rStats.frontID[ri])) <= 2) {
+                candidates.push_back({PairType::LR, li, ri, timeResidual});
+            }
+        }
+    }
+
     return candidates;
 }
 
@@ -377,11 +447,6 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return sum / cluster.size();
     }};
 
-    auto angularDist{[&](double a, double b) -> double {
-        double delta{std::fmod(std::fabs(a - b), 2 * std::numbers::pi)};
-        return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
-    }};
-
     auto [lCluster, rCluster, aCluster]{hitData};
     auto buildStats{[&](const std::vector<std::vector<AHitPointer>>& clusters) -> ClusterStats {
         ClusterStats stats{};
@@ -400,7 +465,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
     const auto rStats{buildStats(rCluster)};
     const auto aStats{buildStats(aCluster)};
 
-    auto tripleCandidates{BuildTripleCandidates(lCluster, rCluster, aCluster, lStats, rStats, aStats)};
+    auto tripleCandidates{this->BuildTripleCandidates(lCluster, rCluster, aCluster, lStats, rStats, aStats)};
 
     std::ranges::sort(tripleCandidates,
                       [](const TripleCandidate& lhs, const TripleCandidate& rhs) {
@@ -423,56 +488,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         aUsed[candidate.aIndex] = true;
     }
 
-    enum struct PairType {
-        LA,
-        RA,
-        LR
-    };
-    struct PairCandidate {
-        PairType type;
-        size_t first;
-        size_t second;
-        double timeResidual;
-    };
-    std::vector<PairCandidate> pairCandidates{};
-
-    auto appendAxialPairs{[&](PairType type, const ClusterStats& firstStats) {
-        for (size_t fi{}; fi < firstStats.avgTime.size(); ++fi) {
-            for (size_t ai{}; ai < aStats.avgTime.size(); ++ai) {
-                if (aUsed[ai]) {
-                    continue;
-                }
-                const auto timeResidual{std::abs(firstStats.avgTime[fi] - aStats.avgTime[ai])};
-                if (timeResidual < sciFiTracker.ThresholdTime() and
-                    this->AdjacentPair(firstStats.frontID[fi], aStats.frontID[ai])) {
-                    pairCandidates.push_back({type, fi, ai, timeResidual});
-                }
-            }
-        }
-    }};
-
-    appendAxialPairs(PairType::LA, lStats);
-    appendAxialPairs(PairType::RA, rStats);
-
-    auto appendHelicalPairs{[&]() {
-        for (size_t li{}; li < lCluster.size(); ++li) {
-            if (lUsed[li]) {
-                continue;
-            }
-            for (size_t ri{}; ri < rCluster.size(); ++ri) {
-                if (rUsed[ri]) {
-                    continue;
-                }
-                const auto timeResidual{std::abs(lStats.avgTime[li] - rStats.avgTime[ri])};
-                if (timeResidual < sciFiTracker.ThresholdTime() and
-                    std::abs(this->SuperLayer(lStats.frontID[li]) - this->SuperLayer(rStats.frontID[ri])) <= 2) {
-                    pairCandidates.push_back({PairType::LR, li, ri, timeResidual});
-                }
-            }
-        }
-    }};
-
-    appendHelicalPairs();
+    auto pairCandidates{this->BuildAllPairCandidates(lStats, rStats, aStats, lUsed, rUsed, aUsed)};
 
     std::ranges::sort(pairCandidates,
                       [](const PairCandidate& lhs, const PairCandidate& rhs) {
