@@ -270,7 +270,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::CompatibleTriple(int lID, int rID, int aID
     if (lrGap != 2) {
         return false;
     }
-    return (gA > minLR && gA < maxLR);
+    return (gA > minLR and gA < maxLR);
 }
 
 enum struct PairType {
@@ -424,8 +424,9 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
     std::set<std::vector<std::vector<AHitPointer>>> result{};
 
     auto calculateAvgAngle{[&](const std::vector<AHitPointer>& cluster) -> double {
-        if (cluster.empty())
+        if (cluster.empty()) {
             return 0.0;
+        }
 
         double sum{0.0};
         for (const auto& hit : cluster) {
@@ -437,8 +438,9 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
     }};
 
     auto calculateAvgTime{[&](const std::vector<AHitPointer>& cluster) -> double {
-        if (cluster.empty())
+        if (cluster.empty()) {
             return 0.0;
+        }
 
         double sum{0.0};
         for (const auto& hit : cluster) {
