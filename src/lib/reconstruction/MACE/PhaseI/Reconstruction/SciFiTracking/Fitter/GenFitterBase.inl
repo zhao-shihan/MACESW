@@ -129,29 +129,28 @@ auto GenFitterBase<AHit, ATrack, AFitter>::Initialize(const std::vector<AHitPoin
                     return new genfit::WireMeasurement{rawHitCoords, rawHitCov,
                                                        *Get<"FiberID">(*hit), Get<"HitID">(*hit),
                                                        nullptr};
-                } else {
-                    TVectorD rawHitCoords{8};
-                    rawHitCoords[0] = 0.;                                                              // x
-                    rawHitCoords[1] = 0.;                                                              // y
-                    rawHitCoords[2] = 0.;                                                              // z
-                    rawHitCoords[3] = Mustard::ToG3<"Length">(fiberMap[*Get<"FiberID">(*hit)].radius); // r
-                    rawHitCoords[4] = fiberMap[*Get<"FiberID">(*hit)].pitch;                           // pitch
-                    rawHitCoords[5] = fiberMap[*Get<"FiberID">(*hit)].rotationAngle;                   // rotationAngle
-                    rawHitCoords[6] = 2 * std::numbers::pi;
-                    rawHitCoords[7] = 0; //
-
-                    TMatrixDSym rawHitCov{8};
-                    rawHitCov.UnitMatrix();
-                    rawHitCov(0, 0) = 0;
-                    rawHitCov(1, 1) = 0;
-                    rawHitCov(2, 2) = 0;
-                    rawHitCov(3, 3) = 0.0;
-                    rawHitCov(4, 4) = 0.0;
-                    rawHitCov(5, 5) = 0.0;
-                    rawHitCov(6, 6) = 0.0;
-                    rawHitCov(7, 7) = 0.0289 * 0.0289;
-                    return new MACE::PhaseI::Reconstruction::GenFitX::HelixMeasurement{rawHitCoords, rawHitCov, *Get<"FiberID">(*hit), Get<"HitID">(*hit), nullptr};
                 }
+                TVectorD rawHitCoords{8};
+                rawHitCoords[0] = 0.;                                                              // x
+                rawHitCoords[1] = 0.;                                                              // y
+                rawHitCoords[2] = 0.;                                                              // z
+                rawHitCoords[3] = Mustard::ToG3<"Length">(fiberMap[*Get<"FiberID">(*hit)].radius); // r
+                rawHitCoords[4] = fiberMap[*Get<"FiberID">(*hit)].pitch;                           // pitch
+                rawHitCoords[5] = fiberMap[*Get<"FiberID">(*hit)].rotationAngle;                   // rotationAngle
+                rawHitCoords[6] = 2 * std::numbers::pi;
+                rawHitCoords[7] = 0; //
+
+                TMatrixDSym rawHitCov{8};
+                rawHitCov.UnitMatrix();
+                rawHitCov(0, 0) = 0;
+                rawHitCov(1, 1) = 0;
+                rawHitCov(2, 2) = 0;
+                rawHitCov(3, 3) = 0.0;
+                rawHitCov(4, 4) = 0.0;
+                rawHitCov(5, 5) = 0.0;
+                rawHitCov(6, 6) = 0.0;
+                rawHitCov(7, 7) = 0.0289 * 0.0289;
+                return new MACE::PhaseI::Reconstruction::GenFitX::HelixMeasurement{rawHitCoords, rawHitCov, *Get<"FiberID">(*hit), Get<"HitID">(*hit), nullptr};
             }()};
         genfitTrack->insertPoint(new genfit::TrackPoint{measurement, genfitTrack.get()});
         measurementHitMap.emplace(measurement, hit);

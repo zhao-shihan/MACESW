@@ -275,11 +275,6 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
             return false;
         }
 
-        // ALAR/ARAL with missing middle A: allow one skipped A group between L and R.
-        // For |L-R| = 2, accept A at:
-        // 1) middle group (between L and R), or
-        // 2) outer adjacent group (just outside L/R block).
-
         const bool middleA{(gA > minLR and gA < maxLR)};
         return middleA;
     }};
@@ -297,7 +292,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return sum / cluster.size();
     }};
 
-    auto calculateAvgTime{[](const std::vector<AHitPointer>& cluster) -> double {
+    auto calculateAvgTime{[&](const std::vector<AHitPointer>& cluster) -> double {
         if (cluster.empty())
             return 0.0;
 
@@ -308,7 +303,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return sum / cluster.size();
     }};
 
-    auto normalizeAngle{[](double angle) -> double {
+    auto normalizeAngle{[&](double angle) -> double {
         angle = std::fmod(angle, 2 * std::numbers::pi);
         if (angle < 0) {
             angle += 2 * std::numbers::pi;
@@ -316,7 +311,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::FindCompatibleClusterCombinations(const st
         return angle;
     }};
 
-    auto angularDist{[](double a, double b) -> double {
+    auto angularDist{[&](double a, double b) -> double {
         double delta{std::fmod(std::fabs(a - b), 2 * std::numbers::pi)};
         return (delta > std::numbers::pi) ? 2 * std::numbers::pi - delta : delta;
     }};
@@ -700,13 +695,13 @@ auto GenFitFinder<ASciFiHit, ATrack>::DividePoints(const std::map<muc::array3d, 
         }
         auto Find(int x) -> int {
             if (parent[x] != x) {
-                parent[x] = find(parent[x]);
+                parent[x] = Find(parent[x]);
             }
             return parent[x];
         }
         void Unite(int x, int y) {
-            int px = find(x);
-            int py = find(y);
+            int px = Find(x);
+            int py = Find(y);
             if (px == py) {
                 return;
             }
@@ -769,7 +764,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::EstimateInitialDirection(const std::map<mu
     std::vector<std::vector<AHitPointer>> fiberLists;
 
     Eigen::Vector3d centroid{Eigen::Vector3d::Zero()};
-    for (const auto& [point, _] : hitData) {
+    for (const auto& [point, _1] : hitData) {
         Eigen::Vector3d c(point[0], point[1], point[2]);
         if (point[0] * centroid.x() + point[1] * centroid.y() + point[2] * centroid.z() >= 0) {
             centroid += c;
@@ -994,7 +989,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::arr
     auto result{std::make_shared<Mustard::Data::Tuple<ATrack>>()};
     auto r{(sciFiTracker.BracketInnerRadius() + sciFiTracker.BracketOuterRadius()) / 2};
 
-    auto [initialDirection, initialCentroid, clusterLists] = hitData;
+    auto [initialDirection, initialCentroid, clusterLists]{hitData};
 
     double t{};
     int fiberNum{};
