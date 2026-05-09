@@ -38,13 +38,13 @@ public:
     using Track = ATrack;
 
 public:
-    GenFitSimpleKalmanFitter(double fiberRMS);
+    explicit GenFitSimpleKalmanFitter(double fiberRMS);
     virtual ~GenFitSimpleKalmanFitter() override = default;
 
     template<std::indirectly_readable AHitPointer, std::indirectly_readable ASeedPointer>
         requires(Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, AHit> and
                  Mustard::Data::SuperTupleModel<typename std::iter_value_t<ASeedPointer>::Model, ATrack>)
-    auto operator()(const std::vector<AHitPointer>& hitData, ASeedPointer seed) -> Base::template Result<AHitPointer>;
+    auto operator()(const std::vector<AHitPointer>& hitData, ASeedPointer& seed) -> Base::template Result<AHitPointer>;
 };
 } // namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Fitter
 

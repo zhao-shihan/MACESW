@@ -70,27 +70,57 @@ public:
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
-    auto ClusterHits(std::vector<AHitPointer>& hitData) -> const std::vector<std::vector<AHitPointer>>;
+    auto ClusterHits(std::vector<AHitPointer>& hitData) -> std::vector<std::vector<AHitPointer>>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
     auto DivideHits(const std::vector<std::vector<AHitPointer>>& hitData)
-        -> const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>;
+        -> std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>;
+
+    auto SuperLayer(int fiberID) -> int;
+
+    auto AdjacentPair(int lhsID, int rhsID) -> bool;
+
+    auto CompatibleTriple(int lID, int rID, int aID) -> bool;
+
+    struct TripleCandidate {
+        size_t lIndex;
+        size_t rIndex;
+        size_t aIndex;
+        double timeResidual;
+        double angleResidual;
+    };
+
+    struct ClusterStats {
+        std::vector<double> avgAngle;
+        std::vector<double> avgTime;
+        std::vector<int> frontID;
+    };
+
+    template<std::indirectly_readable AHitPointer>
+        requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
+    auto BuildTripleCandidates(
+        const std::vector<std::vector<AHitPointer>>& lCluster,
+        const std::vector<std::vector<AHitPointer>>& rCluster,
+        const std::vector<std::vector<AHitPointer>>& aCluster,
+        const ClusterStats& lStats,
+        const ClusterStats& rStats,
+        const ClusterStats& aStats) -> std::vector<TripleCandidate>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
     auto FindCompatibleClusterCombinations(const std::tuple<std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>, std::vector<std::vector<AHitPointer>>>& hitData)
-        -> const std::set<std::vector<std::vector<AHitPointer>>>;
+        -> std::set<std::vector<std::vector<AHitPointer>>>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
     auto CalCoordinates(const std::set<std::vector<std::vector<AHitPointer>>>& hitData, const muc::array3d& direction)
-        -> const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>;
+        -> std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
     auto DividePoints(const std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>& hitData)
-        -> const std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>>;
+        -> std::vector<std::map<muc::array3d, std::vector<std::vector<AHitPointer>>>>;
 
     template<std::indirectly_readable AHitPointer>
         requires Mustard::Data::SuperTupleModel<typename std::iter_value_t<AHitPointer>::Model, ASciFiHit>
