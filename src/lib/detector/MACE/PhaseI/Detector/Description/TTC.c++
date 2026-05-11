@@ -40,7 +40,7 @@ using namespace Mustard::PhysicalConstant;
 TTC::TTC() : // clang-format off
     DescriptionWithCacheBase{"TTC"}, // clang-format on
     // Geometry
-    fLength{this, 5.2_cm},
+    fLength{this, 5_cm},
     fWidth{this, 5_cm},
     fThickness{this, 0.5_cm},
     fRadius{this, 8.5_cm},
