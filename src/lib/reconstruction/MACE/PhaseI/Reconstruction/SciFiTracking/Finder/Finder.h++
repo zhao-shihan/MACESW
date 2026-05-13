@@ -32,7 +32,7 @@
 #include <concepts>
 #include <iterator>
 
-namespace MACE::PhaseI::inline Reconstuction::SciFiTracking::inline Finder {
+namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Finder {
 
 template<typename T>
 concept Finder =
@@ -62,4 +62,4 @@ concept SimFinder =
         requires Mustard::Data::SuperTupleModel<typename T::SciFiHit, MACE::PhaseI::Data::SciFiSimHit>;
         requires Mustard::Data::SuperTupleModel<typename T::Track, MACE::PhaseI::Data::Track>;
     };
-} // namespace MACE::PhaseI::inline Reconstuction::SciFiTracking::inline Finder
+} // namespace MACE::PhaseI::inline Reconstruction::SciFiTracking::inline Finder

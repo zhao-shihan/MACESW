@@ -100,7 +100,7 @@ public:
     auto MPPCEfficiency(std::vector<double> val) -> void { fMPPCEfficiency = std::move(val); }
 
     auto WaveformIntegralTime(double val) { fWaveformIntegralTime = val; }
-    auto UseOptics(double val) { fUseOptics = val; }
+    auto UseOptics(bool val) { fUseOptics = val; }
 
     struct ArrayInformation {
         struct Module {

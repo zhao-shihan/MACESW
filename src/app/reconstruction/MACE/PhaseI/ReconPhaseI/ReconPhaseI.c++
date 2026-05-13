@@ -115,15 +115,18 @@ auto ReconPhaseI::Main(int argc, char* argv[]) const -> int {
     const std::filesystem::path inputPath{inputFiles[0]};
     const auto fileName{inputPath.stem().string()};
 
-    const auto outputBase{"SciFiOutput_" + fileName + ".root"};
+    const std::filesystem::path defaultOutputBase{"SciFiOutput_" + fileName + ".root"};
+    const auto outputPath{
+        cli->present<std::string>("--output") ? std::filesystem::path{*cli->present<std::string>("--output")} : defaultOutputBase};
+    const auto outputMode{cli->get<std::string>("--output-mode")};
 
-    const auto finalPath{Mustard::Parallel::ProcessSpecificPath(outputBase)};
-    TFile file{finalPath.generic_string().c_str(), "RECREATE"};
+    const auto finalPath{Mustard::Parallel::ProcessSpecificPath(outputPath)};
+    TFile file{finalPath.generic_string().c_str(), outputMode.c_str()};
     Mustard::Data::Output<PhaseI::Data::Track> reconTrack{"G4Run0/ReconTrack"};
 
-    MACE::PhaseI::SciFiTracking::GenFitFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder{};
-    // MACE::PhaseI::SciFiTracking::GenFitReferenceKalmanFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
-    MACE::PhaseI::SciFiTracking::GenFitDAFFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
+    MACE::PhaseI::Reconstruction::SciFiTracking::GenFitFinder<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> finder{};
+    // MACE::PhaseI::Reconstruction::SciFiTracking::GenFitReferenceKalmanFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
+    MACE::PhaseI::Reconstruction::SciFiTracking::GenFitDAFFitter<MACE::PhaseI::Data::SciFiHit, MACE::PhaseI::Data::Track> fitter{0.00289};
     fitter.EnableEventDisplay(false);
 
     Mustard::Data::SeqProcessor processor{};

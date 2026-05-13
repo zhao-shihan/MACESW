@@ -34,8 +34,7 @@ namespace MACE::inline Simulation::inline Physics {
 class StandardPhysicsListBase;
 
 class StandardPhysicsListMessenger final : public Mustard::Geant4X::SingletonMessenger<StandardPhysicsListMessenger,
-                                                                                       StandardPhysicsListBase,
-                                                                                       PhaseI::StandardPhysicsListBase> {
+                                                                                       StandardPhysicsListBase> {
     friend Mustard::Env::Memory::SingletonInstantiator;
 
 private:

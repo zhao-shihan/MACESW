@@ -109,7 +109,7 @@ constexpr auto defaultMacro = {
     "/vis/geometry/set/colour SciFiTrackerHelicalLightGuideCore      0     1     1     1     0.05",
     "/vis/geometry/set/colour SciFiTrackerAxialLightGuide       0     1     1     1     0.1",
     "/vis/geometry/set/colour SciFiTrackerAxialLightGuideCore   0     1     1     1     0.05",
-    "/vis/geometry/set/colour SciFiTrackerBraket                     0     1     1     1     0.05",
+    "/vis/geometry/set/colour SciFiTrackerBracket                     0     1     1     1     0.05",
     "",
     "/vis/geometry/set/colour TTCVirtualBox                          0     1     1     1     0.05",
     "/vis/geometry/set/colour TTCPCB                                 0     1     1     1     0.05",
