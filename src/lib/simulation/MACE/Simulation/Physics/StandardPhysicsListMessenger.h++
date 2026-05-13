@@ -25,10 +25,6 @@
 
 class G4UIcmdWithoutParameter;
 
-namespace MACE::PhaseI::inline Simulation::inline Physics {
-class StandardPhysicsListBase;
-} // namespace MACE::PhaseI::inline Simulation::inline Physics
-
 namespace MACE::inline Simulation::inline Physics {
 
 class StandardPhysicsListBase;
