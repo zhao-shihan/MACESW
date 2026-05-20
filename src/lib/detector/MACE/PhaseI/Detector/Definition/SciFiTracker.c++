@@ -470,7 +470,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{rotationAngle} *
+                    G4RotateZ3D{rotationAngle - lightGuideAngle + ((pitch > 0) ? -1.5_pi : 1.5_pi)} *
                         G4Translate3D{0,
                                       helicalRadius,
                                       -sciFiTracker.FiberLength() / 2 - (helicalRadius * lightGuideAngle * std::abs(std::tan(pitch)))} *
