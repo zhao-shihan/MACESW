@@ -42,6 +42,7 @@
 #include <concepts>
 #include <queue>
 #include <ranges>
+#include <utility>
 
 namespace MACE::Detector::Description {
 
@@ -299,7 +300,8 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
 
     // construct type mapping
     using PolygonEdges = std::vector<double>;
-    std::multimap<PolygonEdges, ModuleID> edgeLengthsMap;
+    using PolygonTypeKey = std::pair<std::size_t, PolygonEdges>;
+    std::multimap<PolygonTypeKey, ModuleID> edgeLengthsMap;
 
     for (auto&& [moduleID, _1, _2, centroid, _3, vertexIndex] : std::as_const(moduleList)) {
         // edge lengths for type identifying
@@ -315,7 +317,10 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
             edges.emplace_back(muc::round_to((next - current).mag(), reservedDigit));
         }
         std::ranges::sort(edges);
-        edgeLengthsMap.insert({edges, moduleID});
+        edgeLengthsMap.insert({
+            {edges.size(), edges},
+            moduleID
+        });
     }
 
     int typeID{};
@@ -336,8 +341,9 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
     auto it{edgeLengthsMap.begin()};
 
     while (it != edgeLengthsMap.end()) {
-        auto currentEdgeLengths{it->first};
-        const auto range{edgeLengthsMap.equal_range(currentEdgeLengths)};
+        auto currentTypeKey{it->first};
+        const auto& currentEdgeLengths{currentTypeKey.second};
+        const auto range{edgeLengthsMap.equal_range(currentTypeKey)};
         const std::ranges::subrange equalRange{range.first, range.second};
         Mustard::MasterPrintLn<'I'>("### Type {}: \n", typeID);
         Mustard::MasterPrintLn<'I'>("- lengths: ");
