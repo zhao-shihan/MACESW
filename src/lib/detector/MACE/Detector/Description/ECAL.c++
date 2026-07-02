@@ -318,7 +318,7 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
         }
         std::ranges::sort(edges);
         edgeLengthsMap.insert({
-            {edges.size(), edges},
+            {edges.size(), std::move(edges)},
             moduleID
         });
     }
