@@ -42,6 +42,7 @@
 #include <concepts>
 #include <queue>
 #include <ranges>
+#include <utility>
 
 namespace MACE::Detector::Description {
 
@@ -216,7 +217,7 @@ ECAL::ECAL() :
                                 0.754517, 0.691979, 0.640116, 0.591668, 0.540922, 0.501151,
                                 0.452269, 0.413595, 0.35813, 0.307095, 0.264469, 0.218419,
                                 0.182053, 0.129528, 0.081253, 0.047185, 0.017148, 0.0};
-    fMPPCNPixelRowSet = {12, 8, 12, 12, 12, 12, 12, 12, 12, 12};
+    fMPPCNPixelRowSet = {8, 12, 12, 12, 12, 12, 12, 12, 12, 12};
     fMPPCPixelSizeSet = {3_mm, 3_mm, 3_mm, 3_mm, 3_mm, 3_mm, 3_mm, 3_mm, 3_mm, 3_mm};
     fMPPCEnergyBin = {1.771068_eV, 2.101763_eV, 2.478823_eV, 2.66882_eV, 2.756137_eV, 2.849362_eV, 2.949113_eV, 3.02425_eV, 3.099632_eV, 3.178868_eV, 3.3981_eV, 3.649811_eV, 3.877416_eV, 4.128759_eV, 4.348776_eV};
     fMPPCEfficiency = {0.26319, 0.395706, 0.503681, 0.525767, 0.555215, 0.570552, 0.597546, 0.59816, 0.599387, 0.593252, 0.521472, 0.466258, 0.458896, 0.408589, 0.196933};
@@ -299,7 +300,8 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
 
     // construct type mapping
     using PolygonEdges = std::vector<double>;
-    std::multimap<PolygonEdges, ModuleID> edgeLengthsMap;
+    using PolygonTypeKey = std::pair<std::size_t, PolygonEdges>;
+    std::multimap<PolygonTypeKey, ModuleID> edgeLengthsMap;
 
     for (auto&& [moduleID, _1, _2, centroid, _3, vertexIndex] : std::as_const(moduleList)) {
         // edge lengths for type identifying
@@ -315,7 +317,10 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
             edges.emplace_back(muc::round_to((next - current).mag(), reservedDigit));
         }
         std::ranges::sort(edges);
-        edgeLengthsMap.insert({edges, moduleID});
+        edgeLengthsMap.insert({
+            {edges.size(), std::move(edges)},
+            moduleID
+        });
     }
 
     int typeID{};
@@ -336,8 +341,9 @@ auto ECAL::CalculateArrayInformation() const -> ArrayInformation {
     auto it{edgeLengthsMap.begin()};
 
     while (it != edgeLengthsMap.end()) {
-        auto currentEdgeLengths{it->first};
-        const auto range{edgeLengthsMap.equal_range(currentEdgeLengths)};
+        auto currentTypeKey{it->first};
+        const auto& currentEdgeLengths{currentTypeKey.second};
+        const auto range{edgeLengthsMap.equal_range(currentTypeKey)};
         const std::ranges::subrange equalRange{range.first, range.second};
         Mustard::MasterPrintLn<'I'>("### Type {}: \n", typeID);
         Mustard::MasterPrintLn<'I'>("- lengths: ");
