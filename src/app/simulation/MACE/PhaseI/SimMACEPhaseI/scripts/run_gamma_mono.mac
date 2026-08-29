@@ -16,10 +16,9 @@
 /gps/pos/centre 0. 0. 0. cm
 /gps/ang/type iso
 
-/MACE/Analysis/CoincidenceWithMRPC    no
 /MACE/Analysis/CoincidenceWithECAL    no
 
-/MACE/Analysis/FilePath SimMACEPhaseI_gamma
+/MACE/Analysis/FilePath SimMACEPhaseI_gamma_mono.root
 /MACE/Analysis/FileMode RECREATE
 
 /run/beamOn 1000000

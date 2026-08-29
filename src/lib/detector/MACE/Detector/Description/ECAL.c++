@@ -202,7 +202,8 @@ ECAL::ECAL() :
     fMPPCEnergyBin{this, {}},
     fMPPCEfficiency{this, {}},
     // 0.1(epoxy)+0.1(cathode),window change  from epoxy to epoxy&silicon Pixels, may change name "window" later
-    fWaveformIntegralTime{this, fScintillationTimeConstant1 * 7} {
+    fWaveformIntegralTime{this, fScintillationTimeConstant1 * 7},
+    fUseOptics{this, false} {
     fScintillationEnergyBin = {3.300891_eV, 3.394291_eV, 3.459551_eV, 3.515883_eV, 3.557591_eV, 3.591915_eV,
                                3.622042_eV, 3.644458_eV, 3.678815_eV, 3.690132_eV, 3.715531_eV, 3.728362_eV,
                                3.747776_eV, 3.768708_eV, 3.787216_eV, 3.80725_eV, 3.820723_eV, 3.847958_eV,
@@ -417,6 +418,7 @@ auto ECAL::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fMPPCEnergyBin, "MPPCEnergyBin");
     ImportValue(node, fMPPCEfficiency, "MPPCEfficiency");
     ImportValue(node, fWaveformIntegralTime, "WaveformIntegralTime");
+    ImportValue(node, fUseOptics, "UseOptics");
 }
 
 auto ECAL::ExportAllValue(YAML::Node& node) const -> void {
@@ -441,6 +443,7 @@ auto ECAL::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fMPPCEnergyBin, "MPPCEnergyBin");
     ExportValue(node, fMPPCEfficiency, "MPPCEfficiency");
     ExportValue(node, fWaveformIntegralTime, "WaveformIntegralTime");
+    ExportValue(node, fUseOptics, "UseOptics");
 }
 
 } // namespace MACE::Detector::Description

@@ -50,9 +50,9 @@ namespace MACE::PhaseI::inline Simulation::inline SD {
 
 using namespace Mustard::LiteralUnit;
 
-SciFiSD::SciFiSD(const G4String& sdName) :
+SciFiSD::SciFiSD(const G4String& sdName, const SciFiSiPMSD* sciFiSiPMSD) :
     G4VSensitiveDetector{sdName},
-    fSciFiSiPMSD{},
+    fSciFiSiPMSD{sciFiSiPMSD},
     fSplitHit{},
     fHitsCollection{} {
     collectionName.insert(sdName + "HC");
@@ -74,16 +74,8 @@ auto SciFiSD::ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool {
     if (&particle == G4OpticalPhoton::Definition()) {
         return false;
     }
-    if (particle.GetPDGCharge() == 0) {
-        return false;
-    }
-    // std::cout << track.GetParentID() << std::endl;
 
     const auto eDep{step.GetTotalEnergyDeposit()};
-    const auto fEnergyDepositionThreshold = 1.24_keV;
-    if (eDep < fEnergyDepositionThreshold) {
-        return false;
-    }
     const auto preStepPoint{*step.GetPreStepPoint()};
 
     const auto& x{preStepPoint.GetPosition()};
@@ -124,7 +116,7 @@ auto SciFiSD::EndOfEvent(G4HCofThisEvent*) -> void {
             return Get<"TrkID">(*hit1) < Get<"TrkID">(*hit2);
         }};
     for (int hitID{};
-         auto&& [trackID, splitHit] : fSplitHit) {
+         auto&& [FiberID, splitHit] : fSplitHit) {
         switch (splitHit.size()) {
         case 0:
             muc::unreachable();

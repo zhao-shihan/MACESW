@@ -70,7 +70,6 @@ public:
     auto SubmitECALPMHC(const std::vector<gsl::owner<ECALPMHit*>>& hc) -> void { fECALPMHit = &hc; }
     auto SubmitSciFiHC(const std::vector<gsl::owner<SciFiSimHit*>>& hc) -> void { fSciFiSimHit = &hc; }
     auto SubmitSciFiSiPMHC(const std::vector<gsl::owner<SciFiSiPMHit*>>& hc) -> void { fSciFiSiPMHit = &hc; }
-
     auto SubmitTTCHC(const std::vector<gsl::owner<TTCHit*>>& hc) -> void { fTTCHit = &hc; }
     auto SubmitTTCSiPMHC(const std::vector<gsl::owner<PhotosensorHit*>>& hc) -> void { fTTCSiPMHit = &hc; }
     auto RunBeginUserAction(int runID) -> void override;

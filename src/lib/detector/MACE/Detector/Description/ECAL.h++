@@ -72,6 +72,7 @@ public:
     auto MPPCEfficiency() const -> const auto& { return *fMPPCEfficiency; }
 
     auto WaveformIntegralTime() const -> auto { return *fWaveformIntegralTime; }
+    auto UseOptics() const -> auto { return *fUseOptics; }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,6 +100,7 @@ public:
     auto MPPCEfficiency(std::vector<double> val) -> void { fMPPCEfficiency = std::move(val); }
 
     auto WaveformIntegralTime(double val) { fWaveformIntegralTime = val; }
+    auto UseOptics(bool val) { fUseOptics = val; }
 
     struct ArrayInformation {
         struct Module {
@@ -145,6 +147,7 @@ private:
     Simple<std::vector<double>> fMPPCEfficiency;
 
     Simple<double> fWaveformIntegralTime;
+    Simple<bool> fUseOptics;
 };
 
 } // namespace MACE::Detector::Description

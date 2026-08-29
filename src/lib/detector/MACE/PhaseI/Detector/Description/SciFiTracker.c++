@@ -40,14 +40,17 @@ SciFiTracker::SciFiTracker() : // clang-format off
     fSiliconeOilThickness{0.01_mm},
     fFiberCoreWidth{0.96 * 1_mm},
     fFiberCladdingWidth{1_mm},
-    fFiberLength{325.4_mm},
+    fFiberLength{400_mm},
     fSiPMLength{1.3_mm},
     fSiPMWidth{1.3_mm},
     fSiPMThickness{0.055_mm},
-    fTransverseLightGuideLength{10_mm},
     fEpoxyThickness{0.105_mm},
+    fHelicalLightGuideAngle{1.884954, 1.570795, 1.570795, 0.942477},
+    fStraightLightGuideExtensionLength{60_mm},
+    fLightGuideEntryLength{130_mm, 110_mm, 100_mm, 80_mm},
+    fLightGuideCurvatureRadius{80_mm},
     fNLayer{this, 16},
-    fLayerType{this, {"Transverse", "Transverse", "LHelical", "LHelical", "Transverse", "Transverse", "RHelical", "RHelical", "Transverse", "Transverse", "LHelical", "LHelical", "Transverse", "Transverse", "RHelical", "RHelical" /**/}},
+    fLayerType{this, {"Axial", "Axial", "LHelical", "LHelical", "Axial", "Axial", "RHelical", "RHelical", "Axial", "Axial", "LHelical", "LHelical", "Axial", "Axial", "RHelical", "RHelical" /**/}},
     fLayerRadius{this, {45_mm, 46.8_mm, 48.6_mm, 50.4_mm, 52.2_mm, 54_mm, 55.8_mm, 57.6_mm, 59.4_mm, 61.2_mm, 63_mm, 64.8_mm, 66.6_mm, 68.4_mm, 70.2_mm, 72_mm /**/}},
     fNFiberALayer{this, {140, 140, 120, 120, 160, 160, 120, 120, 180, 180, 140, 140, 180, 180, 140, 140 /**/}},
     fLayerFiberIDRange{this, [this] { return CalculateLayerFiberIDRange(); }},
@@ -106,13 +109,14 @@ SciFiTracker::SciFiTracker() : // clang-format off
                            0.129670093, 0.120230653, 0.108280609, 0.091831406, 0.098424138, 0.083937488, 0.073056832, 0.060399447, 0.047887957,
                            0.034501313}, // S13360
     // reconstruction
-    fSiPMOpticalPhotonCountThreshold{2},
+    fEnergyDepositionThreshold{1_keV},
     fClusterLength{3},
     fThresholdTime{10},
     fTimeWindow{10},
     fSiPMDeadTime{10},
     fCentroidThetaThreshold{0.02 * std::numbers::pi},
-    fCentroidZThreshold{25_mm} {}
+    fCentroidZThreshold{25_mm},
+    fMinDirDotThreshold{0.99} {}
 auto SciFiTracker::CalculateLayerPitch() const -> std::vector<double> {
     std::vector<double> pitch;
     for (int i{}; i < fNLayer; i++) {
@@ -120,7 +124,7 @@ auto SciFiTracker::CalculateLayerPitch() const -> std::vector<double> {
             pitch.push_back(std::atan(fFiberLength / (2_pi * fLayerRadius->at(i))));
         } else if (fLayerType->at(i) == "RHelical") {
             pitch.push_back(-std::atan(fFiberLength / (2_pi * fLayerRadius->at(i))));
-        } else if (fLayerType->at(i) == "Transverse") {
+        } else if (fLayerType->at(i) == "Axial") {
             pitch.push_back(0);
         }
     }
@@ -183,7 +187,10 @@ auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fFiberCoreWidth, "CoreWidth");
     ImportValue(node, fFiberCladdingWidth, "CladdingWidth");
     ImportValue(node, fFiberLength, "FiberLength");
-    ImportValue(node, fTransverseLightGuideLength, "TransverseLightGuideLength");
+    ImportValue(node, fHelicalLightGuideAngle, "HelicalLightGuideAngle");
+    ImportValue(node, fStraightLightGuideExtensionLength, "StraightLightGuideExtensionLength");
+    ImportValue(node, fLightGuideEntryLength, "LightGuideEntryLength");
+    ImportValue(node, fLightGuideCurvatureRadius, "LightGuideCurvatureRadius");
     ImportValue(node, fNLayer, "LayerNumber");
     ImportValue(node, fLayerType, "LayerType");
     ImportValue(node, fLayerRadius, "LayerRadius");
@@ -197,13 +204,14 @@ auto SciFiTracker::ImportAllValue(const YAML::Node& node) -> void {
     ImportValue(node, fScintillationYield, "ScintillationYield");
     ImportValue(node, fScintillationTimeConstant1, "ScintillationTimeConstant1");
     // Reconstruction
-    ImportValue(node, fSiPMOpticalPhotonCountThreshold, "SiPMOpticalPhotonCountThreshold");
+    ImportValue(node, fEnergyDepositionThreshold, "EnergyDepositionThreshold");
     ImportValue(node, fClusterLength, "ClusterLength");
     ImportValue(node, fThresholdTime, "SiPMOptPhoThresholdTime");
     ImportValue(node, fTimeWindow, "SiPMTimeWindow");
     ImportValue(node, fSiPMDeadTime, "SiPMDeadTime");
     ImportValue(node, fCentroidThetaThreshold, "CentroidThetaThreshold");
     ImportValue(node, fCentroidZThreshold, "CentroidZThreshold");
+    ImportValue(node, fMinDirDotThreshold, "MinDirDotThreshold");
 }
 
 auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
@@ -218,7 +226,10 @@ auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fFiberCoreWidth, "CoreWidth");
     ExportValue(node, fFiberCladdingWidth, "CladdingWidth");
     ExportValue(node, fFiberLength, "FiberLength");
-    ExportValue(node, fTransverseLightGuideLength, "TransverseLightGuideLength");
+    ExportValue(node, fHelicalLightGuideAngle, "HelicalLightGuideAngle");
+    ExportValue(node, fStraightLightGuideExtensionLength, "StraightLightGuideExtensionLength");
+    ExportValue(node, fLightGuideEntryLength, "LightGuideEntryLength");
+    ExportValue(node, fLightGuideCurvatureRadius, "LightGuideCurvatureRadius");
     ExportValue(node, fNLayer, "NLayer");
     ExportValue(node, fLayerType, "LayerType");
     ExportValue(node, fLayerRadius, "LayerRadius");
@@ -232,13 +243,14 @@ auto SciFiTracker::ExportAllValue(YAML::Node& node) const -> void {
     ExportValue(node, fScintillationYield, "ScintillationYield");
     ExportValue(node, fScintillationTimeConstant1, "ScintillationTimeConstant1");
     // Reconstruction
-    ExportValue(node, fSiPMOpticalPhotonCountThreshold, "SiPMOpticalPhotonCountThreshold");
+    ExportValue(node, fEnergyDepositionThreshold, "EnergyDepositionThreshold");
     ExportValue(node, fClusterLength, "ClusterLength");
     ExportValue(node, fThresholdTime, "SiPMOptPhoThresholdTime");
     ExportValue(node, fTimeWindow, "SiPMTimeWindow");
     ExportValue(node, fSiPMDeadTime, "SiPMDeadTime");
     ExportValue(node, fCentroidThetaThreshold, "CentroidThetaThreshold");
     ExportValue(node, fCentroidZThreshold, "CentroidZThreshold");
+    ExportValue(node, fMinDirDotThreshold, "MinDirDotThreshold");
 }
 
 } // namespace MACE::PhaseI::Detector::Description

@@ -108,7 +108,6 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
 
     const auto siliconeOilPropertiesTable{new G4MaterialPropertiesTable()};
     siliconeOilPropertiesTable->AddProperty("RINDEX", fEnergyPair, {1.465, 1.465});
-    siliconeOilPropertiesTable->AddProperty("ABSLENGTH", fEnergyPair, {40_cm, 40_cm});
     siliconeOil->SetMaterialPropertiesTable(siliconeOilPropertiesTable);
 
     const auto epoxyPropertiesTable{new G4MaterialPropertiesTable()};
@@ -158,7 +157,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                                          2_pi)};
     const auto logicalBracket{
         Make<G4LogicalVolume>(solidBracket,
-                              G4NistManager::Instance()->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE"), // G4_PLASTIC_SC_VINYLTOLUENE or G4_Air
+                              G4NistManager::Instance()->FindOrBuildMaterial("G4_AIR"), // G4_PLASTIC_SC_VINYLTOLUENE or G4_AIR
                               scifiName + "Bracket")};
     Make<G4PVPlacement>(G4Transform3D{},
                         logicalBracket,
@@ -190,10 +189,10 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
 
     const auto solidAbsorbLayer{
         Make<G4Box>(scifiName + "AbsorbLayer",
-                    sciFiTracker.SiPMLength() / 2,
-                    sciFiTracker.SiPMWidth() / 2,
+                    sciFiTracker.FiberCladdingWidth() / 2,
+                    sciFiTracker.FiberCladdingWidth() / 2,
                     (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2)};
-    const auto logicalAbsorbLayer{Make<G4LogicalVolume>(solidAbsorbLayer, silicon, "SciFiAbsorbLayer")};
+    const auto logicalAbsorbLayer{Make<G4LogicalVolume>(solidAbsorbLayer, silicon, scifiName + "AbsorbLayer")};
 
     Make<G4PVPlacement>(
         G4TranslateZ3D{(sciFiTracker.SiliconeOilThickness() - sciFiTracker.SiPMThickness()) / 2},
@@ -220,7 +219,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 helicalRadius,
                 fiberCladdingWidth,
                 pitch,
-                id,
+                0,
                 2_pi,
                 true,
                 true,
@@ -234,7 +233,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 helicalRadius,
                 fiberCoreWidth,
                 pitch,
-                id,
+                0,
                 2_pi,
                 true,
                 true,
@@ -255,14 +254,14 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
         }};
 
     auto logicalHelicalLightGuide{
-        [&](auto helicalRadius, auto fiberCladdingWidth, auto fiberCoreWidth, auto pitch, auto id) {
+        [&](auto helicalRadius, auto fiberCladdingWidth, auto fiberCoreWidth, auto pitch, auto rotationAngle, auto id) {
             const auto solidHelicalLightGuideCladding{Make<Mustard::Geant4X::HelicalBox>(
                 fmt::format("{}HelicalLightGuide_{}", scifiName, id),
                 helicalRadius,
                 fiberCladdingWidth,
                 pitch,
                 0,
-                1_pi / 2,
+                rotationAngle,
                 true,
                 false,
                 0.001)};
@@ -273,7 +272,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 fiberCoreWidth,
                 pitch,
                 0,
-                1_pi / 2,
+                rotationAngle,
                 true,
                 false,
                 0.001)};
@@ -286,7 +285,7 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             const auto logicalHelicalLightGuideCore{Make<G4LogicalVolume>(
                 solidHelicalLightGuideCore,
                 pmma,
-                scifiName + "HelicalLightGuide")};
+                scifiName + "HelicalLightGuideCore")};
 
             Make<G4PVPlacement>(G4Transform3D{},
                                 logicalHelicalLightGuideCore,
@@ -299,68 +298,100 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             return logicalHelicalLightGuideCladding;
         }};
 
-    auto logicalTransverseFiber{[&](auto transverseFiberCladdingWidth, auto transverseFiberCoreWidth, auto fiberLength, auto id) {
-        const auto solidTransverseFiber{Make<G4Box>(
-            fmt::format("{}TransverseFiber_{}", scifiName, id),
-            transverseFiberCladdingWidth / 2,
-            transverseFiberCladdingWidth / 2,
+    auto logicalAxialFiber{[&](auto axialFiberCladdingWidth, auto axialFiberCoreWidth, auto fiberLength, auto id) {
+        const auto solidAxialFiber{Make<G4Box>(
+            fmt::format("{}AxialFiber_{}", scifiName, id),
+            axialFiberCladdingWidth / 2,
+            axialFiberCladdingWidth / 2,
             fiberLength / 2)};
 
-        const auto logicalTransverseFiber{Make<G4LogicalVolume>(
-            solidTransverseFiber,
+        const auto logicalAxialFiber{Make<G4LogicalVolume>(
+            solidAxialFiber,
             pmma,
-            scifiName + "TransverseFiber")};
-        const auto solidTransverseCore{Make<G4Box>(
-            fmt::format("{}TransverseFiberCore_{}", scifiName, id),
-            transverseFiberCoreWidth / 2,
-            transverseFiberCoreWidth / 2,
+            scifiName + "AxialFiber")};
+        const auto solidAxialCore{Make<G4Box>(
+            fmt::format("{}AxialFiberCore_{}", scifiName, id),
+            axialFiberCoreWidth / 2,
+            axialFiberCoreWidth / 2,
             fiberLength / 2)};
 
-        const auto logicalTransverseCore{
-            Make<G4LogicalVolume>(solidTransverseCore,
+        const auto logicalAxialCore{
+            Make<G4LogicalVolume>(solidAxialCore,
                                   ps,
-                                  scifiName + "TransverseFiberCore")};
+                                  scifiName + "AxialFiberCore")};
         Make<G4PVPlacement>(G4Transform3D{},
-                            logicalTransverseCore,
-                            scifiName + "TransverseFiber",
-                            logicalTransverseFiber,
+                            logicalAxialCore,
+                            scifiName + "AxialFiber",
+                            logicalAxialFiber,
                             false,
                             0,
                             checkOverlaps);
 
-        return logicalTransverseFiber;
+        return logicalAxialFiber;
     }};
 
-    auto logicalTransverseLightGuide{[&](auto transverseLightGuideCladdingWidth, auto transverseLightGuideCoreWidth, auto lightGuideLength, auto id) {
-        const auto solidTransverseLightGuideCladding{Make<G4Box>(
-            fmt::format("{}TransverseLightGuide_{}", scifiName, id),
-            transverseLightGuideCladdingWidth / 2,
-            transverseLightGuideCladdingWidth / 2,
+    auto logicalStraightLightGuide{[&](auto axialLightGuideCladdingWidth, auto axialLightGuideCoreWidth, auto lightGuideLength, auto id) {
+        const auto solidAxialLightGuideCladding{Make<G4Box>(
+            fmt::format("{}AxialLightGuide_{}", scifiName, id),
+            axialLightGuideCladdingWidth / 2,
+            axialLightGuideCladdingWidth / 2,
             lightGuideLength / 2)};
 
-        const auto solidTransverseLightGuideCore{Make<G4Box>(
-            fmt::format("{}TransverseLightGuideCore_{}", scifiName, id),
-            transverseLightGuideCoreWidth / 2,
-            transverseLightGuideCoreWidth / 2,
+        const auto solidAxialLightGuideCore{Make<G4Box>(
+            fmt::format("{}AxialLightGuideCore_{}", scifiName, id),
+            axialLightGuideCoreWidth / 2,
+            axialLightGuideCoreWidth / 2,
             lightGuideLength / 2)};
 
-        const auto logicalTransverseLightGuide{
-            Make<G4LogicalVolume>(solidTransverseLightGuideCladding,
+        const auto logicalAxialLightGuide{
+            Make<G4LogicalVolume>(solidAxialLightGuideCladding,
                                   fp,
-                                  scifiName + "TransverseLightGuide")};
-        const auto logicalTransverseLightGuideCore{
-            Make<G4LogicalVolume>(solidTransverseLightGuideCore,
+                                  scifiName + "AxialLightGuide")};
+        const auto logicalAxialLightGuideCore{
+            Make<G4LogicalVolume>(solidAxialLightGuideCore,
                                   pmma,
-                                  scifiName + "TransverseLightGuide")};
+                                  scifiName + "AxialLightGuideCore")};
         Make<G4PVPlacement>(G4Transform3D{},
-                            logicalTransverseLightGuideCore,
-                            scifiName + "TransverseLightGuide",
-                            logicalTransverseLightGuide,
+                            logicalAxialLightGuideCore,
+                            scifiName + "AxialLightGuide",
+                            logicalAxialLightGuide,
                             false,
                             0,
                             checkOverlaps);
 
-        return logicalTransverseLightGuide;
+        return logicalAxialLightGuide;
+    }};
+
+    auto logicalTubLightGuide{[&](auto axialLightGuideCladdingWidth, auto axialLightGuideCoreWidth, auto radius, auto pitch, auto id) {
+        const auto solidTubLightGuideCladding{Make<G4Tubs>(
+            fmt::format("{}AxialLightGuide_{}", scifiName, id),
+            radius - axialLightGuideCladdingWidth / 2,
+            radius + axialLightGuideCladdingWidth / 2,
+            axialLightGuideCladdingWidth / 2, 0, pitch)};
+
+        const auto solidTubLightGuideCore{Make<G4Tubs>(
+            fmt::format("{}AxialLightGuideCore_{}", scifiName, id),
+            radius - axialLightGuideCoreWidth / 2,
+            radius + axialLightGuideCoreWidth / 2,
+            axialLightGuideCoreWidth / 2, 0, pitch)};
+
+        const auto logicalTubLightGuide{
+            Make<G4LogicalVolume>(solidTubLightGuideCladding,
+                                  fp,
+                                  scifiName + "AxialLightGuide")};
+        const auto logicalTubLightGuideCore{
+            Make<G4LogicalVolume>(solidTubLightGuideCore,
+                                  pmma,
+                                  scifiName + "AxialLightGuideCore")};
+        Make<G4PVPlacement>(G4Transform3D{},
+                            logicalTubLightGuideCore,
+                            scifiName + "AxialLightGuide",
+                            logicalTubLightGuide,
+                            false,
+                            0,
+                            checkOverlaps);
+
+        return logicalTubLightGuide;
     }};
 
     /////////////////////////////////
@@ -371,10 +402,16 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
     const auto layerConfig{sciFiTracker.DetectorLayerConfiguration()};
     const auto fiberInformation{sciFiTracker.DetectorFiberInformation()};
     auto helicalPlacement{
-        [&](auto helicalRadius, auto logicalFiber, auto logicalLightGuide, auto nFiber, auto pitch) {
+        [&](auto layerID, auto logicalFiber, auto logicalHelicalLightGuide, auto logicalStraightLightGuide) {
+            double helicalRadius{layerConfig[layerID].fiber.radius};
+            int nFiber{layerConfig[layerID].nfiber};
+            double pitch{layerConfig[layerID].fiber.pitch};
+            double lightGuideAngle{sciFiTracker.HelicalLightGuideAngle().at(layerID / 4)};
+            double siPMThickness{sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()};
             for (int i{}; i < nFiber; i++) {
+                double rotationAngle{fiberInformation[fiberID].rotationAngle};
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[fiberID].rotationAngle},
+                    G4RotateZ3D{rotationAngle},
                     logicalFiber,
                     fmt::format("{}HelicalFiber_{}", scifiName, fiberID),
                     logicalBracket,
@@ -383,48 +420,62 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[fiberID].rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
-                        G4Translate3D{0, 0, -sciFiTracker.FiberLength() / 2 - (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch))) / 2} *
+                    G4RotateZ3D{rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
+                        G4Translate3D{0, 0, -sciFiTracker.FiberLength() / 2 - (helicalRadius * lightGuideAngle * std::abs(std::tan(pitch))) / 2} *
                         G4RotateY3D{1.5 * 1_pi - std::copysign(1, pitch) * 0.5 * 1_pi},
-                    logicalLightGuide,
-                    scifiName + "HelicalLightGuide",
+                    logicalHelicalLightGuide,
+                    scifiName + "HelicalLightGuide1",
                     Mother().LogicalVolume(),
                     false,
-                    fiberID,
+                    0,
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[fiberID].rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
-                        G4Translate3D{0, 0, sciFiTracker.FiberLength() / 2 + (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch))) / 2} *
+                    G4RotateZ3D{rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
+                        G4Translate3D{0, 0, sciFiTracker.FiberLength() / 2 + (helicalRadius * lightGuideAngle * std::abs(std::tan(pitch))) / 2} *
                         G4RotateY3D{1.5 * 1_pi + std::copysign(1, pitch) * 0.5 * 1_pi},
-                    logicalLightGuide,
-                    scifiName + "HelicalLightGuide",
+                    logicalHelicalLightGuide,
+                    scifiName + "HelicalLightGuide1",
                     Mother().LogicalVolume(),
                     false,
-                    fiberID,
+                    0,
+                    checkOverlaps);
+
+                Make<G4PVPlacement>(
+                    G4RotateZ3D{rotationAngle - lightGuideAngle + ((pitch > 0) ? -1_pi : 1.5_pi)} *
+                        G4Translate3D{0,
+                                      helicalRadius,
+                                      sciFiTracker.FiberLength() / 2 + (helicalRadius * lightGuideAngle * std::abs(std::tan(pitch)))} *
+                        G4RotateY3D{(3 * 1_pi / 2 + std::abs(pitch)) * std::copysign(1, pitch)} *
+                        G4Translate3D{0, 0, sciFiTracker.StraightLightGuideExtensionLength() / 2},
+                    logicalStraightLightGuide,
+                    fmt::format("{}HelicalLightGuide2", scifiName),
+                    Mother().LogicalVolume(),
+                    false,
+                    0,
                     checkOverlaps);
                 fiberID++;
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[sipmID].rotationAngle + ((pitch > 0) ? 0 : 1_pi)} *
+                    G4RotateZ3D{rotationAngle - lightGuideAngle + ((pitch > 0) ? -1_pi : 1.5_pi)} *
                         G4Translate3D{0,
                                       helicalRadius,
-                                      sciFiTracker.FiberLength() / 2 + (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch)))} *
+                                      sciFiTracker.FiberLength() / 2 + (helicalRadius * lightGuideAngle * std::abs(std::tan(pitch)))} *
                         G4RotateY3D{(3 * 1_pi / 2 + std::abs(pitch)) * std::copysign(1, pitch)} *
-                        G4Translate3D{0, 0, (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2},
+                        G4Translate3D{0, 0, sciFiTracker.StraightLightGuideExtensionLength() + siPMThickness / 2},
                     logicalSiPM,
-                    fmt::format("{}SiPM_{}", scifiName, sipmID),
+                    fmt::format("{}SiPM", scifiName),
                     Mother().LogicalVolume(),
                     false,
                     sipmID,
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[sipmID].rotationAngle} *
+                    G4RotateZ3D{rotationAngle - lightGuideAngle + ((pitch > 0) ? -1.5_pi : 1.5_pi)} *
                         G4Translate3D{0,
                                       helicalRadius,
-                                      -sciFiTracker.FiberLength() / 2 - (helicalRadius * 1_pi / 2 * std::abs(std::tan(pitch)))} *
+                                      -sciFiTracker.FiberLength() / 2 - (helicalRadius * lightGuideAngle * std::abs(std::tan(pitch)))} *
                         G4RotateY3D{-1_pi / 2 + pitch} *
-                        G4Translate3D{0, 0, -std::copysign(1, pitch) * (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()) / 2},
+                        G4Translate3D{0, 0, -std::copysign(1, pitch) * siPMThickness / 2},
                     logicalAbsorbLayer,
                     scifiName + "AbsorbLayer",
                     Mother().LogicalVolume(),
@@ -435,35 +486,52 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
             }
         }};
 
-    auto transversePlacement{
-        [&](auto radius, auto logicalFiber, auto logicalLightGuide, auto nFiber) {
+    auto axialPlacement{
+        [&](auto layerID, auto logicalFiber, auto logicalEntryStraightLightGuide, auto logicalTubLightGuide) {
+            double radius{layerConfig[layerID].fiber.radius};
+            int nFiber{layerConfig[layerID].nfiber};
+            double lightGuideEntryLength{sciFiTracker.LightGuideEntryLength().at(layerID / 4)};
+            double lightGuideCurvatureRadius{sciFiTracker.LightGuideCurvatureRadius()};
+            double pitch{sciFiTracker.FiberLength() / (2_pi * radius)};
+            double siPMThickness{sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() + sciFiTracker.EpoxyThickness()};
             for (int i{}; i < nFiber; i++) {
+                double rotationAngle{fiberInformation[fiberID].rotationAngle};
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[fiberID].rotationAngle} *
+                    G4RotateZ3D{rotationAngle} *
                         G4Transform3D{{}, G4ThreeVector(radius, 0, 0)},
                     logicalFiber,
-                    fmt::format("{}TransverseFiber_{}", scifiName, fiberID),
+                    fmt::format("{}AxialFiber_{}", scifiName, fiberID),
                     logicalBracket,
                     false,
                     fiberID,
                     checkOverlaps);
-
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[fiberID].rotationAngle} *
+                    G4RotateZ3D{rotationAngle} *
                         G4Transform3D{{},
-                                      G4ThreeVector(radius, 0, sciFiTracker.FiberLength() / 2 + sciFiTracker.TransverseLightGuideLength() / 2)},
-                    logicalLightGuide,
-                    scifiName + "TransverseLightGuide",
+                                      G4ThreeVector(radius, 0, sciFiTracker.FiberLength() / 2 + lightGuideEntryLength / 2)},
+                    logicalEntryStraightLightGuide,
+                    scifiName + "AxialLightGuide1",
                     Mother().LogicalVolume(),
                     false,
                     0,
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[fiberID].rotationAngle} *
-                        G4Transform3D({}, G4ThreeVector(radius, 0, -(sciFiTracker.FiberLength() / 2 + sciFiTracker.TransverseLightGuideLength() / 2))),
-                    logicalLightGuide,
-                    scifiName + "TransverseLightGuide",
+                    G4RotateZ3D{rotationAngle} *
+                        G4Transform3D({}, G4ThreeVector(radius, 0, -(sciFiTracker.FiberLength() / 2 + sciFiTracker.LightGuideEntryLength().at(layerID / 4) / 2))),
+                    logicalEntryStraightLightGuide,
+                    scifiName + "AxialLightGuide1",
+                    Mother().LogicalVolume(),
+                    false,
+                    0,
+                    checkOverlaps);
+                Make<G4PVPlacement>(
+                    G4RotateZ3D{rotationAngle} *
+                        G4Transform3D({}, G4ThreeVector(lightGuideCurvatureRadius + radius, 0, sciFiTracker.FiberLength() / 2 + lightGuideEntryLength)) *
+                        G4RotateX3D{0.5_pi} *
+                        G4RotateY3D{1_pi},
+                    logicalTubLightGuide,
+                    scifiName + "AxialLightGuide2",
                     Mother().LogicalVolume(),
                     false,
                     0,
@@ -471,14 +539,11 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                 fiberID++;
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[sipmID].rotationAngle} *
-                        G4Transform3D{{},
-                                      G4ThreeVector(radius,
-                                                    0,
-                                                    (sciFiTracker.SiPMThickness() + sciFiTracker.SiliconeOilThickness() +
-                                                     sciFiTracker.EpoxyThickness() + // clang-format off
-                                                     sciFiTracker.FiberLength()) / 2 + 
-                                                     sciFiTracker.TransverseLightGuideLength())}, // clang-format on
+                    G4RotateZ3D{rotationAngle} *
+                        G4Translate3D(radius + lightGuideCurvatureRadius * (1 - std::cos(pitch)), 0,
+                                      sciFiTracker.FiberLength() / 2 + lightGuideEntryLength + lightGuideCurvatureRadius * std::sin(pitch)) *
+                        G4Translate3D{siPMThickness / 2 * std::sin(pitch), 0, siPMThickness / 2 * std::cos(pitch)} *
+                        G4RotateY3D(pitch),
                     logicalSiPM,
                     fmt::format("{}SiPM_{}", scifiName, sipmID),
                     Mother().LogicalVolume(),
@@ -487,16 +552,14 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
                     checkOverlaps);
 
                 Make<G4PVPlacement>(
-                    G4RotateZ3D{fiberInformation[sipmID].rotationAngle} *
+                    G4RotateZ3D{rotationAngle} *
                         G4Transform3D{
                             {},
                             G4ThreeVector(radius,
                                           0,
-                                          -(sciFiTracker.SiPMThickness() +
-                                            sciFiTracker.SiliconeOilThickness() +
-                                            sciFiTracker.EpoxyThickness() + // clang-format off
-                                            sciFiTracker.FiberLength()) / 2 - 
-                                            sciFiTracker.TransverseLightGuideLength())}, // clang-format on
+                                          -(siPMThickness + // clang-format off
+                                            sciFiTracker.FiberLength()) / 2 -
+                                            lightGuideEntryLength)}, // clang-format on
                     logicalAbsorbLayer,
                     scifiName + "AbsorbLayer",
                     Mother().LogicalVolume(),
@@ -509,56 +572,75 @@ auto SciFiTracker::Construct(G4bool checkOverlaps) -> void {
 
     for (int i{}; i < sciFiTracker.NLayer(); i++) {
         if (layerConfig[i].fiber.layerType == "LHelical") {
-            auto logicalLHelicalFiber{logicalHelicalFiber(
+            auto logicalLHFiber{logicalHelicalFiber(
                 layerConfig[i].fiber.radius,
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
                 layerConfig[i].fiber.pitch, fiberID)};
 
-            auto logicalLHelicalLightGuide{logicalHelicalLightGuide(
+            auto logicalHLightGuide{logicalHelicalLightGuide(
                 layerConfig[i].fiber.radius,
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
-                layerConfig[i].fiber.pitch, fiberID)};
+                layerConfig[i].fiber.pitch,
+                sciFiTracker.HelicalLightGuideAngle().at(i / 4),
+                fiberID)};
 
-            helicalPlacement(layerConfig[i].fiber.radius,
-                             logicalLHelicalFiber,
-                             logicalLHelicalLightGuide,
-                             layerConfig[i].nfiber,
-                             layerConfig[i].fiber.pitch);
+            auto logicalALightGuide{logicalStraightLightGuide(
+                sciFiTracker.FiberCladdingWidth(),
+                sciFiTracker.FiberCoreWidth(),
+                sciFiTracker.StraightLightGuideExtensionLength(), fiberID)};
+
+            helicalPlacement(i,
+                             logicalLHFiber,
+                             logicalHLightGuide,
+                             logicalALightGuide);
         } else if (layerConfig[i].fiber.layerType == "RHelical") {
-            auto logicalRHelicalFiber{logicalHelicalFiber(
+            auto logicalRHFiber{logicalHelicalFiber(
                 layerConfig[i].fiber.radius,
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
                 layerConfig[i].fiber.pitch, fiberID)};
 
-            auto logicalRHelicalLightGuide{logicalHelicalLightGuide(
+            auto logicalHLightGuide{logicalHelicalLightGuide(
                 layerConfig[i].fiber.radius,
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
-                layerConfig[i].fiber.pitch, fiberID)};
+                layerConfig[i].fiber.pitch,
+                sciFiTracker.HelicalLightGuideAngle().at(i / 4),
+                fiberID)};
 
-            helicalPlacement(layerConfig[i].fiber.radius,
-                             logicalRHelicalFiber,
-                             logicalRHelicalLightGuide,
-                             layerConfig[i].nfiber,
-                             layerConfig[i].fiber.pitch);
-        } else if (layerConfig[i].fiber.layerType == "Transverse") {
-            auto logicalTFiber{logicalTransverseFiber(
+            auto logicalALightGuide{logicalStraightLightGuide(
+                sciFiTracker.FiberCladdingWidth(),
+                sciFiTracker.FiberCoreWidth(),
+                sciFiTracker.StraightLightGuideExtensionLength(), fiberID)};
+
+            helicalPlacement(i,
+                             logicalRHFiber,
+                             logicalHLightGuide,
+                             logicalALightGuide);
+        } else if (layerConfig[i].fiber.layerType == "Axial") {
+            auto logicalAFiber{logicalAxialFiber(
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
                 sciFiTracker.FiberLength(), fiberID)};
 
-            auto logicalTLightGuide{logicalTransverseLightGuide(
+            auto logicalEntryStraightLightGuide{logicalStraightLightGuide(
                 sciFiTracker.FiberCladdingWidth(),
                 sciFiTracker.FiberCoreWidth(),
-                sciFiTracker.TransverseLightGuideLength(), fiberID)};
+                sciFiTracker.LightGuideEntryLength().at(i / 4), fiberID)};
 
-            transversePlacement(layerConfig[i].fiber.radius,
-                                logicalTFiber,
-                                logicalTLightGuide,
-                                layerConfig[i].nfiber);
+            auto logicalTLightGuide{logicalTubLightGuide(
+                sciFiTracker.FiberCladdingWidth(),
+                sciFiTracker.FiberCoreWidth(),
+                sciFiTracker.LightGuideCurvatureRadius(),
+                sciFiTracker.FiberLength() / (2_pi * layerConfig[i].fiber.radius),
+                fiberID)};
+
+            axialPlacement(i,
+                           logicalAFiber,
+                           logicalEntryStraightLightGuide,
+                           logicalTLightGuide);
         }
     }
 

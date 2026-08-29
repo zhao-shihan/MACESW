@@ -83,12 +83,14 @@ auto DetectorConstruction::Construct() -> G4VPhysicalVolume* {
     const auto ecalSD(new SD::ECALSD{ecalName, fECALPMSD});
     ecalCrystal.RegisterSD(ecalSD);
 
-    const auto fSciFiSD{new SD::SciFiSD{scifiName}};
-    sciFiTracker.RegisterSD(scifiName + "HelicalFiberCore", fSciFiSD);
-    sciFiTracker.RegisterSD(scifiName + "TransverseFiberCore", fSciFiSD);
-
     const auto sciFiSiPMSD{new SD::SciFiSiPMSD{scifiName + "SiPM"}};
     sciFiTracker.RegisterSD(scifiName + "SiPM", sciFiSiPMSD);
+
+    const auto fSciFiSD{
+        new SD::SciFiSD{scifiName, sciFiSiPMSD}
+    };
+    sciFiTracker.RegisterSD(scifiName + "HelicalFiberCore", fSciFiSD);
+    sciFiTracker.RegisterSD(scifiName + "AxialFiberCore", fSciFiSD);
 
     const auto ttcSiPM(new SD::TTCSiPMSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name() + "SiPM", TTCSiPMSD::Type::MACEPhaseI});
     ttc.RegisterSD("TTCScintillator", new SD::TTCSD{MACE::PhaseI::Detector::Description::TTC::Instance().Name(), TTCSD::Type::MACEPhaseI, ttcSiPM});

@@ -19,15 +19,21 @@
 
 #pragma once
 
-#include "Mustard/Application/Subprogram.h++"
+#include "MACE/Detector/Description/FieldOption.h++"
+#include "MACE/PhaseI/Detector/Description/SciFiTracker.h++"
+#include "MACE/PhaseI/Detector/Description/TTC.h++"
 
-namespace MACE::PhaseI::ReconSciFi {
+#include "Mustard/Detector/Assembly/AssemblyBase.h++"
 
-class ReconSciFi : public Mustard::Application::Subprogram {
+namespace MACE::PhaseI::Detector::Assembly {
+
+class TrackerSystem : public Mustard::Detector::Assembly::AssemblyBase {
 public:
-    ReconSciFi();
+    using DescriptionInUse = std::tuple<MACE::PhaseI::Detector::Description::SciFiTracker,
+                                        MACE::PhaseI::Detector::Description::TTC>;
 
-    auto Main(int argc, char* argv[]) const -> int override;
+public:
+    TrackerSystem(Mustard::Detector::Definition::DefinitionBase& mother, bool checkOverlap);
 };
 
-} // namespace MACE::PhaseI::ReconSciFi
+} // namespace MACE::PhaseI::Detector::Assembly

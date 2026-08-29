@@ -19,28 +19,15 @@
 
 #pragma once
 
-#include "MACE/PhaseI/Simulation/Hit/SciFiSimHit.h++"
-#include "MACE/PhaseI/Simulation/SD/SciFiSiPMSD.h++"
+#include "Mustard/Application/Subprogram.h++"
 
-#include "G4VSensitiveDetector.hh"
+namespace MACE::PhaseI::ReconPhaseI {
 
-#include "muc/hash_map"
-#include "muc/ptrvec"
-
-namespace MACE::PhaseI::inline Simulation::inline SD {
-
-class SciFiSD : public G4VSensitiveDetector {
+class ReconPhaseI : public Mustard::Application::Subprogram {
 public:
-    explicit SciFiSD(const G4String& sdName, const SciFiSiPMSD* sciFiSiPMSD = {});
+    ReconPhaseI();
 
-    auto Initialize(G4HCofThisEvent* hitsCollection) -> void override;
-    auto ProcessHits(G4Step* theStep, G4TouchableHistory*) -> G4bool override;
-    auto EndOfEvent(G4HCofThisEvent*) -> void override;
-
-protected:
-    const SciFiSiPMSD* fSciFiSiPMSD;
-    muc::flat_hash_map<int, muc::unique_ptrvec<SciFiSimHit>> fSplitHit;
-    SciFiHitCollection* fHitsCollection;
+    auto Main(int argc, char* argv[]) const -> int override;
 };
 
-} // namespace MACE::PhaseI::inline Simulation::inline SD
+} // namespace MACE::PhaseI::ReconPhaseI

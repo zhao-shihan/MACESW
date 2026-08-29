@@ -39,7 +39,7 @@ SciFiSiPMSD::SciFiSiPMSD(const G4String& sdName) :
 }
 
 auto SciFiSiPMSD::Initialize(G4HCofThisEvent* hitsCollectionOfThisEvent) -> void {
-    fHit.clear(); // clear at the begin of event allows TTCSD to get optical photon counts at the end of event
+    fHit.clear(); // clear at the begin of event allows SciFiSiPMSD to get optical photon counts at the end of event
 
     fHitsCollection = new SciFiSiPMHitCollection(SensitiveDetectorName, collectionName[0]);
     auto hitsCollectionID{G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection)};

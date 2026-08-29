@@ -47,7 +47,10 @@ public:
     auto FiberCoreWidth() const -> auto { return fFiberCoreWidth; }
     auto FiberCladdingWidth() const -> auto { return fFiberCladdingWidth; }
     auto FiberLength() const -> auto { return fFiberLength; }
-    auto TransverseLightGuideLength() const -> auto { return fTransverseLightGuideLength; }
+    auto HelicalLightGuideAngle() const -> auto { return fHelicalLightGuideAngle; }
+    auto StraightLightGuideExtensionLength() const -> auto { return fStraightLightGuideExtensionLength; }
+    auto LightGuideEntryLength() const -> auto { return fLightGuideEntryLength; }
+    auto LightGuideCurvatureRadius() const -> auto { return fLightGuideCurvatureRadius; }
     auto DetectorLayerConfiguration() const -> const auto& { return *fLayerConfiguration; }
     auto DetectorFiberInformation() const -> const auto& { return *fFiberMap; }
     auto NLayer() const -> auto { return *fNLayer; }
@@ -62,13 +65,14 @@ public:
     auto SiPMEnergyBin() const -> const auto& { return fSiPMEnergyBin; }
     auto SiPMQuantumEfficiency() const -> const auto& { return fSiPMQuantumEfficiency; }
     // Reconstruction
-    auto SiPMOpticalPhotonCountThreshold() const -> auto { return fSiPMOpticalPhotonCountThreshold; }
+    auto EnergyDepositionThreshold() const -> auto { return fEnergyDepositionThreshold; }
     auto ClusterLength() const -> auto { return fClusterLength; }
     auto ThresholdTime() const -> auto { return fThresholdTime; }
     auto TimeWindow() const -> auto { return fTimeWindow; }
     auto SiPMDeadTime() const -> auto { return fSiPMDeadTime; }
     auto CentroidThetaThreshold() const -> auto { return fCentroidThetaThreshold; }
     auto CentroidZThreshold() const -> auto { return fCentroidZThreshold; }
+    auto MinDirDotThreshold() const -> auto { return fMinDirDotThreshold; }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +86,10 @@ public:
     auto FiberCoreRadius(double val) -> void { fFiberCoreWidth = val; }
     auto FiberCladdingRadius(double val) -> void { fFiberCladdingWidth = val; }
     auto FiberLength(double val) -> void { fFiberLength = val; }
-    auto TransverseLightGuideLength(double val) -> void { fTransverseLightGuideLength = val; }
+    auto HelicalLightGuideAngle(std::vector<double> val) -> void { fHelicalLightGuideAngle = std::move(val); }
+    auto StraightLightGuideExtensionLength(double val) -> void { fStraightLightGuideExtensionLength = val; }
+    auto LightGuideEntryLength(std::vector<double> val) -> void { fLightGuideEntryLength = std::move(val); }
+    auto LightGuideCurvatureRadius(double val) -> void { fLightGuideCurvatureRadius = val; }
     auto ScintillationTimeConstant1(double val) -> void { fScintillationTimeConstant1 = val; }
     auto NLayer(int val) -> void { fNLayer = val; }
     auto LayerType(std::vector<std::string> val) -> void { fLayerType = std::move(val); }
@@ -94,13 +101,14 @@ public:
     auto SiPMEnergyBin(std::vector<double> val) -> void { fSiPMEnergyBin = std::move(val); }
     auto SiPMQuantumEfficiency(std::vector<double> val) -> void { fSiPMQuantumEfficiency = std::move(val); }
 
-    auto SiPMOpticalPhotonCountThreshold(int val) -> void { fSiPMOpticalPhotonCountThreshold = val; }
+    auto EnergyDepositionThreshold(double val) -> void { fEnergyDepositionThreshold = val; }
     auto ClusterLength(int val) -> void { fClusterLength = val; }
     auto ThresholdTime(double val) -> void { fThresholdTime = val; }
     auto TimeWindow(double val) -> void { fTimeWindow = val; }
     auto SiPMDeadTime(double val) -> void { fSiPMDeadTime = val; }
     auto CentroidThetaThreshold(double val) -> void { fCentroidThetaThreshold = val; }
     auto CentroidZThreshold(double val) -> void { fCentroidZThreshold = val; }
+    auto MinDirDotThreshold(double val) -> void { fMinDirDotThreshold = val; }
 
 public:
     struct LayerConfiguration {
@@ -138,8 +146,11 @@ private:
     double fSiPMLength;
     double fSiPMWidth;
     double fSiPMThickness;
-    double fTransverseLightGuideLength;
     double fEpoxyThickness;
+    std::vector<double> fHelicalLightGuideAngle;
+    double fStraightLightGuideExtensionLength;
+    std::vector<double> fLightGuideEntryLength;
+    double fLightGuideCurvatureRadius;
 
 private:
     auto CalculateLayerConfiguration() const -> std::vector<LayerConfiguration>;
@@ -167,13 +178,14 @@ private:
     std::vector<double> fSiPMEnergyBin;
     std::vector<double> fSiPMQuantumEfficiency;
 
-    int fSiPMOpticalPhotonCountThreshold;
+    double fEnergyDepositionThreshold;
     int fClusterLength;
     double fThresholdTime;
     double fTimeWindow;
     double fSiPMDeadTime;
     double fCentroidThetaThreshold;
     double fCentroidZThreshold;
+    double fMinDirDotThreshold;
 };
 
 } // namespace MACE::PhaseI::Detector::Description
