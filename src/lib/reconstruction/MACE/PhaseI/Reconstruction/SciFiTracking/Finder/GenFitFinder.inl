@@ -273,33 +273,6 @@ auto GenFitFinder<ASciFiHit, ATrack>::CompatibleTriple(int lID, int rID, int aID
     return (gA > minLR and gA < maxLR);
 }
 
-enum struct PairType {
-    LA,
-    RA,
-    LR
-};
-
-struct PairCandidate {
-    PairType type;
-    size_t first;
-    size_t second;
-    double timeResidual;
-};
-
-struct TripleCandidate {
-    size_t lIndex;
-    size_t rIndex;
-    size_t aIndex;
-    double timeResidual;
-    double angleResidual;
-};
-
-struct ClusterStats {
-    std::vector<double> avgAngle;
-    std::vector<double> avgTime;
-    std::vector<int> frontID;
-};
-
 template<Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::SciFiHit> ASciFiHit,
          Mustard::Data::SuperTupleModel<MACE::PhaseI::Data::Track> ATrack>
 template<std::indirectly_readable AHitPointer>
@@ -1112,7 +1085,7 @@ auto GenFitFinder<ASciFiHit, ATrack>::TrackFit(std::tuple<muc::array3d, muc::arr
     minimizer.SetLimitedVariable(2, "thetap", initialPTheta, 1e-2, initialPTheta - std::numbers::pi / 4, initialPTheta + std::numbers::pi / 4);
     minimizer.SetLimitedVariable(3, "phip", initialPPhi, 1e-2, initialPPhi - std::numbers::pi / 4, initialPPhi + std::numbers::pi / 4);
     minimizer.Minimize();
-    if (minimizer.Status() != 0) {
+    if (minimizer.Status() >= 1) {
         Get<"EvtID">(*result) = Get<"EvtID">(*clusterLists.front().front());
         Get<"x">(*result) = initialCentroid;
         Get<"p">(*result) = initialDirection;
